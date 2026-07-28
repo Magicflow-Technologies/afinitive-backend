@@ -1,0 +1,423 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum TipoDocumento {
+  DNI
+  RUC
+  CE
+  PASAPORTE
+}
+
+enum EstadoFichaMadre {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADA
+  EN_REVISION
+  APROBADA
+  RECHAZADA
+}
+
+enum EstadoFormulario {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADO
+  RECHAZADO
+}
+
+enum TipoCampo {
+  TEXTO
+  NUMERO
+  FECHA
+  SELECT
+  MULTISELECT
+  CHECKBOX
+  TEXTAREA
+  EMAIL
+  TELEFONO
+  MONEDA
+}
+
+enum EstadoDocumento {
+  PENDIENTE
+  GENERADO
+  PENDIENTE_FIRMA
+  PARCIAL_FIRMADO
+  FIRMADO
+  ANULADO
+}
+
+enum TipoFirma {
+  SIMPLE
+  ELECTRONICA
+  AVANZADA
+}
+
+enum EstadoFirma {
+  PENDIENTE
+  FIRMADO
+  RECHAZADO
+}
+
+enum EstadoToken {
+  ACTIVO
+  USADO
+  EXPIRADO
+  REVOCADO
+}
+
+enum OrigenMapeo {
+  FORMULARIO
+  VALOR_FIJO
+  CALCULADO
+}
+
+// ============================================
+// IDENTITY BOUNDED CONTEXT
+// ============================================
+
+model Persona {
+  id              String        @id @default(uuid()) @db.Uuid
+  tipoDocumento   TipoDocumento @map("tipo_documento")
+  numeroDocumento String        @map("numero_documento")
+  nombres         String
+  apellidos       String
+  correo          String
+  telefono        String?
+  direccion       String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cliente  Cliente?
+  empleado Empleado?
+  usuario  Usuario?
+
+  @@unique([tipoDocumento, numeroDocumento], name: "uk_persona_documento")
+  @@index([correo])
+  @@index([apellidos, nombres])
+  @@map("persona")
+}
+
+model Rol {
+  id          String @id @default(uuid()) @db.Uuid
+  nombre      String @unique
+  descripcion String?
+  permisos    Json   @default("[]")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuarios Usuario[]
+
+  @@map("rol")
+}
+
+model Usuario {
+  id           String    @id @default(uuid()) @db.Uuid
+  personaId    String    @unique @map("persona_id") @db.Uuid
+  rolId        String    @map("rol_id") @db.Uuid
+  username     String    @unique
+  passwordHash String    @map("password_hash")
+  activo       Boolean   @default(true)
+  ultimoAcceso DateTime? @map("ultimo_acceso")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  persona Persona @relation(fields: [personaId], references: [id])
+  rol     Rol     @relation(fields: [rolId], references: [id])
+
+  auditorias Auditoria[]
+
+  @@index([personaId])
+  @@index([rolId])
+  @@map("usuario")
+}
+
+// ============================================
+// ONBOARDING BOUNDED CONTEXT
+// ============================================
+
+model Cliente {
+  id        String  @id @default(uuid()) @db.Uuid
+  personaId String  @unique @map("persona_id") @db.Uuid
+  activo    Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  persona    Persona     @relation(fields: [personaId], references: [id])
+  fichaMadre FichaMadre?
+
+  @@map("cliente")
+}
+
+model Empleado {
+  id        String  @id @default(uuid()) @db.Uuid
+  personaId String  @unique @map("persona_id") @db.Uuid
+  cargo     String
+  area      String?
+  activo    Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  persona     Persona      @relation(fields: [personaId], references: [id])
+  fichasMadre FichaMadre[]
+
+  @@map("empleado")
+}
+
+model FichaMadre {
+  id            String           @id @default(uuid()) @db.Uuid
+  codigo        String           @unique
+  clienteId     String           @unique @map("cliente_id") @db.Uuid
+  empleadoId    String           @map("empleado_id") @db.Uuid
+  estado        EstadoFichaMadre @default(PENDIENTE)
+  observaciones String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  cliente          Cliente            @relation(fields: [clienteId], references: [id])
+  empleado         Empleado           @relation(fields: [empleadoId], references: [id])
+  fichasFormulario FichaFormulario[]
+  documentos       DocumentoGeneral[]
+  tokensAcceso     TokenAcceso[]
+
+  @@index([empleadoId])
+  @@index([estado])
+  @@index([createdAt])
+  @@map("ficha_madre")
+}
+
+// ============================================
+// FORMS BOUNDED CONTEXT
+// ============================================
+
+model FormularioPlantilla {
+  id          String  @id @default(uuid()) @db.Uuid
+  nombre      String
+  descripcion String?
+  categoria   String?
+  version     Int     @default(1)
+  activo      Boolean @default(true)
+  orden       Int     @default(0)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  fichasFormulario FichaFormulario[]
+  camposPlantilla  CampoFormulario[]
+
+  @@index([activo, orden])
+  @@map("formulario_plantilla")
+}
+
+model CampoFormulario {
+  id                    String    @id @default(uuid()) @db.Uuid
+  formularioPlantillaId String    @map("formulario_plantilla_id") @db.Uuid
+  nombre                String
+  etiqueta              String
+  tipo                  TipoCampo @default(TEXTO)
+  obligatorio           Boolean   @default(false)
+  orden                 Int       @default(0)
+  placeholder           String?
+  helpText              String?   @map("help_text")
+  valorPorDefecto       String?   @map("valor_por_defecto")
+
+  patronValidacion String? @map("patron_validacion")
+  minLength        Int?    @map("min_length")
+  maxLength        Int?    @map("max_length")
+  opciones         Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  formularioPlantilla FormularioPlantilla    @relation(fields: [formularioPlantillaId], references: [id])
+  respuestas          RespuestaCampo[]
+  mapeosDocumento     MapeoCampoDocumento[]
+
+  @@index([formularioPlantillaId, orden])
+  @@map("campo_formulario")
+}
+
+model FichaFormulario {
+  id                    String           @id @default(uuid()) @db.Uuid
+  fichaMadreId          String           @map("ficha_madre_id") @db.Uuid
+  formularioPlantillaId String           @map("formulario_plantilla_id") @db.Uuid
+  estado                EstadoFormulario @default(PENDIENTE)
+  intentos              Int              @default(0)
+
+  fechaInicio       DateTime? @map("fecha_inicio")
+  fechaFinalizacion DateTime? @map("fecha_finalizacion")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  fichaMadre          FichaMadre          @relation(fields: [fichaMadreId], references: [id])
+  formularioPlantilla FormularioPlantilla @relation(fields: [formularioPlantillaId], references: [id])
+  respuestas          RespuestaCampo[]
+
+  @@unique([fichaMadreId, formularioPlantillaId], name: "uk_ficha_formulario")
+  @@index([estado])
+  @@map("ficha_formulario")
+}
+
+model RespuestaCampo {
+  id                String @id @default(uuid()) @db.Uuid
+  fichaFormularioId String @map("ficha_formulario_id") @db.Uuid
+  campoFormularioId String @map("campo_formulario_id") @db.Uuid
+  valor             String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  fichaFormulario FichaFormulario @relation(fields: [fichaFormularioId], references: [id])
+  campoFormulario CampoFormulario @relation(fields: [campoFormularioId], references: [id])
+
+  @@unique([fichaFormularioId, campoFormularioId], name: "uk_respuesta_campo")
+  @@index([fichaFormularioId])
+  @@map("respuesta_campo")
+}
+
+// ============================================
+// DOCUMENTS BOUNDED CONTEXT
+// ============================================
+
+model DocumentoPlantilla {
+  id          String  @id @default(uuid()) @db.Uuid
+  nombre      String
+  descripcion String?
+  archivo     String
+  formato     String
+  version     Int     @default(1)
+  activo      Boolean @default(true)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  mapeos     MapeoCampoDocumento[]
+  documentos DocumentoGeneral[]
+
+  @@map("documento_plantilla")
+}
+
+model MapeoCampoDocumento {
+  id                   String      @id @default(uuid()) @db.Uuid
+  documentoPlantillaId String      @map("documento_plantilla_id") @db.Uuid
+  campoFormularioId    String?     @map("campo_formulario_id") @db.Uuid
+  marcador             String
+  origen               OrigenMapeo @default(FORMULARIO)
+  valorFijo            String?     @map("valor_fijo")
+  expresionCalculo     String?     @map("expresion_calculo")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  documentoPlantilla DocumentoPlantilla @relation(fields: [documentoPlantillaId], references: [id])
+  campoFormulario    CampoFormulario?   @relation(fields: [campoFormularioId], references: [id])
+
+  @@unique([documentoPlantillaId, marcador], name: "uk_mapeo_marcador")
+  @@index([campoFormularioId])
+  @@map("mapeo_campo_documento")
+}
+
+model DocumentoGeneral {
+  id                   String          @id @default(uuid()) @db.Uuid
+  fichaMadreId         String          @map("ficha_madre_id") @db.Uuid
+  documentoPlantillaId String          @map("documento_plantilla_id") @db.Uuid
+  nombreArchivo        String          @map("nombre_archivo")
+  rutaArchivo          String          @map("ruta_archivo")
+  hashIntegridad       String?         @map("hash_integridad")
+  version              Int             @default(1)
+  estado               EstadoDocumento @default(PENDIENTE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  fichaMadre         FichaMadre         @relation(fields: [fichaMadreId], references: [id])
+  documentoPlantilla DocumentoPlantilla @relation(fields: [documentoPlantillaId], references: [id])
+  firmas             Firma[]
+
+  @@index([fichaMadreId])
+  @@index([estado])
+  @@map("documento_general")
+}
+
+model Firma {
+  id                 String      @id @default(uuid()) @db.Uuid
+  documentoGeneralId String      @map("documento_general_id") @db.Uuid
+  tipo               TipoFirma   @default(ELECTRONICA)
+  estado             EstadoFirma @default(PENDIENTE)
+
+  fechaFirma        DateTime? @map("fecha_firma")
+  ip                String?
+  userAgent         String?   @map("user_agent")
+  hashFirma         String?   @map("hash_firma")
+  datosCertificado  Json?     @map("datos_certificado")
+  coordenadasPagina Json?     @map("coordenadas_pagina")
+
+  firmanteNombre    String? @map("firmante_nombre")
+  firmanteDocumento String? @map("firmante_documento")
+  firmanteEmail     String? @map("firmante_email")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  documentoGeneral DocumentoGeneral @relation(fields: [documentoGeneralId], references: [id])
+
+  @@index([documentoGeneralId])
+  @@map("firma")
+}
+
+// ============================================
+// ACCESS AND AUDIT BOUNDED CONTEXT
+// ============================================
+
+model TokenAcceso {
+  id           String      @id @default(uuid()) @db.Uuid
+  fichaMadreId String      @map("ficha_madre_id") @db.Uuid
+  token        String      @unique
+  emailDestino String      @map("email_destino")
+  estado       EstadoToken @default(ACTIVO)
+  expiraEn     DateTime    @map("expira_en")
+  usadoEn      DateTime?   @map("usado_en")
+  intentos     Int         @default(0)
+  maxIntentos  Int         @default(3) @map("max_intentos")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  fichaMadre FichaMadre @relation(fields: [fichaMadreId], references: [id])
+
+  @@index([token])
+  @@index([fichaMadreId])
+  @@map("token_acceso")
+}
+
+model Auditoria {
+  id           String  @id @default(uuid()) @db.Uuid
+  usuarioId    String? @map("usuario_id") @db.Uuid
+  accion       String
+  entidad      String
+  entidadId    String  @map("entidad_id")
+  datosAntes   Json?   @map("datos_antes")
+  datosDespues Json?   @map("datos_despues")
+  ip           String?
+  userAgent    String? @map("user_agent")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([entidad, entidadId])
+  @@index([createdAt])
+  @@map("auditoria")
+}
