@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { LoggerModule } from 'nestjs-pino';
-import { ConfigService } from '@nestjs/config';
 import { ConfigModule } from './core/config/config.module.js';
 import { PrismaModule } from './core/database/prisma/prisma.module.js';
 import { IdentityModule } from './modules/identity/identity.module.js';
@@ -12,16 +10,6 @@ import { AuditModule } from './modules/audit/audit.module.js';
 
 @Module({
   imports: [
-    LoggerModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const loggerConfig = configService.get('logger');
-        return {
-          pinoHttp: loggerConfig?.pinoHttp ?? {},
-        };
-      },
-    }),
     ConfigModule,
     PrismaModule,
     IdentityModule,

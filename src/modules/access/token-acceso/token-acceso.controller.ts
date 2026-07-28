@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, Param, ParseUUIDPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  ParseUUIDPipe,
+} from '@nestjs/common';
 import { TokenAccesoService } from './token-acceso.service.js';
 import { CreateTokenAccesoDto } from './dto/create-token-acceso.dto.js';
 
