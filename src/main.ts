@@ -21,7 +21,13 @@ async function bootstrap() {
   const prefix = configServive.get<string>('app.apiPrefix', 'api/v1');
 
   app.setGlobalPrefix(prefix);
-  await app.listen(port);
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
+    optionsSuccessStatus: 204,
+  });
+  await app.listen(port, '0.0.0.0');
 
   logger.log(`Server running on http://localhost:${port}/${prefix}`);
   logger.log(`Environment: ${configServive.get<string>('app.env')}`);

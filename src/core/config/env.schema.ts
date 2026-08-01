@@ -13,6 +13,7 @@ export const envSchema = z.object({
   //JWT
   JWT_SECRET: z.string().min(8, 'JWT_SECRET debe tener al menos 8 caracteres'),
   JWT_EXPIRES_IN: z.string().default('1d'),
+  TOKEN_ACCESO_EXPIRACION_DIAS: z.coerce.number().int().positive().default(30),
 
   // Logger
   LOG_LEVEL: z

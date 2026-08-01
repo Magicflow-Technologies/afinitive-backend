@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, ParseUUIDPipe, Put } from '@nestjs/common';
 import { TokenAccesoService } from './token-acceso.service.js';
 import { CreateTokenAccesoDto } from './dto/create-token-acceso.dto.js';
 
@@ -31,5 +24,15 @@ export class TokenAccesoController {
   @Get(':id')
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.findOne(id);
+  }
+
+  @Put(':id/revoke')
+  revoke(@Param('id', ParseUUIDPipe) id: string) {
+    return this.service.revoke(id);
+  }
+
+  @Put(':id/reactivate')
+  reactivate(@Param('id', ParseUUIDPipe) id: string) {
+    return this.service.reactivate(id);
   }
 }

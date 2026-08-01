@@ -2,6 +2,7 @@ import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseUUIDPipe }
 import { FichaMadreService } from './ficha-madre.service.js';
 import { CreateFichaMadreDto } from './dto/create-ficha-madre.dto.js';
 import { UpdateFichaMadreDto } from './dto/update-ficha-madre.dto.js';
+import { CreateFichaInicialDto } from './dto/create-ficha-inicial.dto.js';
 
 @Controller('fichas-madre')
 export class FichaMadreController {
@@ -10,6 +11,11 @@ export class FichaMadreController {
   @Post()
   create(@Body() dto: CreateFichaMadreDto) {
     return this.fichaMadreService.create(dto);
+  }
+
+  @Post('inicial')
+  createInicial(@Body() dto: CreateFichaInicialDto) {
+    return this.fichaMadreService.createInicial(dto);
   }
 
   @Get()

@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../src/generated/prisma"
 }
 
@@ -386,6 +386,7 @@ model TokenAcceso {
   fichaMadreId String      @map("ficha_madre_id") @db.Uuid
   token        String      @unique
   emailDestino String      @map("email_destino")
+  documentosFirmaCantidad Int         @default(5) @map("documentos_firma_cantidad")
   estado       EstadoToken @default(ACTIVO)
   expiraEn     DateTime    @map("expira_en")
   usadoEn      DateTime?   @map("usado_en")

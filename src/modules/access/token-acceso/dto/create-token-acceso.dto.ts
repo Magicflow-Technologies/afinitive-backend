@@ -1,4 +1,4 @@
-import { IsUUID, IsString, IsEmail } from 'class-validator';
+import { IsUUID, IsEmail, IsOptional, IsIn, IsInt } from 'class-validator';
 
 export class CreateTokenAccesoDto {
   @IsUUID()
@@ -6,4 +6,9 @@ export class CreateTokenAccesoDto {
 
   @IsEmail()
   emailDestino!: string;
+
+  @IsOptional()
+  @IsInt()
+  @IsIn([2, 5, 7])
+  documentosFirmaCantidad?: number;
 }

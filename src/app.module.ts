@@ -7,6 +7,7 @@ import { DocumentsModule } from './modules/documents/documents.module.js';
 import { SigningModule } from './modules/signing/signing.module.js';
 import { AccessModule } from './modules/access/access.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
+import { AuthModule } from './modules/auth/auth.module.js';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuditModule } from './modules/audit/audit.module.js';
     SigningModule,
     AccessModule,
     AuditModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

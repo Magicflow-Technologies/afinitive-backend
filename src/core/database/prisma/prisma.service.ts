@@ -1,17 +1,16 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '../../../generated/prisma/client.js';
+import { Injectable } from '@nestjs/common';
+import { PrismaClient } from '../../../generated/prisma/index.js';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { ConfigService } from '@nestjs/config';
+import pg from 'pg';
 
 @Injectable()
-export class PrismaService
-  extends PrismaClient
-  implements OnModuleInit, OnModuleInit
-{
-  constructor(private readonly configService: ConfigService) {
-    const connectionString = configService.get<string>('DATABASE_URL');
-    const adapter = new PrismaPg({ connectionString });
-
+export class PrismaService extends PrismaClient {
+  constructor() {
+    const pool = new pg.Pool({
+      connectionString: process.env.DATABASE_URL,
+      options: '-c search_path=afinitivebd',
+    });
+    const adapter = new PrismaPg(pool, { schema: 'afinitivebd' });
     super({ adapter });
   }
 

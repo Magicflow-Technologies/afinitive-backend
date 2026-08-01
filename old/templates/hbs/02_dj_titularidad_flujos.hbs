@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Declaración Jurada - Titularidad de Flujos Cedidos</title>
+  <style>
+    /* Configuración de Hoja Física A4 */
+    @page {
+      size: A4;
+      margin: 25.4mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, 'Segoe UI', sans-serif;
+      font-size: 11pt;
+      line-height: 1.65;
+      color: #000000;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Estilo de simulación de hoja física A4 en pantalla */
+    @media screen {
+      body {
+        background-color: #e2e8f0;
+        padding: 40px 0;
+        display: flex;
+        justify-content: center;
+      }
+      .page-a4 {
+        background: #ffffff;
+        width: 210mm;
+        min-height: 297mm;
+        padding: 25.4mm; /* 1 pulgada / 2.54cm según APA */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #cbd5e1;
+        border-radius: 2px;
+      }
+    }
+
+    /* Estilo limpio para impresión o generación PDF */
+    @media print {
+      body {
+        background: #ffffff;
+      }
+      .page-a4 {
+        width: 100%;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+      }
+    }
+
+    .header-title {
+      text-align: center;
+      font-weight: bold;
+      font-size: 13.5pt;
+      margin-bottom: 6px;
+    }
+
+    .header-subtitle {
+      text-align: center;
+      font-weight: bold;
+      font-size: 13.5pt;
+      margin-bottom: 45px;
+    }
+
+    .paragraph {
+      text-align: justify;
+      margin-bottom: 35px;
+      font-size: 11pt;
+      line-height: 1.7;
+    }
+
+    .date-location {
+      margin-bottom: 90px;
+      font-size: 11pt;
+    }
+
+    .signature-container {
+      margin: 0 auto;
+      width: 320px;
+      text-align: center;
+    }
+
+    .signature-line {
+      border-top: 1px solid #000000;
+      margin-bottom: 6px;
+      width: 100%;
+    }
+
+    .signature-text-bold {
+      font-weight: bold;
+      font-size: 11pt;
+      line-height: 1.3;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIMULADOR DE HOJA A4 -->
+  <div class="page-a4">
+
+    <!-- TITULO 1 -->
+    <div class="header-title">
+      Declaración Jurada
+    </div>
+
+    <!-- TITULO 2 -->
+    <div class="header-subtitle">
+      Titularidad de Flujos Cedidos
+    </div>
+
+    <!-- PARRAFO CLONADO EXACTO -->
+    <div class="paragraph">
+      Por medio de la presente, {{nombres_apellidos}}, identificado con {{tipo_documento}} N° {{numero_documento}}, con domicilio en {{direccion_completa}}, distrito de {{distrito}}, provincia de {{provincia}} y departamento de {{departamento}}, declaro bajo juramento que a la fecha de suscripción del presente documento los flujos que serán cedidos al Patrimonio Fideicometido que serán administrados por Corfid Corporación Fiduciaria S.A., son (i) son de titularidad y libre disposición de {{nombres_apellidos}}; (ii) sobre ellos no pesa ninguna carga o gravamen que pueda limitar o restringir su transferencia en dominio fiduciario; y, (iii) no se encuentra en trámite algún proceso judicial, procedimiento arbitral o procedimiento administrativo, transacción extrajudicial o cualquier otro similar, que afecte o pudiese afectar la transferencia de los flujos.
+    </div>
+
+    <!-- FECHA Y UBICACION -->
+    <div class="date-location">
+      {{provincia}}, {{fecha_actual}}
+    </div>
+
+    <!-- BLOQUE DE FIRMA CENTRADO Y EN NEGRITA -->
+    <div class="signature-container">
+      <div class="signature-line"></div>
+      <div class="signature-text-bold">
+        {{nombres_apellidos}} {{tipo_documento}}<br>
+        DNI N° {{numero_documento}}
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

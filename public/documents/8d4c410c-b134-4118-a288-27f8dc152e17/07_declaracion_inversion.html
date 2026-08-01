@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>DECLARACIÓN DE INVERSIÓN</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 20mm 18mm;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.4;
+      color: #000000;
+      margin: 0;
+      padding: 0;
+    }
+
+    @media screen {
+      body {
+        background-color: #e2e8f0;
+        padding: 30px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+      }
+      .page-a4 {
+        background: #ffffff;
+        width: 210mm;
+        min-height: 297mm;
+        padding: 20mm 18mm;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        border: 1px solid #cbd5e1;
+        position: relative;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+      .page-a4 {
+        width: 100%;
+        padding: 0;
+        box-shadow: none;
+        border: none;
+        page-break-after: always;
+      }
+    }
+
+    .doc-title {
+      text-align: center;
+      font-weight: bold;
+      font-style: italic;
+      text-decoration: underline;
+      font-size: 11pt;
+      margin-bottom: 22px;
+    }
+
+    .recipient-block {
+      font-style: italic;
+      margin-bottom: 16px;
+      line-height: 1.35;
+    }
+
+    .attn-ref-block {
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+
+    .attn-row {
+      display: flex;
+      margin-bottom: 12px;
+    }
+
+    .attn-label {
+      width: 45px;
+      font-weight: bold;
+      font-style: italic;
+      text-decoration: underline;
+    }
+
+    .attn-people {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      row-gap: 4px;
+    }
+
+    .ref-row {
+      display: flex;
+      text-align: justify;
+    }
+
+    .ref-label {
+      width: 45px;
+      font-weight: bold;
+      font-style: italic;
+      text-decoration: underline;
+    }
+
+    .ref-content {
+      flex: 1;
+    }
+
+    p {
+      text-align: justify;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .highlight-var {
+      background-color: #fef08a; /* Color amarillo para identificar datos dinámicos */
+      padding: 0 2px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .tbl-declaracion {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      margin-bottom: 15px;
+      font-size: 9pt;
+      font-style: italic;
+    }
+
+    .tbl-declaracion td {
+      border: 1px solid #000000;
+      padding: 4px 6px;
+      vertical-align: top;
+    }
+
+    .tbl-declaracion .col-label {
+      width: 38%;
+      font-weight: bold;
+    }
+
+    .tbl-declaracion .col-val {
+      width: 62%;
+    }
+
+    ol {
+      margin-left: 20px;
+      padding-left: 0;
+    }
+
+    li {
+      text-align: justify;
+      margin-bottom: 14px;
+      font-style: italic;
+    }
+
+    .signature-container {
+      text-align: center;
+      margin-top: 250px;
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    .sig-line {
+      border-top: 1.5px solid #000000;
+      width: 280px;
+      margin: 0 auto 8px auto;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HOJA 1 -->
+  <div class="page-a4">
+
+    <!-- TÍTULO -->
+    <div class="doc-title">DECLARACIÓN DE INVERSIÓN</div>
+
+    <!-- DESTINATARIO -->
+    <div class="recipient-block">
+      Señores<br>
+      <strong>CORFID CORPORACIÓN FIDUCIARIA S.A.</strong><br>
+      Av. El Derby 250 Torre 2 Urbanización El Derby<br>
+      Santiago de Surco
+    </div>
+
+    <!-- ATENCIÓN Y REFERENCIA -->
+    <div class="attn-ref-block">
+      <div class="attn-row">
+        <div class="attn-label">Att:</div>
+        <div class="attn-people">
+          <div>Sr. Marco Puppo</div><div>Gerente General</div>
+          <div>Sra. María Villavicencio</div><div>Gerente Legal</div>
+        </div>
+      </div>
+
+      <div class="ref-row">
+        <div class="ref-label">Ref:</div>
+        <div class="ref-content">
+          Inversión en valores mobiliarios emitidos mediante <span class="highlight-var">Patrimonio en Fideicomiso AFINITIVE</span>, constituido según Contrato de Fideicomiso celebrado con <span class="highlight-var">fecha 29 de julio de 2026</span> y elevado a Escritura Pública con <span class="highlight-var">fecha 29 de julio de 2026</span>, ante <span class="highlight-var">Notario Público de Lima Dr. Eduardo Laos de Lama</span> y los términos y condiciones contenidos en el Patrimonio en <span class="highlight-var">Fideicomiso AFINITIVE</span> (en adelante el "Patrimonio").
+        </div>
+      </div>
+    </div>
+
+    <!-- PÁRRAFO INTRODUCTORIO -->
+    <p>
+      Por medio de la presente y en virtud de lo señalado en el Contrato de Fideicomiso AWM LIBRE 2, por mi cuenta y riesgo, manifiesto a ustedes en calidad de Fiduciario del Patrimonio, mi intención de invertir en los siguientes valores:
+    </p>
+
+    <!-- TABLA DE VALORES -->
+    <table class="tbl-declaracion">
+      <tr>
+        <td class="col-label">Tipo de Oferta</td>
+        <td class="col-val">Oferta Privada</td>
+      </tr>
+      <tr>
+        <td class="col-label">Fideicomitente/Originador</td>
+        <td class="col-val"><span class="highlight-var">AFINITIVE S.A.C.</span></td>
+      </tr>
+      <tr>
+        <td class="col-label">Patrimonio Fideicomitido</td>
+        <td class="col-val"><span class="highlight-var">Patrimonio en Fideicomiso AFINITIVE – D. Leg. N° 861, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.</span></td>
+      </tr>
+      <tr>
+        <td class="col-label">Tipo de valor:</td>
+        <td class="col-val">Bonos de Titulización</td>
+      </tr>
+      <tr>
+        <td class="col-label">Denominación</td>
+        <td class="col-val">BONOS DE <span class="highlight-var">TITULIZACIÓN – PF AFINITIVE</span></td>
+      </tr>
+      <tr>
+        <td class="col-label">Emisor/Fiduciario</td>
+        <td class="col-val">Grupo Coril Sociedad Titulizadora S.A.</td>
+      </tr>
+      <tr>
+        <td class="col-label">Colocador</td>
+        <td class="col-val">Grupo Coril Sociedad Titulizadora S.A.</td>
+      </tr>
+      <tr>
+        <td class="col-label">Cantidad de valores a adquirir</td>
+        <td class="col-val">Uno (01)</td>
+      </tr>
+      <tr>
+        <td class="col-label">Moneda</td>
+        <td class="col-val">US$ dólares americanos</td>
+      </tr>
+      <tr>
+        <td class="col-label">Valor Nominal</td>
+        <td class="col-val"><span class="highlight-var">US$ 30,000.00 (Cincuenta mil y /00 100 dólares americanos).</span></td>
+      </tr>
+      <tr>
+        <td class="col-label">Serie/Emisión/Programa</td>
+        <td class="col-val"><span class="highlight-var">Primera</span> emisión</td>
+      </tr>
+      <tr>
+        <td class="col-label">Rendimiento o Tasa de Interés</td>
+        <td class="col-val">10 %</td>
+      </tr>
+      <tr>
+        <td class="col-label">Plazo de la emisión</td>
+        <td class="col-val">Hasta de 24 meses. Base ACT/360.</td>
+      </tr>
+      <tr>
+        <td class="col-label">Vigencia de la Instrucción</td>
+        <td class="col-val">Seis (06) días hábiles</td>
+      </tr>
+    </table>
+
+    <!-- DECLARACIÓN Y PUNTO 1 -->
+    <p style="font-weight: bold;">
+      Mediante la presente DECLARACIÓN DE INVERSIÓN acepto expresamente todos los términos y condiciones detallados en el Acto Constitutivo del Patrimonio en <span class="highlight-var">Fideicomiso AFINITIVE</span> / y la Nota Informativa. Asimismo, declaro, bajo declaración jurada, lo siguiente:
+    </p>
+
+    <div style="margin-left: 20px; font-style: italic; text-align: justify;">
+      1. &nbsp;&nbsp;&nbsp; Que no he recibido ningún tipo de invitación, propuesta, recomendación u oferta, en general, por cualquier medio, sea oral y/o escrito, por parte de Corfid Corporación Fiduciaria S.A. y/o Grupo Coril Sociedad Titulizadora S.A. para la inversión en los valores mobiliarios descritos en la presente carta.
+    </div>
+  </div>
+
+  <!-- HOJA 2 -->
+  <div class="page-a4 page-break">
+    <div style="margin-left: 20px; font-style: italic; text-align: justify; margin-top: 20px;">
+      2. &nbsp;&nbsp;&nbsp; Que tengo conocimiento del contenido del Contrato de Fideicomiso, incluyendo las obligaciones contenidas en él, así como los demás documentos relacionados a esta inversión, razón por la cual se envía esta instrucción conociendo los riesgos asociados, por lo cual se actúa bajo cuenta y riesgo propio.<br><br>
+
+      3. &nbsp;&nbsp;&nbsp; Declaro que he tomado conocimiento que el Fideicomitente no es vinculado a Corfid Corporación Fiduciaria S.A. y/o Grupo Coril Sociedad Titulizadora S.A...
+    </div>
+
+    <!-- SECCIÓN DE FIRMA CENTRADA -->
+    <div class="signature-container">
+      <div class="sig-line"></div>
+      <span style="text-transform: uppercase;">Maycol Quispe</span><br>
+      DNI N° 72503291
+    </div>
+  </div>
+
+</body>
+</html>

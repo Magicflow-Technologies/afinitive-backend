@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma/prisma.service.js';
 import { CreatePersonaDto } from './dto/create-persona.dto.js';
 import { UpdatePersonaDto } from './dto/update-persona.dto.js';
-import { Prisma } from '../../../generated/prisma/client.js';
+import { Prisma } from '../../../generated/prisma/index.js';
 
 @Injectable()
 export class PersonaService {

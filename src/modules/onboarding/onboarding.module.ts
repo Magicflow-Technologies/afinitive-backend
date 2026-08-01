@@ -9,8 +9,10 @@ import { FichaFormularioService } from './ficha-formulario/ficha-formulario.serv
 import { FichaFormularioController } from './ficha-formulario/ficha-formulario.controller.js';
 import { RespuestaCampoService } from './respuesta-campo/respuesta-campo.service.js';
 import { RespuestaCampoController } from './respuesta-campo/respuesta-campo.controller.js';
+import { AccessModule } from '../access/access.module.js';
 
 @Module({
+  imports: [AccessModule],
   controllers: [
     FichaMadreController,
     FormularioPlantillaController,
