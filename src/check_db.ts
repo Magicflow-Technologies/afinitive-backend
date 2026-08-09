@@ -102,7 +102,7 @@ async function main() {
   console.log('Creando ficha madre de onboarding...');
   const fichaMadre = await prisma.fichaMadre.create({
     data: {
-      codigo: 'FM-2026-001',
+      codigo: 'FM-2023-001',
       clienteId: cliente.id,
       empleadoId: empleado.id,
       estado: 'PENDIENTE',

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma/prisma.service.js';
 import { CreateFirmaDto } from './dto/create-firma.dto.js';
 import { UpdateFirmaDto } from './dto/update-firma.dto.js';
@@ -6,7 +10,8 @@ import { SignPackageDto } from './dto/sign-package.dto.js';
 import { createHash } from 'crypto';
 
 const TEMPLATE_FILE_FALLBACKS: Record<string, string> = {
-  '01_carta_solicitud_participacion.hbs': '05_carta_solicitud_participacion.hbs',
+  '01_carta_solicitud_participacion.hbs':
+    '05_carta_solicitud_participacion.hbs',
   '03_formato_beneficiario_final.hbs': '04_formato_beneficiario_final.hbs',
   '04_dj_residencia_fiscal.hbs': '03_dj_residencia_fiscal.hbs',
   '05_ficha_cliente_pn.hbs': '01_ficha_cliente_pn.hbs',
@@ -39,9 +44,12 @@ export class FirmaService {
     return TEMPLATE_DISPLAY_ORDER[canonicalArchivo] ?? Number.MAX_SAFE_INTEGER;
   }
 
-  private sortDocumentosByTemplateOrder<T extends { documentoPlantilla?: { archivo?: string | null } | null; createdAt?: Date | string | null }>(
-    documentos: T[],
-  ) {
+  private sortDocumentosByTemplateOrder<
+    T extends {
+      documentoPlantilla?: { archivo?: string | null } | null;
+      createdAt?: Date | string | null;
+    },
+  >(documentos: T[]) {
     return [...documentos].sort((a, b) => {
       const orderDiff =
         this.getTemplateOrder(a.documentoPlantilla?.archivo) -
@@ -110,18 +118,30 @@ export class FirmaService {
     }
 
     if (new Date() > tokenAcceso.expiraEn) {
-      await this.prisma.tokenAcceso.update({ where: { id: tokenAcceso.id }, data: { estado: 'EXPIRADO' } });
+      await this.prisma.tokenAcceso.update({
+        where: { id: tokenAcceso.id },
+        data: { estado: 'EXPIRADO' },
+      });
       throw new UnauthorizedException('Token expirado');
     }
 
-    const documentosOrdenados = this.sortDocumentosByTemplateOrder(tokenAcceso.fichaMadre.documentos);
-    const documentosSeleccionados = documentosOrdenados.slice(0, tokenAcceso.documentosFirmaCantidad || 5);
+    const documentosOrdenados = this.sortDocumentosByTemplateOrder(
+      tokenAcceso.fichaMadre.documentos,
+    );
+    const documentosSeleccionados = documentosOrdenados.slice(
+      0,
+      tokenAcceso.documentosFirmaCantidad || 5,
+    );
     if (documentosSeleccionados.length === 0) {
-      throw new BadRequestException('No hay documentos disponibles para firmar.');
+      throw new BadRequestException(
+        'No hay documentos disponibles para firmar.',
+      );
     }
 
     const fechaFirma = new Date();
-    const hashFirma = dto.firmaImagen ? createHash('sha256').update(dto.firmaImagen).digest('hex') : null;
+    const hashFirma = dto.firmaImagen
+      ? createHash('sha256').update(dto.firmaImagen).digest('hex')
+      : null;
     const datosCertificado = dto.firmaImagen
       ? {
           firmaImagen: dto.firmaImagen,
@@ -130,12 +150,18 @@ export class FirmaService {
       : null;
 
     const result = await this.prisma.$transaction(async (tx) => {
-      const firmasActualizadas: Awaited<ReturnType<typeof this.prisma.firma.update>>[] = [];
+      const firmasActualizadas: Awaited<
+        ReturnType<typeof this.prisma.firma.update>
+      >[] = [];
 
       for (const documento of documentosSeleccionados) {
-        const firma = documento.firmas.find((item) => item.estado !== 'FIRMADO') ?? documento.firmas[0];
+        const firma =
+          documento.firmas.find((item) => item.estado !== 'FIRMADO') ??
+          documento.firmas[0];
         if (!firma) {
-          throw new BadRequestException(`El documento ${documento.nombreArchivo} no tiene firma asociada.`);
+          throw new BadRequestException(
+            `El documento ${documento.nombreArchivo} no tiene firma asociada.`,
+          );
         }
 
         const firmaActualizada = await tx.firma.update({
