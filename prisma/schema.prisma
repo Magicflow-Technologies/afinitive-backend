@@ -79,6 +79,7 @@ enum OrigenMapeo {
   FORMULARIO
   VALOR_FIJO
   CALCULADO
+  SISTEMA
 }
 
 // ============================================

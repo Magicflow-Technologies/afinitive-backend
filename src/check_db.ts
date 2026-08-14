@@ -22,6 +22,7 @@ async function main() {
     await prisma.fichaFormulario.deleteMany();
     await prisma.campoFormulario.deleteMany();
     await prisma.formularioPlantilla.deleteMany();
+    await prisma.tokenAcceso.deleteMany();
     await prisma.fichaMadre.deleteMany();
     await prisma.empleado.deleteMany();
     await prisma.cliente.deleteMany();
