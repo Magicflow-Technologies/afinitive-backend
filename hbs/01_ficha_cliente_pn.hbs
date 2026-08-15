@@ -135,6 +135,14 @@
       margin-right: 3px;
     }
 
+    .chk-box.checked::after {
+      content: "✓";
+      font-size: 11px;
+      position: relative;
+      left: 1px;
+      top: -2px;
+    }
+
     .notice-bar {
       background-color: #ffffff;
       font-weight: bold;
@@ -381,7 +389,7 @@
         </td>
         <td style="width: 50%; vertical-align: middle;">
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{detalle_origen_fondos}}</span>
+          <span class="val">{{fondosPropiosDetalle}}</span>
         </td>
       </tr>
       <tr>
@@ -389,28 +397,40 @@
           <span class="lbl"><strong>VENTA DE ACTIVOS.</strong> Especificar el bien y el N° de escritura pública o
             Kárdex, fecha y Notario.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{ventaActivosDetalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
           <span class="lbl"><strong>FINANCIAMIENTOS.</strong> Por ejemplo: Precisar la entidad financiera, monto y
             número de cuenta.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{financiaminetosDetalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
           <span class="lbl"><strong>DIVIDENDOS Y PARTICIPACIONES.</strong> Por ejemplo: Indicar la empresa y su %
             participación o accionariado, monto.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{dividendosParticipacionesDetalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
           <span class="lbl"><strong>CONTRATO DE OBRA, LICITACION PUBLICA.</strong> (precisar monto, n° de contrato y
             fecha, N° de Kx y Escritura, Notaría), adjuntar copia o scan.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{contratoObraLicitacionDetalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
@@ -423,7 +443,10 @@
         <td>
           <span class="lbl"><strong>OTROS. (Especificar):</strong></span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{contratoObraLicitacionDetalle}}</span>
+        </td>
       </tr>
     </table>
 
@@ -439,9 +462,12 @@
               que genere ganancias ilícitas)?</strong></span>
         </td>
         <td style="width: 25%; vertical-align: middle;">
-          <span class="chk-box">{{investigado_delitos_si}}</span> Sí &nbsp;&nbsp;&nbsp;&nbsp; <span
-            class="chk-box">{{investigado_delitos_no}}</span> No<br><br>
-          <span class="lbl">Especificar:</span> <span class="val">{{especificar_delitos}}</span>
+          <span class="chk-box {{#if esInvestigadoDelitos}}checked{{/if}}"></span> Sí
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="chk-box {{#unless esInvestigadoDelitos}}checked{{#unless}}"></span> No<br><br>
+
+          <span class="lbl">Especificar:</span>
+          <span class="val">{{especificar_delitos}}</span>
         </td>
       </tr>
       <tr>
