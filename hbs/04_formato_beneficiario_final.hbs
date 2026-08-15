@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>FORMATO DE LA PERSONA NATURAL QUE CALIFICA COMO BENEFICIARIO FINAL</title>
@@ -33,6 +34,7 @@
         align-items: center;
         gap: 30px;
       }
+
       .page-a4 {
         background: #ffffff;
         width: 210mm;
@@ -50,6 +52,7 @@
       body {
         background: #ffffff;
       }
+
       .page-a4 {
         width: 100%;
         padding: 0;
@@ -57,6 +60,7 @@
         border: none;
         page-break-after: always;
       }
+
       .page-a4:last-child {
         page-break-after: avoid;
       }
@@ -93,7 +97,8 @@
       font-size: 7.5pt;
     }
 
-    .table-data td, .table-data th {
+    .table-data td,
+    .table-data th {
       border: 1px solid #000000;
       padding: 3px 5px;
       vertical-align: top;
@@ -120,6 +125,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- HOJA 1 DE 3 -->
@@ -139,7 +145,8 @@
           <td style="width: 30%; font-weight: normal; background-color: #ffffff; vertical-align: top;">
             Fecha del<br>Formato
           </td>
-          <td style="width: 70%; background-color: #ffffff; font-weight: normal; text-align: left; vertical-align: middle;">
+          <td
+            style="width: 70%; background-color: #ffffff; font-weight: normal; text-align: left; vertical-align: middle;">
             {{dia}}/{{mes}}/{{anio}}
           </td>
         </tr>
@@ -150,17 +157,20 @@
           <td style="width: 70%; padding: 0;">
             <table style="width: 100%; border-collapse: collapse; border: none;">
               <tr>
-                <td style="padding: 4px 6px; border-bottom: 1px solid #000000; border-top: none; border-left: none; border-right: none; background-color: #d1d5db;">
+                <td
+                  style="padding: 4px 6px; border-bottom: 1px solid #000000; border-top: none; border-left: none; border-right: none; background-color: #d1d5db;">
                   PPNN – PPJJ - Propiedad<br>(literal a) del párrafo 4.1 del art. 4 D.Leg. 1372)
                 </td>
               </tr>
               <tr>
-                <td style="padding: 4px 6px; border-bottom: 1px solid #000000; border-top: none; border-left: none; border-right: none; background-color: #d1d5db;">
+                <td
+                  style="padding: 4px 6px; border-bottom: 1px solid #000000; border-top: none; border-left: none; border-right: none; background-color: #d1d5db;">
                   PPNN – PPJJ - Control<br>(literal b) del párrafo 4.1 del art. 4 D.Leg. 1372)
                 </td>
               </tr>
               <tr>
-                <td style="padding: 4px 6px; border-bottom: 1px solid #000000; border-top: none; border-left: none; border-right: none; background-color: #d1d5db;">
+                <td
+                  style="padding: 4px 6px; border-bottom: 1px solid #000000; border-top: none; border-left: none; border-right: none; background-color: #d1d5db;">
                   PPNN – PPJJ Administrativo superior<br>(literal c) del párrafo 4.1 del art. 4 D.Leg. 1372)
                 </td>
               </tr>
@@ -196,9 +206,12 @@
       <tr>
         <td class="col-label">e) Tipo y número de documento de identidad</td>
         <td>
-          e.1) DNI: {{doc_dni}}<br>
-          e.2) Carné de extranjería: {{doc_ce}}<br>
-          e.3) Pasaporte: {{doc_pasaporte}}
+          e.1) DNI:
+          {{#if es_dni}}{{numeroDocumento}}{{/if}}<br>
+          e.2) Carné de extranjería:
+          {{#if es_ce}}{{numeroDocumento}}{{/if}}<br>
+          e.3) Pasaporte:
+          {{#if es_pasaporte}}{{numeroDocumento}}{{/if}}
         </td>
       </tr>
       <tr>
@@ -234,9 +247,18 @@
       <tr>
         <td class="col-label">k) Régimen patrimonial u otros</td>
         <td>
-          k.1) Sociedad de Gananciales &nbsp;&nbsp; Desde: dd/mm/aaaa &nbsp;&nbsp; [ {{regimen_gananciales}} ]<br>
-          k.2) Separación de Patrimonios &nbsp;&nbsp; Desde: dd/mm/aaaa &nbsp;&nbsp; [ {{regimen_separacion}} ]<br>
-          k.3) Unión de Hecho &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Desde: dd/mm/aaaa &nbsp;&nbsp; [ {{conyuge_fecha_matrimonio}} ]
+          k.1) Sociedad de Gananciales
+          &nbsp;&nbsp; Desde: {{regimen_fecha}}
+          &nbsp;&nbsp; [ {{regimen_gananciales}} ]<br>
+
+          k.2) Separación de Patrimonios
+          &nbsp;&nbsp; Desde: {{regimen_fecha}}
+          &nbsp;&nbsp; [ {{regimen_separacion}} ]<br>
+
+          k.3) Unión de Hecho
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          Desde: {{regimen_fecha}}
+          dd/mm/aaaa &nbsp;&nbsp; [ {{regimen_union_hecho}} ]
         </td>
       </tr>
       <tr>
@@ -251,7 +273,8 @@
         </td>
       </tr>
       <tr>
-        <td class="col-label">n) Dirección (calle, avenida, jirón u otros, urbanización, distrito, provincia y código postal)</td>
+        <td class="col-label">n) Dirección (calle, avenida, jirón u otros, urbanización, distrito, provincia y código
+          postal)</td>
         <td>{{direccion_completa_formato}}</td>
       </tr>
     </table>
@@ -290,7 +313,8 @@
     <div class="section-title">3. Beneficiario Final por propiedad indirecta⁸</div>
     <table class="table-data">
       <tr>
-        <td>¿Existen PPNN o PPJJ a través de las cuales indirectamente posea o controle como mínimo 10% Capital PPJJ</td>
+        <td>¿Existen PPNN o PPJJ a través de las cuales indirectamente posea o controle como mínimo 10% Capital PPJJ
+        </td>
         <td style="width: 15%; text-align: center;">SI</td>
         <td style="width: 15%; text-align: center; font-weight: bold;">NO</td>
       </tr>
@@ -315,7 +339,8 @@
     </table>
 
     <div class="section-title">3.2 Cadena de titularidad</div>
-    <div style="font-weight: bold; font-size: 8pt; margin-bottom: 3px;">3.2.1 Cuadro resumen de personas que conforman el capital de una PPJJ</div>
+    <div style="font-weight: bold; font-size: 8pt; margin-bottom: 3px;">3.2.1 Cuadro resumen de personas que conforman
+      el capital de una PPJJ</div>
     <table class="table-data">
       <thead>
         <tr>
@@ -353,7 +378,8 @@
 
   <!-- HOJA 3 DE 3 -->
   <div class="page-a4">
-    <div style="font-weight: bold; font-size: 8pt; margin-bottom: 3px;">3.2.2 Cuadro de personas pertenecientes a la cadena de titularidad</div>
+    <div style="font-weight: bold; font-size: 8pt; margin-bottom: 3px;">3.2.2 Cuadro de personas pertenecientes a la
+      cadena de titularidad</div>
     <table class="table-data">
       <thead>
         <tr>
@@ -390,7 +416,8 @@
       <tr>
         <td class="col-label">b) País de Origen</td>
         <td>
-          b.1) Creación &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; b.2) Constitución &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; b.3) Registro
+          b.1) Creación &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; b.2) Constitución &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; b.3)
+          Registro
         </td>
       </tr>
       <tr>
@@ -406,24 +433,30 @@
         <td></td>
       </tr>
       <tr>
-        <td class="col-label">f) Dirección (calle, avenida, jirón u otros, urbanización, distrito, provincia y código postal)</td>
+        <td class="col-label">f) Dirección (calle, avenida, jirón u otros, urbanización, distrito, provincia y código
+          postal)</td>
         <td></td>
       </tr>
     </table>
 
     <div class="section-title">4. Beneficiario Final por control¹⁴</div>
     <p style="font-size: 7.5pt; text-align: justify; margin-bottom: 5px;">
-      Si Ud. ejerce control indirecto en la persona jurídica por medios distintos a la propiedad, para adoptar e imponer decisiones con independencia de que ocupe o no cargos formales en la persona jurídica, conforme a lo dispuesto en el párrafo 5.4 del artículo 5 del Reglamento, sírvase proporcionar la siguiente información; como así también, los datos de identificación del cuadro 1 y del cuadro 2, de corresponder.
+      Si Ud. ejerce control indirecto en la persona jurídica por medios distintos a la propiedad, para adoptar e imponer
+      decisiones con independencia de que ocupe o no cargos formales en la persona jurídica, conforme a lo dispuesto en
+      el párrafo 5.4 del artículo 5 del Reglamento, sírvase proporcionar la siguiente información; como así también, los
+      datos de identificación del cuadro 1 y del cuadro 2, de corresponder.
     </p>
 
     <table class="table-data">
       <tr>
         <td style="font-weight: bold; width: 25%;">Control directo</td>
-        <td>Cuando la PPNN ejerce más de la mitad del poder de voto en los órganos de administración o dirección o equivalente que tenga poder de decisión, en una persona jurídica.</td>
+        <td>Cuando la PPNN ejerce más de la mitad del poder de voto en los órganos de administración o dirección o
+          equivalente que tenga poder de decisión, en una persona jurídica.</td>
       </tr>
       <tr>
         <td style="font-weight: bold;">Control indirecto</td>
-        <td>Cuando la PPNN tiene la potestad para designar, remover o vetar a la mayoría de los miembros de los órganos de administración o dirección o equivalente de la PPJJ.</td>
+        <td>Cuando la PPNN tiene la potestad para designar, remover o vetar a la mayoría de los miembros de los órganos
+          de administración o dirección o equivalente de la PPJJ.</td>
       </tr>
     </table>
 
@@ -440,17 +473,25 @@
     </table>
 
     <div style="margin-top: 30px; text-align: center;">
-      <div style="border-top: 1px solid #000000; width: 260px; margin: 0 auto 5px auto;"></div>
+      {{#if firma_imagen}}
+      <img src="{{firma_imagen}}" alt="Firma del Declarante"
+        style="max-height: 65px; width: auto; margin-bottom: 5px; margin-right: 40px;" />
+      {{/if}}
+      <div style="border-top: 1px solid #000000; width: 260px; margin: 0 auto 5px auto;">
+      </div>
+
       <strong>Firma del beneficiario final</strong><br>
       N.° Documento de identidad: {{numero_documento}}
     </div>
 
     <div class="footnote">
-      ¹² En el caso de señalar como Tipo BF – Otros Medios, se deberá indicar en observaciones el beneficiario final del Fondo de Inversión o del Fideicomiso.<br>
+      ¹² En el caso de señalar como Tipo BF – Otros Medios, se deberá indicar en observaciones el beneficiario final del
+      Fondo de Inversión o del Fideicomiso.<br>
       ¹³ En caso de ser personas jurídicas, deberá indicar el Nombre, Razón o Denominación Social.<br>
       ¹⁴ Literal b) del párrafo 4.1 del artículo 4 del Decreto Legislativo N.° 1372.
     </div>
   </div>
 
 </body>
+
 </html>

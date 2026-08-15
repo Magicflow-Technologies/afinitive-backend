@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Declaración Jurada de Residencia Fiscal - Personas Naturales</title>
@@ -31,6 +32,7 @@
         display: flex;
         justify-content: center;
       }
+
       .page-a4 {
         background: #ffffff;
         width: 210mm;
@@ -48,6 +50,7 @@
       body {
         background: #ffffff;
       }
+
       .page-a4 {
         width: 100%;
         padding: 0;
@@ -72,7 +75,8 @@
       text-align: right;
       font-weight: bold;
       font-size: 13pt;
-      color: #1e3a8a; /* Azul institucional CORFID */
+      color: #1e3a8a;
+      /* Azul institucional CORFID */
       line-height: 1.25;
     }
 
@@ -142,6 +146,14 @@
       margin: 0 4px;
     }
 
+    .checkbox-square.checked::after {
+      content: "✓";
+      font-size: 11px;
+      position: relative;
+      left: 1px;
+      top: -2px;
+    }
+
     .sub-section {
       margin-left: 20px;
       margin-top: 6px;
@@ -183,6 +195,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- SIMULADOR DE HOJA A4 -->
@@ -219,7 +232,7 @@
 
     <div class="field-row">
       <strong>2. DNI:</strong>
-      <span class="underlined-value" style="width: 85%;">{{doc_dni}}</span>
+      <span class="underlined-value" style="width: 85%;">{{numero_documento}}</span>
     </div>
 
     <div class="field-row">
@@ -259,32 +272,68 @@
     <!-- SECCIÓN 7: RESIDENCIA FISCAL EXTRANJERA -->
     <div class="field-row" style="margin-top: 14px;">
       <strong>7. ¿Tiene residencia fiscal o tributaria en otro país que no sea Perú?</strong>
-      &nbsp;&nbsp; Sí <span class="checkbox-square">{{residencia_fiscal_fuera_si}}</span>
-      &nbsp;&nbsp;&nbsp;&nbsp; No <span class="checkbox-square">{{residencia_fiscal_fuera_no}}</span>
+      &nbsp;&nbsp; Sí <span class="checkbox-square {{#if residencia_fiscal_fuera}}checked{{/if}}"></span>
+      &nbsp;&nbsp;&nbsp;&nbsp; No
+      <span class="checkbox-square {{#if residencia_fiscal_fuera}}checked{{/if}}"></span>
     </div>
 
     <div class="sub-section">
-      <strong>7.1</strong> En caso haya marcado "SÍ" declare los países y el número equivalente al RUC peruano que tenga ante las autoridades tributarias de tales países. Ejemplo: Número de Identificación Tributaria (NIT), Rol Único Tributario (RUT), Taxpayer Identification Number (TIN), etc.:<br><br>
+      <strong>7.1</strong> En caso haya marcado "SÍ" declare los países y el número equivalente al RUC peruano que tenga
+      ante las autoridades tributarias de tales países. Ejemplo: Número de Identificación Tributaria (NIT), Rol Único
+      Tributario (RUT), Taxpayer Identification Number (TIN), etc.:<br><br>
 
       <div style="margin-left: 20px; line-height: 1.8;">
-        <strong>País:</strong> <span class="underlined-value" style="width: 220px;">{{pais_residencia_fiscal_extranjero}}</span>
+        <strong>País:</strong>
+        <span class="underlined-value" style="width: 220px;">
+          {{#if residencia_fiscal_fuera}}
+          {{pais_residencia_fiscal_extranjero}}
+          {{/if}}
+        </span>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>NIT / RUT / TIN / otro:</strong> <span class="underlined-value" style="width: 200px;">{{doc_nit}}</span><br>
+        <strong>NIT / RUT / TIN / otro:</strong>
+        <span class="underlined-value" style="width: 200px;">
+          {{#if residencia_fiscal_fuera}}
+          {{doc_nit}}
+          {{/if}}
+        </span><br>
 
-        <strong>País:</strong> <span class="underlined-value" style="width: 220px;"></span>
+        <strong>País:</strong>
+        <span class="underlined-value" style="width: 220px;">
+          {{#if residencia_fiscal_fuera}}
+          {{pais_residencia_fiscal_extranjero_2}}
+          {{/if}}
+        </span>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>NIT / RUT / TIN / otro:</strong> <span class="underlined-value" style="width: 180px;"></span> *<br>
+        <strong>NIT / RUT / TIN / otro:</strong>
+        <span class="underlined-value" style="width: 180px;">
+          {{#if residencia_fiscal_fuera}}
+          {{doc_nit_2}}
+          {{/if}}
+        </span> *<br>
 
-        <strong>País:</strong> <span class="underlined-value" style="width: 220px;"></span>
+
+        <strong>País:</strong>
+        <span class="underlined-value" style="width: 220px;">
+          {{#if residencia_fiscal_fuera}}
+          {{pais_residencia_fiscal_extranjero_3}}
+          {{/if}}
+        </span>
         &nbsp;&nbsp;&nbsp;&nbsp;
-        <strong>NIT / RUT / TIN / otro:</strong> <span class="underlined-value" style="width: 180px;"></span> *
+        <strong>NIT / RUT / TIN / otro:</strong>
+        <span class="underlined-value" style="width: 180px;">
+          {{#if residencia_fiscal_fuera}}
+          {{doc_nit_3}}
+          {{/if}}
+        </span> *
       </div>
     </div>
 
     <div class="sub-section" style="margin-top: 10px;">
-      <strong>7.2</strong> En caso no cuente con el número de NIT / RUT / TIN, explique los motivos:<br><br>
+      <strong>7.2</strong>
+      En caso no cuente con el número de NIT / RUT / TIN, explique los motivos:<br><br>
       <div style="margin-left: 20px;">
-        a) El país de residencia fiscal o tributaria no emite registro o número tributario (NIT / RUT / TIN / otro)<br><br>
+        a) El país de residencia fiscal o tributaria no emite registro o número tributario (NIT / RUT / TIN /
+        otro)<br><br>
         b) Otro: <span class="underlined-value" style="width: 520px;"></span>
       </div>
     </div>
@@ -294,8 +343,11 @@
       <strong>Declaro bajo Juramento que:</strong>
       <ul class="bullets-list">
         <li>La información proporcionada es veraz y completa.</li>
-        <li>Conocer que conforme al Decreto Supremo No. 256-2018-EF, Corfid Corporación Fiduciaria S.A, podrá entregar a las autoridades nacionales o internacionales la información contenida en el presente documento.</li>
-        <li>Me comprometo a comunicar a Corfid Corporación Fiduciaria S.A cualquier cambio de circunstancias respecto a la información declarada en el presente documento, en un plazo de 30 días, a partir de la fecha del cambio de circunstancias.</li>
+        <li>Conocer que conforme al Decreto Supremo No. 256-2018-EF, Corfid Corporación Fiduciaria S.A, podrá entregar a
+          las autoridades nacionales o internacionales la información contenida en el presente documento.</li>
+        <li>Me comprometo a comunicar a Corfid Corporación Fiduciaria S.A cualquier cambio de circunstancias respecto a
+          la información declarada en el presente documento, en un plazo de 30 días, a partir de la fecha del cambio de
+          circunstancias.</li>
       </ul>
     </div>
 
@@ -315,4 +367,5 @@
   </div>
 
 </body>
+
 </html>
