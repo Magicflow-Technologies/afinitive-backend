@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>CARTA DE SOLICITUD DE PARTICIPACIÓN DE INVERSIONISTA</title>
@@ -31,11 +32,13 @@
         display: flex;
         justify-content: center;
       }
+
       .page-a4 {
         background: #ffffff;
         width: 210mm;
         min-height: 297mm;
-        padding: 25.4mm; /* 1 pulgada / 2.54cm según APA */
+        padding: 25.4mm;
+        /* 1 pulgada / 2.54cm según APA */
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0, 0, 0, 0.1);
         border: 1px solid #cbd5e1;
         border-radius: 2px;
@@ -47,6 +50,7 @@
       body {
         background: #ffffff;
       }
+
       .page-a4 {
         width: 100%;
         padding: 0;
@@ -105,18 +109,21 @@
       margin-bottom: 14px;
       font-style: italic;
     }
+
     .signatures-container {
       margin-top: 60px;
       display: flex;
       justify-content: space-between;
       width: 100%;
     }
+
     .signature-box {
       width: 42%;
       text-align: center;
       font-size: 10pt;
       font-style: normal;
     }
+
     .signature-line {
       border-top: 1px solid #000000;
       margin-bottom: 8px;
@@ -124,6 +131,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- SIMULADOR DE HOJA A4 -->
@@ -152,7 +160,10 @@
           María Alejandra Villavicencio Rodriguez – Gerente Legal
         </td>
       </tr>
-      <tr><td style="height: 10px;"></td><td></td></tr>
+      <tr>
+        <td style="height: 10px;"></td>
+        <td></td>
+      </tr>
       <tr>
         <td class="text-italic">Referencia:</td>
         <td class="text-italic">CARTA DE SOLICITUD DE PARTICIPACIÓN DE INVERSIONISTA</td>
@@ -166,12 +177,17 @@
 
     <!-- PARRAFO 1 -->
     <div class="paragraph">
-      Nos dirigimos a ustedes con relación al Contrato de Fideicomiso (en adelante, el "CONTRATO") celebrado con fecha 27 de febrero 2024, entre Inversiones Condominio Aventura S.A.C.., en calidad de Intervinientes; Ricardo Martin Bertalmio Ruibal, en calidad de Representante de los inversionistas; y, Corfid Corporación Fiduciaria S.A., en calidad de Fiduciario. Los términos en mayúscula no definidos en esta CARTA DE SOLICITUD DE PARTICIPACIÓN DE INVERSIONISTA tendrán el significado otorgado en la cláusula segunda del CONTRATO.
+      Nos dirigimos a ustedes con relación al Contrato de Fideicomiso (en adelante, el "CONTRATO") celebrado con fecha
+      27 de febrero 2024, entre Inversiones Condominio Aventura S.A.C.., en calidad de Intervinientes; Ricardo Martin
+      Bertalmio Ruibal, en calidad de Representante de los inversionistas; y, Corfid Corporación Fiduciaria S.A., en
+      calidad de Fiduciario. Los términos en mayúscula no definidos en esta CARTA DE SOLICITUD DE PARTICIPACIÓN DE
+      INVERSIONISTA tendrán el significado otorgado en la cláusula segunda del CONTRATO.
     </div>
 
     <!-- PARRAFO 2 -->
     <div class="paragraph">
-      De conformidad con lo establecido en el CONTRATO, por medio de la presente les solicitamos se apruebe la participación del señor {{nombres_apellidos}}, como INVERSIONISTA, cuyos datos son los siguientes:
+      De conformidad con lo establecido en el CONTRATO, por medio de la presente les solicitamos se apruebe la
+      participación del señor {{nombres_apellidos}}, como INVERSIONISTA, cuyos datos son los siguientes:
     </div>
 
     <!-- TABLA CLONADA IDENTICA -->
@@ -190,18 +206,20 @@
       </tr>
       <tr>
         <td class="col-label">MONTO DE INVERSIÓN</td>
-        <td>{{moneda_simbolo}} ****{{monto_inicial_invertir_formateado}}</td>
+        <td>{{tipo_moneda}} ****{{monto_inicial_invertir_formateado}}</td>
       </tr>
     </table>
 
     <!-- PARRAFO 3 -->
     <div class="paragraph">
-      En ese sentido, quedamos atentos a sus comentarios y atención, según los plazos señalados en la cláusula Trigésimo-Primera del CONTRATO.
+      En ese sentido, quedamos atentos a sus comentarios y atención, según los plazos señalados en la cláusula
+      Trigésimo-Primera del CONTRATO.
     </div>
 
     <!-- PARRAFO 4 -->
     <div class="paragraph">
-      Se adjunta a la presente carta copia del DNI, Ficha Cliente y Declaración Jurada de Origen de Flujos e Inexistencia de Procesos Judiciales.
+      Se adjunta a la presente carta copia del DNI, Ficha Cliente y Declaración Jurada de Origen de Flujos e
+      Inexistencia de Procesos Judiciales.
     </div>
 
     <!-- PARRAFO 5 -->
@@ -225,8 +243,11 @@
 
       <div class="signature-box">
         <div class="signature-line"></div>
-        <strong style="text-transform: uppercase;">{{#if conyuge_nombres_apellidos}}{{conyuge_nombres_apellidos}}{{else}}REPRESENTANTE LEGAL / CÓNYUGE{{/if}}</strong><br>
-        {{#if conyuge_numero_documento}}{{conyuge_tipo_documento}}: {{conyuge_numero_documento}}{{else}}DNI / RUC: __________________{{/if}}<br>
+        <strong style="text-transform: uppercase;">{{#if
+          conyuge_nombres_apellidos}}{{conyuge_nombres_apellidos}}{{else}}REPRESENTANTE LEGAL /
+          CÓNYUGE{{/if}}</strong><br>
+        {{#if conyuge_numero_documento}}{{conyuge_tipo_documento}}: {{conyuge_numero_documento}}{{else}}DNI / RUC:
+        __________________{{/if}}<br>
         {{#if conyuge_nombres_apellidos}}Cónyuge / Co-Titular{{else}}Representante Legal / Co-Titular{{/if}}
       </div>
     </div>
@@ -234,4 +255,5 @@
   </div>
 
 </body>
+
 </html>
