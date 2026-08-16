@@ -125,8 +125,11 @@ export class FirmaService {
       throw new UnauthorizedException('Token expirado');
     }
 
+    const documentosPendientes = tokenAcceso.fichaMadre.documentos.filter(
+      (documento) => documento.estado !== 'FIRMADO',
+    );
     const documentosOrdenados = this.sortDocumentosByTemplateOrder(
-      tokenAcceso.fichaMadre.documentos,
+      documentosPendientes,
     );
     const documentosSeleccionados = documentosOrdenados.slice(
       0,
@@ -154,6 +157,15 @@ export class FirmaService {
         ReturnType<typeof this.prisma.firma.update>
       >[] = [];
 
+      const tokensPrevios = await tx.tokenAccesoDocumento.findMany({
+        where: {
+          documentoGeneral: { fichaMadreId: tokenAcceso.fichaMadreId },
+        },
+        select: { tokenAccesoId: true },
+        distinct: ['tokenAccesoId'],
+      });
+      const roundNumber = tokensPrevios.length + 1;
+
       for (const documento of documentosSeleccionados) {
         const firma =
           documento.firmas.find((item) => item.estado !== 'FIRMADO') ??
@@ -169,6 +181,7 @@ export class FirmaService {
           data: {
             estado: 'FIRMADO',
             fechaFirma,
+            tokenAccesoId: tokenAcceso.id,
             ip: dto.ip,
             userAgent: dto.userAgent,
             hashFirma: hashFirma ?? undefined,
@@ -182,6 +195,14 @@ export class FirmaService {
         await tx.documentoGeneral.update({
           where: { id: documento.id },
           data: { estado: 'FIRMADO' },
+        });
+
+        await tx.tokenAccesoDocumento.create({
+          data: {
+            tokenAccesoId: tokenAcceso.id,
+            documentoGeneralId: documento.id,
+            roundNumber,
+          },
         });
 
         firmasActualizadas.push(firmaActualizada);

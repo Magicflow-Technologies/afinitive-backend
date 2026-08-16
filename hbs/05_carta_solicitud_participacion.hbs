@@ -187,26 +187,26 @@
     <!-- PARRAFO 2 -->
     <div class="paragraph">
       De conformidad con lo establecido en el CONTRATO, por medio de la presente les solicitamos se apruebe la
-      participación del señor {{nombres_apellidos}}, como INVERSIONISTA, cuyos datos son los siguientes:
+      participación del señor {{fichaMadre.inversionista.titular.nombres_apellidos}}, como INVERSIONISTA, cuyos datos son los siguientes:
     </div>
 
     <!-- TABLA CLONADA IDENTICA -->
     <table class="table-cloned">
       <tr>
         <td class="col-label">NOMBRE</td>
-        <td>{{nombres_apellidos}}</td>
+        <td>{{fichaMadre.inversionista.titular.nombres_apellidos}}</td>
       </tr>
       <tr>
         <td class="col-label">{{tipo_documento}}</td>
-        <td>{{numero_documento}}</td>
+        <td>{{fichaMadre.inversionista.titular.numero_documento}}</td>
       </tr>
       <tr>
         <td class="col-label">DATOS DE CONTACTO</td>
-        <td>{{telefono_celular}} / {{correo_electronico}}</td>
+        <td>{{fichaMadre.inversionista.titular.telefono_celular}} / {{fichaMadre.inversionista.titular.correo_electronico}}</td>
       </tr>
       <tr>
         <td class="col-label">MONTO DE INVERSIÓN</td>
-        <td>{{tipo_moneda}} ****{{monto_inicial_invertir_formateado}}</td>
+        <td>{{fichaMadre.inversionista.inversion.moneda}} ****{{fichaMadre.inversionista.inversion.monto_inicial}}</td>
       </tr>
     </table>
 
@@ -235,6 +235,10 @@
     <!-- SECCIÓN DE FIRMAS PARA DOS PERSONAS -->
     <div class="signatures-container">
       <div class="signature-box">
+        {{#if fichaMadre.metadata.firmado}}
+        <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Titular"
+          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+        {{/if}}
         <div class="signature-line"></div>
         <strong style="text-transform: uppercase;">{{nombres_apellidos}}</strong><br>
         {{tipo_documento}}: {{numero_documento}}<br>

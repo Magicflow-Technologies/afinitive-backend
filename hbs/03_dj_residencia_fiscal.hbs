@@ -227,12 +227,12 @@
     <!-- CAMPOS NUMERADOS DEL 1 AL 5 -->
     <div class="field-row">
       <strong>1. Nombres y apellidos:</strong>
-      <span class="underlined-value" style="width: 72%;">{{nombres_apellidos}}</span>
+      <span class="underlined-value" style="width: 72%;">{{fichaMadre.inversionista.titular.nombres_apellidos}}</span>
     </div>
 
     <div class="field-row">
       <strong>2. DNI:</strong>
-      <span class="underlined-value" style="width: 85%;">{{numero_documento}}</span>
+      <span class="underlined-value" style="width: 85%;">{{fichaMadre.inversionista.titular.numero_documento}}</span>
     </div>
 
     <div class="field-row">
@@ -242,12 +242,12 @@
 
     <div class="field-row">
       <strong>4. Fecha de Nacimiento:</strong>
-      <span class="underlined-value" style="width: 73%;">{{fecha_nacimiento}}</span>
+      <span class="underlined-value" style="width: 73%;">{{fichaMadre.inversionista.titular.fecha_nacimiento}}</span>
     </div>
 
     <div class="field-row">
       <strong>5. País de Nacimiento:</strong>
-      <span class="underlined-value" style="width: 74%;">{{pais_nacimiento}}</span>
+      <span class="underlined-value" style="width: 74%;">{{fichaMadre.inversionista.titular.pais_nacimiento}}</span>
     </div>
 
     <!-- CAMPO 6: DIRECCIÓN DE RESIDENCIA -->
@@ -255,16 +255,16 @@
       <strong>6. Dirección de Residencia:</strong>
       <div class="address-grid">
         <div class="address-line">
-          <span>Calle <span class="underlined-value" style="width: 320px;">{{direccion_completa}}</span></span>
+          <span>Calle <span class="underlined-value" style="width: 320px;">{{fichaMadre.inversionista.domicilio.direccion_completa}}</span></span>
           <span>Número <span class="underlined-value" style="width: 200px;"></span></span>
         </div>
         <div class="address-line">
-          <span>Ciudad <span class="underlined-value" style="width: 250px;">{{distrito}}</span></span>
-          <span>Provincia <span class="underlined-value" style="width: 230px;">{{provincia}}</span></span>
+          <span>Ciudad <span class="underlined-value" style="width: 250px;">{{fichaMadre.inversionista.domicilio.distrito}}</span></span>
+          <span>Provincia <span class="underlined-value" style="width: 230px;">{{fichaMadre.inversionista.domicilio.provincia}}</span></span>
         </div>
         <div class="address-line">
-          <span>Código Postal <span class="underlined-value" style="width: 180px;">{{codigo_postal}}</span></span>
-          <span>País <span class="underlined-value" style="width: 250px;">{{pais_residencia}}</span></span>
+          <span>Código Postal <span class="underlined-value" style="width: 180px;">{{fichaMadre.inversionista.domicilio.codigo_postal}}</span></span>
+          <span>País <span class="underlined-value" style="width: 250px;">{{fichaMadre.inversionista.domicilio.pais_domicilio}}</span></span>
         </div>
       </div>
     </div>
@@ -272,9 +272,9 @@
     <!-- SECCIÓN 7: RESIDENCIA FISCAL EXTRANJERA -->
     <div class="field-row" style="margin-top: 14px;">
       <strong>7. ¿Tiene residencia fiscal o tributaria en otro país que no sea Perú?</strong>
-      &nbsp;&nbsp; Sí <span class="checkbox-square {{#if residencia_fiscal_fuera}}checked{{/if}}"></span>
+      &nbsp;&nbsp; Sí <span class="checkbox-square {{#if tiene_residencia_fiscal_extranjera}}checked{{/if}}"></span>
       &nbsp;&nbsp;&nbsp;&nbsp; No
-      <span class="checkbox-square {{#if residencia_fiscal_fuera}}checked{{/if}}"></span>
+      <span class="checkbox-square {{#if tiene_residencia_fiscal_extranjera}}checked{{/if}}"></span>
     </div>
 
     <div class="sub-section">
@@ -353,10 +353,14 @@
 
     <!-- SECCIÓN DE FIRMA AL PIE -->
     <div class="signature-section">
+      {{#if fichaMadre.metadata.firmado}}
+      <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
+          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+      {{/if}}
       <div class="signature-line"></div>
       <strong>Firma:</strong><br><br>
-      {{nombres_apellidos}}<br>
-      DNI: {{numero_documento}}
+      {{fichaMadre.inversionista.titular.nombres_apellidos}}<br>
+      DNI: {{fichaMadre.inversionista.titular.numero_documento}}
     </div>
 
     <!-- NÚMERO DE PÁGINA -->

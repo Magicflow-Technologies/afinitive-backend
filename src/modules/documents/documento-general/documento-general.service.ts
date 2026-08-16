@@ -2,14 +2,14 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma/prisma.service.js';
 import { CreateDocumentoGeneralDto } from './dto/create-documento-general.dto.js';
 import { UpdateDocumentoGeneralDto } from './dto/update-documento-general.dto.js';
+import { toFichaMadreObject } from '../../onboarding/ficha-madre/ficha-madre.mapper.js';
 import fs from 'fs/promises';
 import path from 'path';
 import Handlebars from 'handlebars';
 import { chromium } from 'playwright';
 
 const TEMPLATE_FILE_FALLBACKS: Record<string, string> = {
-  '01_carta_solicitud_participacion.hbs':
-    '05_carta_solicitud_participacion.hbs',
+  '01_carta_solicitud_participacion.hbs': '05_carta_solicitud_participacion.hbs',
   '03_formato_beneficiario_final.hbs': '04_formato_beneficiario_final.hbs',
   '04_dj_residencia_fiscal.hbs': '03_dj_residencia_fiscal.hbs',
   '05_ficha_cliente_pn.hbs': '01_ficha_cliente_pn.hbs',
@@ -23,10 +23,6 @@ const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
   '05_carta_solicitud_participacion.hbs': 5,
   '06_instruccion_inversion.hbs': 6,
   '07_declaracion_inversion.hbs': 7,
-  '01_carta_solicitud_participacion.hbs': 5,
-  '03_formato_beneficiario_final.hbs': 4,
-  '04_dj_residencia_fiscal.hbs': 3,
-  '05_ficha_cliente_pn.hbs': 1,
 };
 
 @Injectable()
@@ -46,7 +42,6 @@ export class DocumentoGeneralService {
     if (!archivo) {
       return '';
     }
-
     return TEMPLATE_FILE_FALLBACKS[archivo] ?? archivo;
   }
 
@@ -105,13 +100,9 @@ export class DocumentoGeneralService {
   }
 
   async generate(fichaMadreId: string) {
-    // 1. Cargar la Ficha Madre con el cliente y sus respuestas
     const fichaMadre = await this.loadFichaMadreConData(fichaMadreId);
-
-    // 2. Construir diccionario de respuestas
     const replacements = await this.buildReplacements(fichaMadre);
 
-    // 3. Limpiar firmas y documentos anteriores para esta Ficha Madre
     const docsAnteriores = await this.prisma.documentoGeneral.findMany({
       where: { fichaMadreId },
     });
@@ -122,7 +113,6 @@ export class DocumentoGeneralService {
       await this.prisma.documentoGeneral.delete({ where: { id: docAnt.id } });
     }
 
-    // 4. Cargar todas las plantillas activas
     const plantillas = this.sortDocumentosByTemplateOrder(
       await this.prisma.documentoPlantilla.findMany({
         where: { activo: true },
@@ -132,14 +122,11 @@ export class DocumentoGeneralService {
 
     for (const plantilla of plantillas) {
       try {
-        // Leer la plantilla HBS usando compatibilidad con nombres legacy del repositorio
         const templatePath = await this.resolveTemplatePath(plantilla.archivo);
         const templateContent = await fs.readFile(templatePath, 'utf-8');
 
-        // Render de validación: compila la plantilla con la data actual
         Handlebars.compile(templateContent)(replacements);
 
-        // Registrar en base de datos
         const docGen = await this.prisma.documentoGeneral.create({
           data: {
             fichaMadreId,
@@ -151,7 +138,6 @@ export class DocumentoGeneralService {
           include: { documentoPlantilla: true },
         });
 
-        // Crear registro de Firma
         await this.prisma.firma.create({
           data: {
             documentoGeneralId: docGen.id,
@@ -166,7 +152,6 @@ export class DocumentoGeneralService {
       }
     }
 
-    // Actualizar estado de la Ficha Madre a EN_REVISION
     await this.prisma.fichaMadre.update({
       where: { id: fichaMadreId },
       data: { estado: 'EN_REVISION' },
@@ -176,59 +161,80 @@ export class DocumentoGeneralService {
   }
 
   private async loadFichaMadreConData(fichaMadreId: string) {
-    // 1. Obtener la Ficha Madre con el cliente y sus respuestas
-    const fichaMadre = await this.prisma.fichaMadre.findUniqueOrThrow({
+    return this.prisma.fichaMadre.findUniqueOrThrow({
       where: { id: fichaMadreId },
       include: {
-        cliente: {
+        cliente: { include: { persona: true } },
+        inversionista: {
           include: {
-            persona: true,
+            titular: true,
+            domicilios: true,
+            informacionLaboral: true,
+            apoderado: true,
+            vinculaciones: true,
+            origenFondos: true,
+            antecedentesPenales: true,
+            residenciaFiscal: { include: { paises: { orderBy: { orden: 'asc' } } } },
+            inversion: true,
           },
         },
-        fichasFormulario: {
+        documentos: {
           include: {
-            respuestas: {
-              include: {
-                campoFormulario: true,
-              },
-            },
+            firmas: true,
           },
         },
       },
     });
-
-    return fichaMadre;
   }
 
   private async buildReplacements(fichaMadre: any) {
-    const answers: Record<string, string> = {};
-    for (const ff of fichaMadre.fichasFormulario) {
-      for (const resp of ff.respuestas) {
-        answers[resp.campoFormulario.nombre] = resp.valor;
-      }
-    }
+    const fm = toFichaMadreObject(fichaMadre);
+    const inv = fm.fichaMadre.inversionista ?? {};
+    const titular = inv.titular ?? {};
+    const domicilio = inv.domicilio ?? {};
+    const laboral = inv.informacion_laboral ?? {};
+    const conyuge = titular.conyuge ?? {};
+    const inversion = inv.inversion ?? {};
+    const residencia = inv.residencia_fiscal ?? {};
+    const apoderado = inv.apoderado ?? {};
 
-    const persona = fichaMadre.cliente.persona;
-
-    // Formatear fecha actual
     const meses = [
-      'enero',
-      'febrero',
-      'marzo',
-      'abril',
-      'mayo',
-      'junio',
-      'julio',
-      'agosto',
-      'septiembre',
-      'octubre',
-      'noviembre',
-      'diciembre',
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
     ];
     const hoy = new Date();
     const fechaActualStr = `${hoy.getDate()} de ${meses[hoy.getMonth()]} de ${hoy.getFullYear()}`;
 
-    // Cargar logo Corfid en base64
+    // Buscar si existe alguna firma realizada en los documentos de esta ficha
+    let firmaImagen = '';
+    let estaFirmado = false;
+    let fechaFirmaStr = '';
+
+    if (fichaMadre.documentos && Array.isArray(fichaMadre.documentos)) {
+      for (const doc of fichaMadre.documentos) {
+        if (doc.firmas && Array.isArray(doc.firmas)) {
+          const firmaFirmada = doc.firmas.find(
+            (f: any) => f.estado === 'FIRMADO' && f.datosCertificado?.firmaImagen,
+          );
+          if (firmaFirmada) {
+            estaFirmado = true;
+            firmaImagen = firmaFirmada.datosCertificado.firmaImagen;
+            if (firmaFirmada.fechaFirma) {
+              const ff = new Date(firmaFirmada.fechaFirma);
+              fechaFirmaStr = `${ff.getDate()} de ${meses[ff.getMonth()]} de ${ff.getFullYear()}`;
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    if (!fm.fichaMadre.metadata) {
+      fm.fichaMadre.metadata = {};
+    }
+    fm.fichaMadre.metadata.firmado = estaFirmado;
+    fm.fichaMadre.metadata.firma_imagen = firmaImagen;
+
     let logoBase64 = '';
     try {
       const logoPath = path.join(process.cwd(), 'hbs', 'corfid_logo.png');
@@ -238,202 +244,164 @@ export class DocumentoGeneralService {
       console.error('Error al leer corfid_logo.png:', e);
     }
 
-    const val = (key: string, def = '') => answers[key] || def;
-    const isVal = (key: string, target: string) =>
-      val(key).toLowerCase() === target.toLowerCase() ? 'X' : ' ';
+    const estadoCivil = (titular.estado_civil ?? '').toLowerCase();
+    const tipoDoc = (titular.tipo_documento ?? '').toUpperCase();
+    const conyugeTipoDoc = (conyuge.tipo_documento ?? '').toUpperCase();
 
-    // Formatear monto
-    const monto = val('monto_inicial_invertir');
-    const montoNum = parseFloat(monto) || 0;
+    const isVal = (v: any, target: string) =>
+      String(v ?? '').toLowerCase() === target ? 'X' : ' ';
+
+    const montoNum = parseFloat(inversion.monto_inicial) || 0;
     const montoFormateado = montoNum.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     });
 
-    // Armar el objeto de reemplazos para Handlebars
-    const replacements = {
+    const paisesFiscales = residencia.paises ?? [];
+
+    return {
+      fichaMadre: fm.fichaMadre,
+
+      // Estado de firma
+      firmado: estaFirmado,
+      firma_imagen: firmaImagen,
+      fecha_firma: fechaFirmaStr || fechaActualStr,
+
+      // Fechas y recursos
       fecha_actual: fechaActualStr,
       dia: String(hoy.getDate()),
       mes: String(hoy.getMonth() + 1).padStart(2, '0'),
       anio: String(hoy.getFullYear()),
       logo_corfid: logoBase64,
 
-      nombres_apellidos: `${persona.nombres} ${persona.apellidos}`.trim(),
-      tipo_documento: persona.tipoDocumento,
-      numero_documento: persona.numeroDocumento,
-      telefono_celular: val('telefono_contacto', ''),
-      correo_electronico: persona.email,
-      estado_civil: val('estado_civil', ''),
-      nacionalidad: val('nacionalidad', ''),
-      pais_nacimiento: val('pais_nacimiento', ''),
-      fecha_nacimiento: val('fecha_nacimiento', ''),
-      profesion: val('profesion', ''),
-      ocupacion: val('ocupacion', ''),
-      grado_instruccion: val('grado_instruccion', ''),
-      empresa_centro_trabajo: val('empresa_centro_trabajo', ''),
+      // Aliases planos (compatibilidad con las plantillas)
+      nombres_apellidos: titular.nombres_apellidos ?? '',
+      nombresApellidos: titular.nombres_apellidos ?? '',
+      tipo_documento: titular.tipo_documento ?? '',
+      numero_documento: titular.numero_documento ?? '',
+      numeroDocumento: titular.numero_documento ?? '',
+      correo_electronico: titular.correo_electronico ?? '',
+      telefono_celular: titular.telefono_celular ?? '',
+      estado_civil: titular.estado_civil ?? '',
+      nacionalidad: titular.nacionalidad ?? '',
+      pais_nacimiento: titular.pais_nacimiento ?? '',
+      fecha_nacimiento: titular.fecha_nacimiento ?? '',
+      sexo: titular.sexo ?? '',
+      grado_instruccion: titular.grado_instruccion ?? '',
+      es_inversionista: titular.es_inversionista ?? false,
+      pep: titular.pep ?? false,
+      pep_institucion_cargo: titular.pep_institucion_cargo ?? '',
 
-      direccion_completa: val('direccion_completa', ''),
-      distrito: val('distrito', ''),
-      provincia: val('provincia', ''),
-      departamento: val('departamento', ''),
-      pais_residencia: val('pais_residencia', ''),
-      codigo_postal: val('codigo_postal', ''),
-      direccion_completa_formato: `${val('direccion_completa')}, ${val('distrito')}, ${val('provincia')}, ${val('departamento')}`,
+      situacion_laboral: laboral.situacion_laboral ?? '',
+      profesion: laboral.profesion ?? '',
+      ocupacion: laboral.ocupacion ?? '',
+      empresa_centro_trabajo: laboral.empresa_centro_trabajo ?? '',
+      ingreso_promedio_anual: laboral.ingreso_promedio_anual ?? '',
 
-      banco_nombre: val('banco_nombre', ''),
-      numero_cuenta: val('numero_cuenta', ''),
-      cuenta_cci: val('cuenta_cci', ''),
-      detalle_origen_fondos: val('detalle_origen_fondos', ''),
-      monto_inicial_invertir_formateado: montoFormateado,
-      moneda_simbolo: '$',
+      direccion_completa: domicilio.direccion_completa ?? '',
+      distrito: domicilio.distrito ?? '',
+      provincia: domicilio.provincia ?? '',
+      departamento: domicilio.departamento ?? '',
+      pais_residencia: titular.pais_residencia ?? '',
+      codigo_postal: domicilio.codigo_postal ?? '',
+      es_domiciliado: inv.es_domiciliado ?? false,
 
-      doc_dni: persona?.tipoDocumento === 'DNI' ? persona.numeroDocumento : '',
-      doc_ruc: persona.tipoDocumento === 'RUC' ? persona.numeroDocumento : '',
-      doc_ce: persona.tipoDocumento === 'CE' ? persona.numeroDocumento : '',
-      doc_pasaporte:
-        persona.tipoDocumento === 'PASAPORTE' ? persona.numeroDocumento : '',
+      // Documento de identidad
+      doc_dni: tipoDoc === 'DNI' ? titular.numero_documento ?? '' : '',
+      doc_ruc: tipoDoc === 'RUC' ? titular.numero_documento ?? '' : '',
+      doc_ce: tipoDoc === 'CE' ? titular.numero_documento ?? '' : '',
+      doc_pasaporte: tipoDoc === 'PASAPORTE' ? titular.numero_documento ?? '' : '',
+      es_dni: tipoDoc === 'DNI',
+      es_ce: tipoDoc === 'CE',
+      es_pasaporte: tipoDoc === 'PASAPORTE',
       doc_nit: '',
 
-      es_soltero: isVal('estado_civil', 'soltero/a'),
-      es_casado: isVal('estado_civil', 'casado/a'),
-      es_conviviente: isVal('estado_civil', 'conviviente'),
-      es_divorciado: isVal('estado_civil', 'divorciado/a'),
-      es_viudo: isVal('estado_civil', 'viudo/a'),
+      // Estado civil
+      es_soltero: isVal(estadoCivil, 'soltero'),
+      es_casado: isVal(estadoCivil, 'casado'),
+      es_conviviente: isVal(estadoCivil, 'conviviente'),
+      es_divorciado: isVal(estadoCivil, 'divorciado'),
+      es_viudo: isVal(estadoCivil, 'viudo'),
 
-      pep_si: isVal('es_pep', 'sí'),
-      pep_no: isVal('es_pep', 'no'),
-      pep_institucion_cargo: val('pep_institucion_cargo', ''),
+      // Cónyuge y régimen
+      conyuge_nombres_apellidos: conyuge.nombres_apellidos ?? '',
+      conyuge_tipo_documento: conyuge.tipo_documento ?? '',
+      conyuge_numero_documento: conyuge.numero_documento ?? '',
+      conyuge_fecha_matrimonio: conyuge.fecha_regimen ?? '',
+      conyuge_doc_dni: conyugeTipoDoc === 'DNI' ? conyuge.numero_documento ?? '' : '',
+      conyuge_doc_ce: conyugeTipoDoc === 'CE' ? conyuge.numero_documento ?? '' : '',
+      conyuge_doc_pasaporte: conyugeTipoDoc === 'PASAPORTE' ? conyuge.numero_documento ?? '' : '',
+      regimen_gananciales: isVal(conyuge.regimen_patrimonial, 'gananciales'),
+      regimen_separacion: isVal(conyuge.regimen_patrimonial, 'separacion'),
+      regimen_union_hecho: isVal(conyuge.regimen_patrimonial, 'union'),
+      regimen_fecha: conyuge.fecha_regimen ?? '',
 
-      residencia_fiscal_fuera_si: isVal('residencia_fiscal_fuera', 'sí'),
-      residencia_fiscal_fuera_no: isVal('residencia_fiscal_fuera', 'no'),
-      pais_residencia_fiscal_extranjero: val(
-        'pais_residencia_fiscal_extranjero',
-        '',
-      ),
+      // Residencia fiscal
+      tiene_residencia_fiscal_extranjera: residencia.tiene_residencia_fiscal_extranjera ?? false,
+      residencia_fiscal_fuera: residencia.tiene_residencia_fiscal_extranjera ?? false,
+      pais_residencia_fiscal_extranjero: paisesFiscales[0]?.pais ?? '',
+      pais_residencia_fiscal_extranjero_2: paisesFiscales[1]?.pais ?? '',
+      pais_residencia_fiscal_extranjero_3: paisesFiscales[2]?.pais ?? '',
+      doc_nit_2: paisesFiscales[1]?.nit_tin ?? '',
+      doc_nit_3: paisesFiscales[2]?.nit_tin ?? '',
 
-      conyuge_nombres_apellidos: val('conyuge_nombres_apellidos', ''),
-      conyuge_tipo_documento: val('conyuge_tipo_documento', ''),
-      conyuge_numero_documento: val('conyuge_numero_documento', ''),
-      conyuge_fecha_matrimonio: val('conyuge_fecha_matrimonio', ''),
-      regimen_gananciales: isVal('regimen_patrimonial', 'gananciales'),
-      regimen_separacion: isVal(
-        'regimen_patrimonial',
-        'separación de patrimonios',
-      ),
+      // Apoderado
+      apoderado_nombres_apellidos: apoderado.nombres_apellidos ?? '',
+      apoderado_tipo_documento: apoderado.tipo_documento ?? '',
+      apoderado_numero_documento: apoderado.numero_documento ?? '',
+      apoderado_nacionalidad: apoderado.nacionalidad ?? '',
+      apoderado_sexo: apoderado.sexo ?? '',
+      apoderado_estado_civil: apoderado.estado_civil ?? '',
+      apoderado_pais_nacimiento: apoderado.pais_nacimiento ?? '',
+      apoderado_fecha_nacimiento: apoderado.fecha_nacimiento ?? '',
+      apoderado_pais_residencia: apoderado.pais_residencia ?? '',
+      apoderado_grado_instruccion: apoderado.grado_instruccion ?? '',
+      apoderado_es_domiciliado: apoderado.es_domiciliado ?? false,
+      apoderado_correo_electronico: apoderado.correo_electronico ?? '',
+      apoderado_telefono_celular: apoderado.telefono_celular ?? '',
+      apoderado_distrito: apoderado.domicilio?.distrito ?? '',
+      apoderado_departamento: apoderado.domicilio?.departamento ?? '',
+      apoderado_provincia: apoderado.domicilio?.provincia ?? '',
+      apoderado_pais_domicilio: apoderado.domicilio?.pais_domicilio ?? '',
+      apoderado_direccion_completa: apoderado.domicilio?.direccion_completa ?? '',
+      apoderado_email: apoderado.correo_electronico ?? '',
 
-      conyuge_doc_dni:
-        val('conyuge_tipo_documento') === 'DNI'
-          ? val('conyuge_numero_documento')
-          : '',
-      conyuge_doc_ce:
-        val('conyuge_tipo_documento') === 'CE'
-          ? val('conyuge_numero_documento')
-          : '',
-      conyuge_doc_pasaporte:
-        val('conyuge_tipo_documento') === 'PASAPORTE'
-          ? val('conyuge_numero_documento')
-          : '',
+      // Inversión y datos bancarios
+      moneda: inversion.moneda ?? '',
+      moneda_simbolo: (inversion.moneda ?? 'USD').toUpperCase() === 'USD' ? '$' : 'S/',
+      monto_inicial: inversion.monto_inicial ?? '',
+      monto_inicial_invertir_formateado: montoFormateado,
+      monto_inicial_letras: inversion.monto_inicial_letras ?? '',
+      monto_en_letras: inversion.monto_inicial_letras ?? '',
+      origen_recursos: inversion.origen_recursos ?? '',
+      banco_nombre: inversion.banco_nombre ?? '',
+      numero_cuenta: inversion.numero_cuenta ?? '',
+      cuenta_cci: inversion.cuenta_cci ?? '',
 
-      // Ficha Cliente PN - datos personales y patrimoniales
-      sexo: val('sexo', ''),
-      situacion_laboral: val('situacion_laboral', ''),
-      ingreso_promedio_anual: val('ingreso_promedio_anual', ''),
-      patrimonio_aproximado: val('patrimonio_aproximado', ''),
-
-      // Ficha Cliente PN - preguntas Sí/No
-      es_inversionista_si: isVal('es_inversionista', 'sí'),
-      es_inversionista_no: isVal('es_inversionista', 'no'),
-      es_domiciliado_si: isVal('es_domiciliado', 'sí'),
-      es_domiciliado_no: isVal('es_domiciliado', 'no'),
-      correspondencia_es_domicilio: isVal(
-        'correspondencia_direccion',
-        'domicilio',
-      ),
-      vinculado_corfid_si: isVal('vinculado_corfid', 'sí'),
-      vinculado_corfid_no: isVal('vinculado_corfid', 'no'),
-      cliente_otra_fiduciaria_si: isVal('cliente_otra_fiduciaria', 'sí'),
-      cliente_otra_fiduciaria_no: isVal('cliente_otra_fiduciaria', 'no'),
-      trabajador_otra_fiduciaria_si: isVal(
-        'trabajador_otra_fiduciaria',
-        'sí',
-      ),
-      trabajador_otra_fiduciaria_no: isVal(
-        'trabajador_otra_fiduciaria',
-        'no',
-      ),
-      antecedentes_penales_si: isVal('antecedentes_penales', 'sí'),
-      antecedentes_penales_no: isVal('antecedentes_penales', 'no'),
-
-      // Datos del apoderado (se oculta la sección si está vacío)
-      apoderado_nombres_apellidos: val('apoderado_nombres_apellidos', ''),
-      apoderado_tipo_documento: val('apoderado_tipo_documento', ''),
-      apoderado_numero_documento: val('apoderado_numero_documento', ''),
-      apoderado_nacionalidad: val('apoderado_nacionalidad', ''),
-      apoderado_sexo: val('apoderado_sexo', ''),
-      apoderado_estado_civil: val('apoderado_estado_civil', ''),
-      apoderado_pais_nacimiento: val('apoderado_pais_nacimiento', ''),
-      apoderado_fecha_nacimiento: val('apoderado_fecha_nacimiento', ''),
-      apoderado_pais_residencia: val('apoderado_pais_residencia', ''),
-      apoderado_grado_instruccion: val('apoderado_grado_instruccion', ''),
-      apoderado_es_domiciliado_si: isVal('apoderado_es_domiciliado', 'sí'),
-      apoderado_es_domiciliado_no: isVal('apoderado_es_domiciliado', 'no'),
-      apoderado_distrito: val('apoderado_distrito', ''),
-      apoderado_departamento: val('apoderado_departamento', ''),
-      apoderado_telefono_celular: val('apoderado_telefono_celular', ''),
-      apoderado_pais_domicilio: val('apoderado_pais_domicilio', ''),
-      apoderado_provincia: val('apoderado_provincia', ''),
-      apoderado_direccion_completa: val('apoderado_direccion_completa', ''),
-      apoderado_email: val('apoderado_email', ''),
-
-      // Datos del contrato / fideicomiso (configurables por plantilla)
-      fecha_contrato: val('fecha_contrato', '27 de febrero 2024'),
-      empresa_interviniente: val(
-        'empresa_interviniente',
-        'Inversiones Condominio Aventura S.A.C.',
-      ),
-      interviniente_nombre: val('interviniente_nombre', 'AFINITIVE S.A.C.'),
-      representante_inversionistas_nombre: val(
-        'representante_inversionistas_nombre',
-        'RICARDO MARTIN BERTALMIO RUIBAL',
-      ),
-      representante_inversionistas_dni: val(
-        'representante_inversionistas_dni',
-        '07636192',
-      ),
-      moneda_nombre: val('moneda_nombre', 'dólares americanos'),
-      titular_cuenta_nombre: val(
-        'titular_cuenta_nombre',
+      // Datos del contrato / fideicomiso (configurables)
+      fecha_contrato: '27 de febrero 2024',
+      empresa_interviniente: 'Inversiones Condominio Aventura S.A.C.',
+      interviniente_nombre: 'AFINITIVE S.A.C.',
+      representante_inversionistas_nombre: 'RICARDO MARTIN BERTALMIO RUIBAL',
+      representante_inversionistas_dni: '07636192',
+      moneda_nombre: 'dólares americanos',
+      titular_cuenta_nombre:
         'Patrimonio en Fideicomiso PF AFINITIVE -D. LEG. N° 861, Titulo XI, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.',
-      ),
-      titular_cuenta_ruc: val('titular_cuenta_ruc', '20609876543'),
-      patrimonio_nombre: val(
-        'patrimonio_nombre',
-        'Patrimonio en Fideicomiso AFINITIVE',
-      ),
-      patrimonio_nombre_largo: val(
-        'patrimonio_nombre_largo',
+      titular_cuenta_ruc: '20609876543',
+      patrimonio_nombre: 'Patrimonio en Fideicomiso AFINITIVE',
+      patrimonio_nombre_largo:
         'Patrimonio en Fideicomiso AFINITIVE – D. Leg. N° 861, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.',
-      ),
-      patrimonio_sigla: val('patrimonio_sigla', 'PF AFINITIVE'),
-      fideicomiso_nombre: val('fideicomiso_nombre', 'AWM LIBRE 2'),
-      fideicomiso_patrimonio_nombre: val(
-        'fideicomiso_patrimonio_nombre',
-        'Fideicomiso AFINITIVE',
-      ),
-      fideicomitente_nombre: val('fideicomitente_nombre', 'AFINITIVE S.A.C.'),
-      notario_nombre: val(
-        'notario_nombre',
-        'Notario Público de Lima Dr. Eduardo Laos de Lama',
-      ),
-      cantidad_valores: val('cantidad_valores', 'Uno (01)'),
-      monto_en_letras: val('monto_en_letras', ''),
-      serie_emision: val('serie_emision', 'Primera'),
-      tasa_interes: val('tasa_interes', '10 %'),
-      plazo_emision: val('plazo_emision', 'Hasta de 24 meses. Base ACT/360.'),
-      vigencia_instruccion: val('vigencia_instruccion', 'Seis (06) días hábiles'),
+      patrimonio_sigla: 'PF AFINITIVE',
+      fideicomiso_nombre: 'AWM LIBRE 2',
+      fideicomiso_patrimonio_nombre: 'Fideicomiso AFINITIVE',
+      fideicomitente_nombre: 'AFINITIVE S.A.C.',
+      notario_nombre: 'Notario Público de Lima Dr. Eduardo Laos de Lama',
+      cantidad_valores: 'Uno (01)',
+      serie_emision: 'Primera',
+      tasa_interes: '10 %',
+      plazo_emision: 'Hasta de 24 meses. Base ACT/360.',
+      vigencia_instruccion: 'Seis (06) días hábiles',
     };
-
-    return replacements;
   }
 
   private async resolveTemplatePath(archivo: string) {
@@ -467,10 +435,7 @@ export class DocumentoGeneralService {
       include: { documentoPlantilla: true },
     });
 
-    const seleccionados = this.sortDocumentosByTemplateOrder(documentos).slice(
-      0,
-      5,
-    );
+    const seleccionados = this.sortDocumentosByTemplateOrder(documentos).slice(0, 5);
     if (seleccionados.length < 5) {
       throw new BadRequestException(
         'La ficha no tiene al menos cinco formatos generados.',
@@ -491,8 +456,7 @@ export class DocumentoGeneralService {
       htmls.push(await this.renderPlantillaHtml(archivo, replacements));
     }
 
-    const pdfBuffer = await this.renderHtmlsToPdf(htmls);
-    return pdfBuffer;
+    return this.renderHtmlsToPdf(htmls);
   }
 
   private async renderHtmlsToPdf(htmls: string[]): Promise<Buffer> {

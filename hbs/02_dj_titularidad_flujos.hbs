@@ -117,16 +117,20 @@
 
     <!-- PARRAFO CLONADO EXACTO -->
     <div class="paragraph">
-      Por medio de la presente, {{nombres_apellidos}}, identificado con {{tipo_documento}} N° {{numero_documento}}, con domicilio en {{direccion_completa}}, distrito de {{distrito}}, provincia de {{provincia}} y departamento de {{departamento}}, declaro bajo juramento que a la fecha de suscripción del presente documento los flujos que serán cedidos al Patrimonio Fideicometido que serán administrados por Corfid Corporación Fiduciaria S.A., son (i) son de titularidad y libre disposición de {{nombres_apellidos}}; (ii) sobre ellos no pesa ninguna carga o gravamen que pueda limitar o restringir su transferencia en dominio fiduciario; y, (iii) no se encuentra en trámite algún proceso judicial, procedimiento arbitral o procedimiento administrativo, transacción extrajudicial o cualquier otro similar, que afecte o pudiese afectar la transferencia de los flujos.
+      Por medio de la presente, {{fichaMadre.inversionista.titular.nombres_apellidos}}, identificado con {{fichaMadre.inversionista.titular.tipo_documento}} N° {{fichaMadre.inversionista.titular.numero_documento}}, con domicilio en {{fichaMadre.inversionista.domicilio.direccion_completa}}, distrito de {{fichaMadre.inversionista.domicilio.distrito}}, provincia de {{provincia}} y departamento de {{fichaMadre.inversionista.domicilio.departamento}}, declaro bajo juramento que a la fecha de suscripción del presente documento los flujos que serán cedidos al Patrimonio Fideicometido que serán administrados por Corfid Corporación Fiduciaria S.A., son (i) son de titularidad y libre disposición de {{fichaMadre.inversionista.titular.nombres_apellidos}}; (ii) sobre ellos no pesa ninguna carga o gravamen que pueda limitar o restringir su transferencia en dominio fiduciario; y, (iii) no se encuentra en trámite algún proceso judicial, procedimiento arbitral o procedimiento administrativo, transacción extrajudicial o cualquier otro similar, que afecte o pudiese afectar la transferencia de los flujos.
     </div>
 
     <!-- FECHA Y UBICACION -->
     <div class="date-location">
-      {{provincia}}, {{fecha_actual}}
+      {{fichaMadre.inversionista.domicilio.provincia}}, {{fecha_actual}}
     </div>
 
     <!-- BLOQUE DE FIRMA CENTRADO Y EN NEGRITA -->
     <div class="signature-container">
+      {{#if fichaMadre.metadata.firmado}}
+      <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
+          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+      {{/if}}
       <div class="signature-line"></div>
       <div class="signature-text-bold">
         {{nombres_apellidos}} {{tipo_documento}}<br>

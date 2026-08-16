@@ -179,35 +179,35 @@
       <tr>
         <td style="width: 45%;">
           <span class="lbl">NOMBRES Y APELLIDOS (COMPLETOS):</span><br><br>
-          <span class="val" style="font-size: 8.5pt;">{{nombres_apellidos}}</span>
+          <span class="val" style="font-size: 8.5pt;">{{fichaMadre.inversionista.titular.nombres_apellidos}}</span>
         </td>
         <td style="width: 55%;" colspan="3">
           <table style="width: 100%; border: none; border-collapse: collapse;">
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">ESTADO CIVIL (QUE FIGURA EN SU DNI):</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{estado_civil}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.estado_civil}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">PAIS DE RESIDENCIA:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{pais_residencia}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.pais_residencia}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">LUGAR DE NACIMIENTO:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{departamento}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.pais_nacimiento}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">FECHA DE NACIMIENTO:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{fecha_nacimiento}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.fecha_nacimiento}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">GRADO DE INSTRUCCIÓN:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{grado_instruccion}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.grado_instruccion}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">¿ES UD. UN INVERSIONISTA?</span></td>
               <td style="border: none; padding: 1px;">
-                <span class="chk-box {{#if is_inversinista}}checked{{/if}}"></span>Sí &nbsp;&nbsp; <span
-                  class="chk-box {{#unless is_inversinista}}checked{{/unless}}"></span> No
+                <span class="chk-box {{#if es_inversionista}}checked{{/if}}"></span>Sí &nbsp;&nbsp; <span
+                  class="chk-box {{#unless es_inversionista}}checked{{/unless}}"></span> No
               </td>
             </tr>
           </table>
@@ -215,22 +215,22 @@
       </tr>
       <tr>
         <td colspan="4">
-          <span class="lbl">TIPO DE DOCUMENTO:</span> <span class="val">{{tipo_documento}}</span>
+          <span class="lbl">TIPO DE DOCUMENTO:</span> <span class="val">{{fichaMadre.inversionista.titular.tipo_documento}}</span>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <span class="lbl">NÚMERO DE DOCUMENTO:</span> <span class="val">{{numero_documento}}</span>
+          <span class="lbl">NÚMERO DE DOCUMENTO:</span> <span class="val">{{fichaMadre.inversionista.titular.numero_documento}}</span>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <span class="lbl">NACIONALIDAD:</span> <span class="val">{{nacionalidad}}</span>
+          <span class="lbl">NACIONALIDAD:</span> <span class="val">{{fichaMadre.inversionista.titular.nacionalidad}}</span>
           &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <span class="lbl">SEXO:</span> <span class="val">{{sexo}}</span>
+          <span class="lbl">SEXO:</span> <span class="val">{{fichaMadre.inversionista.titular.sexo}}</span>
         </td>
       </tr>
       <tr>
         <td colspan="4">
           <span class="lbl">¿ES UD. UNA PERSONA EXPUESTA POLÍTICAMENTE?</span>
-          &nbsp;&nbsp; <span class="chk-box {{#if pep}}checked{{/if}}"></span> Sí &nbsp;&nbsp;
-          <span class="chk-box {{#unless pep}}checked{{/unless}}"></span> No<br>
-          {{#if pep}}
-          <span class="lbl">INDICAR LA INSTITUCIÓN Y CARGO:</span> <span class="val">{{pep_institucion_cargo}}</span>
+          &nbsp;&nbsp; <span class="chk-box {{#if fichaMadre.inversionista.titular.pep}}checked{{/if}}"></span> Sí &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.titular.pep}}checked{{/unless}}"></span> No<br>
+          {{#if fichaMadre.inversionista.titular.pep}}
+          <span class="lbl">INDICAR LA INSTITUCIÓN Y CARGO:</span> <span class="val">{{fichaMadre.inversionista.titular.pep_institucion_cargo}}</span>
           {{/if}}
         </td>
       </tr>
@@ -242,18 +242,18 @@
       <tr>
         <td style="width: 50%;" colspan="2">
           <span class="lbl">*¿ES USTED DOMICILIADO?:</span> &nbsp;&nbsp; <span
-            class="chk-box {{#if esDomiciliado}}checked{{/if}}"></span> Sí &nbsp;&nbsp;
-          <span class="chk-box {{#unless esDomiciliado}}checked{{/unless}}"></span> No<br>
+            class="chk-box {{#if fichaMadre.inversionista.es_domiciliado}}checked{{/if}}"></span> Sí &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.es_domiciliado}}checked{{/unless}}"></span> No<br>
 
-          <span class="lbl">DISTRITO:</span> <span class="val">{{distrito}}</span><br>
-          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{departamento}}</span><br>
-          <span class="lbl">*TELEFONO FIJO O CELULAR:</span> <span class="val">{{telefono_celular}}</span>
+          <span class="lbl">DISTRITO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.distrito}}</span><br>
+          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.departamento}}</span><br>
+          <span class="lbl">*TELEFONO FIJO O CELULAR:</span> <span class="val">{{fichaMadre.inversionista.titular.telefono_celular}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*PAIS DEL DOMICILIO:</span> <span class="val">{{pais_domicilio}}</span><br>
-          <span class="lbl">PROVINCIA:</span> <span class="val">{{provincia}}</span><br>
-          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span> <span class="val">{{direccion_completa}}</span><br>
-          <span class="lbl">EMAIL:</span> <span class="val">{{correo_electronico}}</span>
+          <span class="lbl">*PAIS DEL DOMICILIO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.pais_domicilio}}</span><br>
+          <span class="lbl">PROVINCIA:</span> <span class="val">{{fichaMadre.inversionista.domicilio.provincia}}</span><br>
+          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.direccion_completa}}</span><br>
+          <span class="lbl">EMAIL:</span> <span class="val">{{fichaMadre.inversionista.titular.correo_electronico}}</span>
         </td>
       </tr>
 
@@ -264,12 +264,12 @@
       <tr>
         <td style="width: 50%;" colspan="2">
           <span class="lbl">*SITUACIÓN LABORAL:</span> <span class="val">{{situacion_laboral}}</span><br>
-          <span class="lbl">*PROFESIÓN:</span> <span class="val">{{profesion}}</span><br>
-          <span class="lbl">*INGRESO PROMEDIO ANUAL:</span> <span class="val">{{ingreso_promedio_anual}}</span>
+          <span class="lbl">*PROFESIÓN:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.profesion}}</span><br>
+          <span class="lbl">*INGRESO PROMEDIO ANUAL:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.ingreso_promedio_anual}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">NOMBRE DEL CENTRO DE TRABAJO:</span> <span class="val">{{empresa_centro_trabajo}}</span><br>
-          <span class="lbl">*OCUPACIÓN:</span> <span class="val">{{ocupacion}}</span>
+          <span class="lbl">NOMBRE DEL CENTRO DE TRABAJO:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.empresa_centro_trabajo}}</span><br>
+          <span class="lbl">*OCUPACIÓN:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.ocupacion}}</span>
         </td>
       </tr>
 
@@ -283,13 +283,13 @@
         <td style="width: 50%;" colspan="2">
           <span class="lbl">*SU DIRECCIÓN DE CORRESPONDENCIA ES LA MISMA QUE:</span><br>
           <span class="lbl">En caso no ser su domicilio, completar direccion:</span> &nbsp;&nbsp;&nbsp;&nbsp; <span
-            class="chk-box">X</span> <span class="val">Domicilio</span><br>
-          <span class="lbl">DISTRITO:</span> <span class="val">{{distrito}}</span>
+            class="chk-box {{#if fichaMadre.inversionista.usar_misma_direccion_correspondencia}}checked{{/if}}"></span> <span class="val">Domicilio</span><br>
+          <span class="lbl">DISTRITO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.distrito}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{departamento}}</span><br>
-          <span class="lbl">*PAÍS DEL DOMICILIO:</span> <span class="val">{{pais_residencia}}</span><br>
-          <span class="lbl">PROVINCIA:</span> <span class="val">{{provincia}}</span>
+          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.departamento}}</span><br>
+          <span class="lbl">*PAÍS DEL DOMICILIO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.pais_domicilio}}</span><br>
+          <span class="lbl">PROVINCIA:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.provincia}}</span>
         </td>
       </tr>
     </table>
@@ -302,18 +302,42 @@
       </tr>
       <tr>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">NOMBRES Y APELLIDOS (COMPLETOS):</span><br><br>
-          <span class="lbl">TIPO DE DOCUMENTO:</span><br>
-          <span class="lbl">NÚMERO DE DOCUMENTO:</span><br>
-          <span class="lbl">NACIONALIDAD:</span><br>
+          <span class="lbl">NOMBRES Y APELLIDOS (COMPLETOS):</span><br>
+          <span class="val">{{fichaMadre.inversionista.apoderado.nombres_apellidos}}</span>
+          <br><br>
+
+          <span class="lbl">TIPO DE DOCUMENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.tipo_documento}}</span>
+          <br>
+
+          <span class="lbl">NÚMERO DE DOCUMENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.numero_documento}}</span>
+          <br>
+          <span class="lbl">NACIONALIDAD:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.nacionalidad}}</span>
+
           <span class="lbl">SEXO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.sexo}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">ESTADO CIVIL (QUE FIGURA EN SU DNI):</span><br>
-          <span class="lbl">PAIS DE NACIMIENTO:</span><br>
-          <span class="lbl">FECHA DE NACIMIENTO:</span><br>
-          <span class="lbl">PAIS DE RESIDENCIA:</span><br>
+          <span class="lbl">ESTADO CIVIL (QUE FIGURA EN SU DNI):</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.estado_civil}}</span>
+          <br>
+
+          <span class="lbl">PAIS DE NACIMIENTO:</span>
+          <spanc class="val">{{fichaMadre.inversionista.apoderado.pais_nacimiento}}</span>
+          <br>
+
+          <span class="lbl">FECHA DE NACIMIENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.fecha_nacimiento}}</span>
+          <br>
+
+          <span class="lbl">PAIS DE RESIDENCIA:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.pais_residencia}}</span>
+          <br>
+
           <span class="lbl">GRADO DE INSTRUCCIÓN:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.grado_instruccion}}</span>
         </td>
       </tr>
       <tr>
@@ -321,17 +345,36 @@
       </tr>
       <tr>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*¿ES USTED DOMICILIADO?:</span> &nbsp;&nbsp; <span class="chk-box"></span> Sí &nbsp;&nbsp;
-          <span class="chk-box"></span> No<br>
-          <span class="lbl">DISTRITO:</span><br>
-          <span class="lbl">DEPARTAMENTO:</span><br>
+          <span class="lbl">*¿ES USTED DOMICILIADO?:</span> 
+          &nbsp;&nbsp; <span class="chk-box {{#if fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/if}}"></span> Sí 
+          &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/unless}}"></span> No<br>
+          <span class="lbl">DISTRITO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.distrito}}</span>
+          <br>
+
+          <span class="lbl">DEPARTAMENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.departamento}}</span>
+          <br>
+
           <span class="lbl">*TELEFONO FIJO O CELULAR:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.telefono_celular}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*PAIS DEL DOMICILIO:</span><br>
-          <span class="lbl">PROVINCIA:</span><br>
-          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span><br>
+          <span class="lbl">*PAIS DEL DOMICILIO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.pais_domicilio}}</span>
+          <br>
+
+          <span class="lbl">PROVINCIA:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.provincia}}</span>
+          <br>
+
+          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.direccion_completa}}</span>
+          <br>
+
           <span class="lbl">EMAIL:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.correo_electronico}}</span>
         </td>
       </tr>
     </table>
@@ -343,21 +386,23 @@
         <td style="width: 50%;">
           <span class="lbl">¿ES UD, VINCULADO A CORFID O A GRUPO CORIL?</span>
           &nbsp;&nbsp;
-          <span class="chk-box {{#if isAffiliatedToCorfidGroup}}checked{{/if}}"></span> Sí
+          <span class="chk-box {{#if fichaMadre.inversionista.vinculaciones.es_vinculado_corfid_grupo_coril}}checked{{/if}}"></span> Sí
           &nbsp;&nbsp;
-          <span class="chk-box {{#unless isAffiliatedToCorfidGroup}}checked{{/unless}}"></span> No<br><br>
+
+          <span class="chk-box {{#unless fichaMadre.inversionista.vinculaciones.es_vinculado_corfid_grupo_coril}}checked{{/unless}}"></span> No<br><br>
+          
           <span class="lbl">¿HA SIDO CLIENTE DE OTRA FIDUCIARIA?</span>
           &nbsp;&nbsp;
-          <span class="chk-box {{#if hasBeenClientOfOtherTrustee}}checked{{/if}}"></span> Sí
+          <span class="chk-box {{#if fichaMadre.inversionista.vinculaciones.ha_sido_cliente_otra_fiduciaria}}checked{{/if}}"></span> Sí
           &nbsp;&nbsp;
-          <span class="chk-box {{#unless hasBeenClientOfOtherTrustee}}checked{{/unless}}"></span>No
+          <span class="chk-box {{#unless fichaMadre.inversionista.vinculaciones.ha_sido_cliente_otra_fiduciaria}}checked{{/unless}}"></span>No
         </td>
         <td style="width: 50%;">
           <span class="lbl">¿HA SIDO TRABAJADOR DE OTRA FIDUCIARIA?</span>
           &nbsp;&nbsp;
-          <span class="chk-box {{#if hasBeenEmployeeOfOtherTrustee}}checked{{/if}}"></span> Sí
+          <span class="chk-box {{#if fichaMadre.inversionista.vinculaciones.ha_sido_trabajador_otra_fiduciaria}}checked{{/if}}"></span> Sí
           &nbsp;&nbsp;
-          <span class="chk-box {{#unless hasBeenEmployeeOfOtherTrustee}}checked{{/unless}}"></span>No
+          <span class="chk-box {{#unless fichaMadre.inversionista.vinculaciones.ha_sido_trabajador_otra_fiduciaria}}checked{{/unless}}"></span>No
         </td>
       </tr>
     </table>
@@ -371,7 +416,7 @@
             TITULOS VALORES U OTROS):</span>
         </td>
         <td style="width: 40%; vertical-align: middle;">
-          <span class="val">S/. {{valor_aproximado_patrimonio}}</span>
+          <span class="val">S/. {{fichaMadre.inversionista.vinculaciones.valor_aproximado_patrimonio}}</span>
         </td>
       </tr>
     </table>
@@ -389,7 +434,7 @@
         </td>
         <td style="width: 50%; vertical-align: middle;">
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{fondosPropiosDetalle}}</span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.fondos_propios_detalle}}</span>
         </td>
       </tr>
       <tr>
@@ -399,7 +444,7 @@
         </td>
         <td>
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{ventaActivosDetalle}}</span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.venta_activos_detalle}}</span>
         </td>
       </tr>
       <tr>
@@ -409,7 +454,7 @@
         </td>
         <td>
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{financiaminetosDetalle}}</span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.financiamientos_detalle}}</span>
         </td>
       </tr>
       <tr>
@@ -419,7 +464,7 @@
         </td>
         <td>
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{dividendosParticipacionesDetalle}}</span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.dividendos_participaciones_detalle}}</span>
         </td>
       </tr>
       <tr>
@@ -429,7 +474,7 @@
         </td>
         <td>
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{contratoObraLicitacionDetalle}}</span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.contrato_obra_licitacion_detalle}}</span>
         </td>
       </tr>
       <tr>
@@ -437,7 +482,11 @@
           <span class="lbl"><strong>PATRIMONIO FIDEICOMETIDO.</strong> (precisar N° de Escritura, fecha, partes, monto,
             plazo)</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.patrimonio_fideicometido_detalle}}</span>
+        </td>
+        
       </tr>
       <tr>
         <td>
@@ -445,7 +494,7 @@
         </td>
         <td>
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{contratoObraLicitacionDetalle}}</span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.otros_fondos_detalle}}</span>
         </td>
       </tr>
     </table>
@@ -462,12 +511,12 @@
               que genere ganancias ilícitas)?</strong></span>
         </td>
         <td style="width: 25%; vertical-align: middle;">
-          <span class="chk-box {{#if esInvestigadoDelitos}}checked{{/if}}"></span> Sí
+          <span class="chk-box {{#if fichaMadre.inversionista.antecedentes_penales_judiciales.es_investigado_delitos}}checked{{/if}}"></span> Sí
           &nbsp;&nbsp;&nbsp;&nbsp;
-          <span class="chk-box {{#unless esInvestigadoDelitos}}checked{{#unless}}"></span> No<br><br>
+          <span class="chk-box {{#unless fichaMadre.inversionista.antecedentes_penales_judiciales.es_investigado_delitos}}checked{{/unless}}"></span> No<br><br>
 
           <span class="lbl">Especificar:</span>
-          <span class="val">{{especificar_delitos}}</span>
+          <span class="val">{{fichaMadre.inversionista.antecedentes_penales_judiciales.especificar_delitos}}</span>
         </td>
       </tr>
       <tr>
@@ -504,13 +553,13 @@
 
       <div
         style="text-align: right; font-weight: bold; margin-top: 20px; display: flex; flex-direction: column; align-items: flex-end;">
-        {{#if firma_imagen}}
-        <img src="{{firma_imagen}}" alt="Firma del Declarante"
-          style="max-height: 65px; width: auto; margin-bottom: 5px; margin-right: 40px;" />
+        {{#if fichaMadre.metadata.firmado}}
+        <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
+          style="max-height: 80px; width: auto; max-width: 220px; margin-bottom: 4px; margin-right: 40px; object-fit: contain;" />
         {{/if}}
         <div>
           <span style="margin-right: 80px;">FECHA: &nbsp;&nbsp; {{dia}}/{{mes}}/{{anio}}</span>
-          <span style="text-transform: uppercase;">{{nombres_apellidos}}</span>
+          <span style="text-transform: uppercase;">{{fichaMadre.inversionista.titular.nombres_apellidos}}</span>
         </div>
       </div>
     </div>
@@ -657,9 +706,9 @@
       <br>
 
       <div style="text-align: center; margin-top: 25px; font-size: 8pt; line-height: 1.6;">
-        {{#if firma_imagen}}
-        <img src="{{firma_imagen}}" alt="Firma del Declarante"
-          style="max-height: 70px; width: auto; display: block; margin: 0 auto 5px auto;" />
+        {{#if fichaMadre.metadata.firmado}}
+        <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
+          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
         {{else}}
         .......................................................................<br>
         {{/if}}

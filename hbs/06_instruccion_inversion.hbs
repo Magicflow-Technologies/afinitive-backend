@@ -239,9 +239,14 @@
     <!-- SECCIÓN DE FIRMAS EN 2 COLUMNAS -->
     <div class="signatures-row">
       <div class="sig-col">
+        {{#if fichaMadre.metadata.firmado}}
+        <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Inversionista"
+          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+        {{/if}}
+        <div class="sig-line" style="border-top: 1px solid #000; width: 220px; margin: 0 auto 5px auto;"></div>
         <div>INVERSIONISTA</div>
         <div class="sig-name">{{nombres_apellidos}}</div>
-        <div class="sig-dni">DNI {{numero_documento}}</div>
+        <div class="sig-dni">{{tipo_documento}} {{numero_documento}}</div>
       </div>
       <div class="sig-col">
         <div>REPRESENTANTE DE LOS INVERSIONISTAS</div>

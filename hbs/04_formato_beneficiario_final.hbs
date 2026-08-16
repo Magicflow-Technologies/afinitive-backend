@@ -189,19 +189,19 @@
     <table class="table-data">
       <tr>
         <td class="col-label">a) Nombre y apellidos completos</td>
-        <td>{{nombres_apellidos}}</td>
+        <td>{{fichaMadre.inversionista.titular.nombres_apellidos}}</td>
       </tr>
       <tr>
         <td class="col-label">b) País de Residencia</td>
-        <td>{{pais_residencia}}</td>
+        <td>{{fichaMadre.inversionista.titular.pais_residencia}}</td>
       </tr>
       <tr>
         <td class="col-label">c) Fecha de nacimiento</td>
-        <td>{{fecha_nacimiento}}</td>
+        <td>{{fichaMadre.inversionista.titular.fecha_nacimiento}}</td>
       </tr>
       <tr>
         <td class="col-label">d) Nacionalidad</td>
-        <td>{{nacionalidad}}</td>
+        <td>{{fichaMadre.inversionista.titular.nacionalidad}}</td>
       </tr>
       <tr>
         <td class="col-label">e) Tipo y número de documento de identidad</td>
@@ -268,14 +268,14 @@
       <tr>
         <td class="col-label">m) Datos de Contacto</td>
         <td>
-          m.1) Correo electrónico: {{correo_electronico}}<br>
-          m.2) Número telefónico: {{telefono_celular}}
+          m.1) Correo electrónico: {{fichaMadre.inversionista.titular.correo_electronico}}<br>
+          m.2) Número telefónico: {{fichaMadre.inversionista.titular.telefono_celular}}
         </td>
       </tr>
       <tr>
         <td class="col-label">n) Dirección (calle, avenida, jirón u otros, urbanización, distrito, provincia y código
           postal)</td>
-        <td>{{direccion_completa_formato}}</td>
+        <td>{{fichaMadre.inversionista.domicilio.direccion_completa}}</td>
       </tr>
     </table>
 
@@ -473,15 +473,15 @@
     </table>
 
     <div style="margin-top: 30px; text-align: center;">
-      {{#if firma_imagen}}
-      <img src="{{firma_imagen}}" alt="Firma del Declarante"
-        style="max-height: 65px; width: auto; margin-bottom: 5px; margin-right: 40px;" />
+      {{#if fichaMadre.metadata.firmado}}
+      <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
+        style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
       {{/if}}
       <div style="border-top: 1px solid #000000; width: 260px; margin: 0 auto 5px auto;">
       </div>
 
       <strong>Firma del beneficiario final</strong><br>
-      N.° Documento de identidad: {{numero_documento}}
+      N.° Documento de identidad: {{fichaMadre.inversionista.titular.numero_documento}}
     </div>
 
     <div class="footnote">

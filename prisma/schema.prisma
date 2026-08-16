@@ -18,6 +18,12 @@ enum TipoDocumento {
   PASAPORTE
 }
 
+enum TipoDomicilio {
+  DOMICILIO
+  CORRESPONDENCIA
+  APODERADO
+}
+
 enum EstadoFichaMadre {
   PENDIENTE
   EN_PROCESO
@@ -25,26 +31,6 @@ enum EstadoFichaMadre {
   EN_REVISION
   APROBADA
   RECHAZADA
-}
-
-enum EstadoFormulario {
-  PENDIENTE
-  EN_PROCESO
-  COMPLETADO
-  RECHAZADO
-}
-
-enum TipoCampo {
-  TEXTO
-  NUMERO
-  FECHA
-  SELECT
-  MULTISELECT
-  CHECKBOX
-  TEXTAREA
-  EMAIL
-  TELEFONO
-  MONEDA
 }
 
 enum EstadoDocumento {
@@ -73,13 +59,6 @@ enum EstadoToken {
   USADO
   EXPIRADO
   REVOCADO
-}
-
-enum OrigenMapeo {
-  FORMULARIO
-  VALOR_FIJO
-  CALCULADO
-  SISTEMA
 }
 
 // ============================================
@@ -153,6 +132,9 @@ model Cliente {
   personaId String  @unique @map("persona_id") @db.Uuid
   activo    Boolean @default(true)
 
+  // Firma aprobada reutilizable del cliente (base64/data-url)
+  firmaRegistrada String? @map("firma_registrada")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -189,11 +171,11 @@ model FichaMadre {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  cliente          Cliente            @relation(fields: [clienteId], references: [id])
-  empleado         Empleado           @relation(fields: [empleadoId], references: [id])
-  fichasFormulario FichaFormulario[]
-  documentos       DocumentoGeneral[]
-  tokensAcceso     TokenAcceso[]
+  cliente       Cliente            @relation(fields: [clienteId], references: [id])
+  empleado      Empleado           @relation(fields: [empleadoId], references: [id])
+  inversionista Inversionista?
+  documentos    DocumentoGeneral[]
+  tokensAcceso  TokenAcceso[]
 
   @@index([empleadoId])
   @@index([estado])
@@ -201,93 +183,217 @@ model FichaMadre {
   @@map("ficha_madre")
 }
 
-// ============================================
-// FORMS BOUNDED CONTEXT
-// ============================================
+// ------------------------------------------------------------------
+// Perfil del inversionista (ficha madre) - una tabla por sección
+// ------------------------------------------------------------------
 
-model FormularioPlantilla {
-  id          String  @id @default(uuid()) @db.Uuid
-  nombre      String
-  descripcion String?
-  categoria   String?
-  version     Int     @default(1)
-  activo      Boolean @default(true)
-  orden       Int     @default(0)
+model Inversionista {
+  id          String @id @default(uuid()) @db.Uuid
+  fichaMadreId String @unique @map("ficha_madre_id") @db.Uuid
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  fichasFormulario FichaFormulario[]
-  camposPlantilla  CampoFormulario[]
-
-  @@index([activo, orden])
-  @@map("formulario_plantilla")
-}
-
-model CampoFormulario {
-  id                    String    @id @default(uuid()) @db.Uuid
-  formularioPlantillaId String    @map("formulario_plantilla_id") @db.Uuid
-  nombre                String
-  etiqueta              String
-  tipo                  TipoCampo @default(TEXTO)
-  obligatorio           Boolean   @default(false)
-  orden                 Int       @default(0)
-  placeholder           String?
-  helpText              String?   @map("help_text")
-  valorPorDefecto       String?   @map("valor_por_defecto")
-
-  patronValidacion String? @map("patron_validacion")
-  minLength        Int?    @map("min_length")
-  maxLength        Int?    @map("max_length")
-  opciones         Json?
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  formularioPlantilla FormularioPlantilla    @relation(fields: [formularioPlantillaId], references: [id])
-  respuestas          RespuestaCampo[]
-  mapeosDocumento     MapeoCampoDocumento[]
-
-  @@index([formularioPlantillaId, orden])
-  @@map("campo_formulario")
-}
-
-model FichaFormulario {
-  id                    String           @id @default(uuid()) @db.Uuid
-  fichaMadreId          String           @map("ficha_madre_id") @db.Uuid
-  formularioPlantillaId String           @map("formulario_plantilla_id") @db.Uuid
-  estado                EstadoFormulario @default(PENDIENTE)
-  intentos              Int              @default(0)
-
-  fechaInicio       DateTime? @map("fecha_inicio")
-  fechaFinalizacion DateTime? @map("fecha_finalizacion")
+  esDomiciliado                    Boolean @default(true) @map("es_domiciliado")
+  usarMismaDireccionCorrespondencia Boolean @default(true) @map("usar_misma_direccion_correspondencia")
+  tieneApoderado                   Boolean @default(false) @map("tiene_apoderado")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  fichaMadre          FichaMadre          @relation(fields: [fichaMadreId], references: [id])
-  formularioPlantilla FormularioPlantilla @relation(fields: [formularioPlantillaId], references: [id])
-  respuestas          RespuestaCampo[]
+  fichaMadre        FichaMadre          @relation(fields: [fichaMadreId], references: [id])
+  titular           Titular?
+  domicilios        Domicilio[]
+  informacionLaboral InformacionLaboral?
+  apoderado         Apoderado?
+  vinculaciones     Vinculaciones?
+  origenFondos      OrigenFondos?
+  antecedentesPenales AntecedentesPenales?
+  residenciaFiscal  ResidenciaFiscal?
+  inversion         Inversion?
 
-  @@unique([fichaMadreId, formularioPlantillaId], name: "uk_ficha_formulario")
-  @@index([estado])
-  @@map("ficha_formulario")
+  @@map("inversionista")
 }
 
-model RespuestaCampo {
+model Titular {
+  id               String @id @default(uuid()) @db.Uuid
+  inversionistaId  String @unique @map("inversionista_id") @db.Uuid
+
+  nombresApellidos        String?       @map("nombres_apellidos")
+  tipoDocumento           TipoDocumento? @map("tipo_documento")
+  numeroDocumento         String?       @map("numero_documento")
+  nacionalidad            String?
+  sexo                    String?
+  paisNacimiento          String?       @map("pais_nacimiento")
+  departamentoNacimiento  String?       @map("departamento_nacimiento")
+  fechaNacimiento         String?       @map("fecha_nacimiento")
+  paisResidencia          String?       @map("pais_residencia")
+  gradoInstruccion        String?       @map("grado_instruccion")
+  estadoCivil             String?       @map("estado_civil")
+  esInversionista         Boolean       @default(true) @map("es_inversionista")
+  correoElectronico       String?       @map("correo_electronico")
+  telefonoCelular         String?       @map("telefono_celular")
+
+  // Cónyuge (aplanado)
+  conyugeNombresApellidos String?              @map("conyuge_nombres_apellidos")
+  conyugeTipoDocumento    TipoDocumento?       @map("conyuge_tipo_documento")
+  conyugeNumeroDocumento  String?              @map("conyuge_numero_documento")
+  regimenPatrimonial      String?              @map("regimen_patrimonial")
+  fechaRegimen            String?              @map("fecha_regimen")
+
+  // PEP
+  pep                Boolean @default(false)
+  pepInstitucionCargo String? @map("pep_institucion_cargo")
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@map("titular")
+}
+
+model Domicilio {
+  id              String         @id @default(uuid()) @db.Uuid
+  inversionistaId String         @map("inversionista_id") @db.Uuid
+  tipo            TipoDomicilio  @map("tipo")
+
+  direccionCompleta String? @map("direccion_completa")
+  distrito          String?
+  provincia         String?
+  departamento      String?
+  pais              String?
+  codigoPostal      String?  @map("codigo_postal")
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@unique([inversionistaId, tipo], name: "uk_domicilio_inversionista_tipo")
+  @@index([inversionistaId])
+  @@map("domicilio")
+}
+
+model InformacionLaboral {
+  id                  String  @id @default(uuid()) @db.Uuid
+  inversionistaId     String  @unique @map("inversionista_id") @db.Uuid
+
+  situacionLaboral       String?  @map("situacion_laboral")
+  profesion              String?
+  ocupacion              String?
+  empresaCentroTrabajo   String?  @map("empresa_centro_trabajo")
+  ingresoPromedioAnual   Decimal? @map("ingreso_promedio_anual") @db.Decimal(18, 2)
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@map("informacion_laboral")
+}
+
+model Apoderado {
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
+
+  nombresApellidos       String?       @map("nombres_apellidos")
+  tipoDocumento          TipoDocumento? @map("tipo_documento")
+  numeroDocumento        String?       @map("numero_documento")
+  nacionalidad           String?
+  sexo                   String?
+  estadoCivil            String?       @map("estado_civil")
+  paisNacimiento         String?       @map("pais_nacimiento")
+  fechaNacimiento        String?       @map("fecha_nacimiento")
+  paisResidencia         String?       @map("pais_residencia")
+  gradoInstruccion       String?       @map("grado_instruccion")
+  esDomiciliado          Boolean       @default(true) @map("es_domiciliado")
+  correoElectronico      String?       @map("correo_electronico")
+  telefonoCelular        String?       @map("telefono_celular")
+
+  // Poder registral (aplanado)
+  partidaRegistral String? @map("partida_registral")
+  asiento          String?
+  zonaRegistral    String? @map("zona_registral")
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@map("apoderado")
+}
+
+model Vinculaciones {
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
+
+  esVinculadoCorfidGrupoCoril    Boolean  @default(false) @map("es_vinculado_corfid_grupo_coril")
+  haSidoClienteOtraFiduciaria    Boolean  @default(false) @map("ha_sido_cliente_otra_fiduciaria")
+  haSidoTrabajadorOtraFiduciaria Boolean  @default(false) @map("ha_sido_trabajador_otra_fiduciaria")
+  valorAproximadoPatrimonio      Decimal? @map("valor_aproximado_patrimonio") @db.Decimal(18, 2)
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@map("vinculaciones")
+}
+
+model OrigenFondos {
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
+
+  fondosPropiosDetalle            String? @map("fondos_propios_detalle")
+  ventaActivosDetalle             String? @map("venta_activos_detalle")
+  financiamientosDetalle          String? @map("financiamientos_detalle")
+  dividendosParticipacionesDetalle String? @map("dividendos_participaciones_detalle")
+  contratoObraLicitacionDetalle   String? @map("contrato_obra_licitacion_detalle")
+  patrimonioFideicometidoDetalle  String? @map("patrimonio_fideicometido_detalle")
+  otrosFondosDetalle              String? @map("otros_fondos_detalle")
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@map("origen_fondos")
+}
+
+model AntecedentesPenales {
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
+
+  esInvestigadoDelitos Boolean @default(false) @map("es_investigado_delitos")
+  especificarDelitos   String? @map("especificar_delitos")
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@map("antecedentes_penales")
+}
+
+model ResidenciaFiscal {
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
+
+  tieneResidenciaFiscalExtranjera Boolean @default(false) @map("tiene_residencia_fiscal_extranjera")
+
+  inversionista Inversionista     @relation(fields: [inversionistaId], references: [id])
+  paises        ResidenciaFiscalPais[]
+
+  @@map("residencia_fiscal")
+}
+
+model ResidenciaFiscalPais {
   id                String @id @default(uuid()) @db.Uuid
-  fichaFormularioId String @map("ficha_formulario_id") @db.Uuid
-  campoFormularioId String @map("campo_formulario_id") @db.Uuid
-  valor             String
+  residenciaFiscalId String @map("residencia_fiscal_id") @db.Uuid
+  pais              String?
+  nitTin            String? @map("nit_tin")
+  orden             Int    @default(0)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  residenciaFiscal ResidenciaFiscal @relation(fields: [residenciaFiscalId], references: [id])
 
-  fichaFormulario FichaFormulario @relation(fields: [fichaFormularioId], references: [id])
-  campoFormulario CampoFormulario @relation(fields: [campoFormularioId], references: [id])
+  @@index([residenciaFiscalId])
+  @@map("residencia_fiscal_pais")
+}
 
-  @@unique([fichaFormularioId, campoFormularioId], name: "uk_respuesta_campo")
-  @@index([fichaFormularioId])
-  @@map("respuesta_campo")
+model Inversion {
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
+
+  moneda             String?  @default("USD")
+  montoInicial       Decimal? @map("monto_inicial") @db.Decimal(18, 2)
+  montoInicialLetras String?  @map("monto_inicial_letras")
+  origenRecursos     String?  @map("origen_recursos")
+
+  // Datos bancarios (Instrucción de Inversión)
+  bancoNombre  String? @map("banco_nombre")
+  numeroCuenta String? @map("numero_cuenta")
+  cuentaCci    String? @map("cuenta_cci")
+
+  inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
+
+  @@map("inversion")
 }
 
 // ============================================
@@ -306,29 +412,9 @@ model DocumentoPlantilla {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  mapeos     MapeoCampoDocumento[]
   documentos DocumentoGeneral[]
 
   @@map("documento_plantilla")
-}
-
-model MapeoCampoDocumento {
-  id                   String      @id @default(uuid()) @db.Uuid
-  documentoPlantillaId String      @map("documento_plantilla_id") @db.Uuid
-  campoFormularioId    String?     @map("campo_formulario_id") @db.Uuid
-  marcador             String
-  origen               OrigenMapeo @default(FORMULARIO)
-  valorFijo            String?     @map("valor_fijo")
-  expresionCalculo     String?     @map("expresion_calculo")
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  documentoPlantilla DocumentoPlantilla @relation(fields: [documentoPlantillaId], references: [id])
-  campoFormulario    CampoFormulario?   @relation(fields: [campoFormularioId], references: [id])
-
-  @@unique([documentoPlantillaId, marcador], name: "uk_mapeo_marcador")
-  @@index([campoFormularioId])
-  @@map("mapeo_campo_documento")
 }
 
 model DocumentoGeneral {
@@ -347,6 +433,7 @@ model DocumentoGeneral {
   fichaMadre         FichaMadre         @relation(fields: [fichaMadreId], references: [id])
   documentoPlantilla DocumentoPlantilla @relation(fields: [documentoPlantillaId], references: [id])
   firmas             Firma[]
+  tokensDocumentos   TokenAccesoDocumento[]
 
   @@index([fichaMadreId])
   @@index([estado])
@@ -356,6 +443,7 @@ model DocumentoGeneral {
 model Firma {
   id                 String      @id @default(uuid()) @db.Uuid
   documentoGeneralId String      @map("documento_general_id") @db.Uuid
+  tokenAccesoId      String?     @map("token_acceso_id") @db.Uuid
   tipo               TipoFirma   @default(ELECTRONICA)
   estado             EstadoFirma @default(PENDIENTE)
 
@@ -373,8 +461,10 @@ model Firma {
   createdAt DateTime @default(now()) @map("created_at")
 
   documentoGeneral DocumentoGeneral @relation(fields: [documentoGeneralId], references: [id])
+  tokenAcceso      TokenAcceso?     @relation(fields: [tokenAccesoId], references: [id])
 
   @@index([documentoGeneralId])
+  @@index([tokenAccesoId])
   @@map("firma")
 }
 
@@ -396,11 +486,28 @@ model TokenAcceso {
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  fichaMadre FichaMadre @relation(fields: [fichaMadreId], references: [id])
+  fichaMadre FichaMadre             @relation(fields: [fichaMadreId], references: [id])
+  documentos TokenAccesoDocumento[]
+  firmas     Firma[]
 
   @@index([token])
   @@index([fichaMadreId])
   @@map("token_acceso")
+}
+
+model TokenAccesoDocumento {
+  id                 String  @id @default(uuid()) @db.Uuid
+  tokenAccesoId      String  @map("token_acceso_id") @db.Uuid
+  documentoGeneralId String  @map("documento_general_id") @db.Uuid
+  roundNumber        Int?    @map("round_number")
+  firmadoAt          DateTime? @map("firmado_at")
+
+  tokenAcceso      TokenAcceso      @relation(fields: [tokenAccesoId], references: [id])
+  documentoGeneral DocumentoGeneral @relation(fields: [documentoGeneralId], references: [id])
+
+  @@unique([tokenAccesoId, documentoGeneralId], name: "uk_token_documento")
+  @@index([documentoGeneralId])
+  @@map("token_acceso_documento")
 }
 
 model Auditoria {
