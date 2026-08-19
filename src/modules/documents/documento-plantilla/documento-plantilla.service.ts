@@ -8,15 +8,15 @@ export class DocumentoPlantillaService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(dto: CreateDocumentoPlantillaDto) {
-    return this.prisma.documentoPlantilla.create({ data: dto, include: { mapeos: true } });
+    return this.prisma.documentoPlantilla.create({ data: dto });
   }
 
   async findAll() {
-    return this.prisma.documentoPlantilla.findMany({ include: { mapeos: true } });
+    return this.prisma.documentoPlantilla.findMany();
   }
 
   async findOne(id: string) {
-    return this.prisma.documentoPlantilla.findUniqueOrThrow({ where: { id }, include: { mapeos: { include: { campoFormulario: true } } } });
+    return this.prisma.documentoPlantilla.findUniqueOrThrow({ where: { id } });
   }
 
   async update(id: string, dto: UpdateDocumentoPlantillaDto) {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>FORMATO DE FICHA CLIENTE PARA PERSONA NATURAL</title>
@@ -31,6 +32,7 @@
         align-items: center;
         gap: 20px;
       }
+
       .page-a4 {
         background: #ffffff;
         width: 210mm;
@@ -46,6 +48,7 @@
       body {
         background: #ffffff;
       }
+
       .page-a4 {
         width: 100%;
         padding: 0;
@@ -81,7 +84,8 @@
     }
 
     .sec-header {
-      background-color: #0066b3; /* Azul oficial CORFID */
+      background-color: #0066b3;
+      /* Azul oficial CORFID */
       color: #ffffff;
       font-weight: bold;
       text-align: center;
@@ -97,7 +101,8 @@
       margin-bottom: 2px;
     }
 
-    .tbl-form td, .tbl-form th {
+    .tbl-form td,
+    .tbl-form th {
       border: 1px solid #000000;
       padding: 3px 5px;
       vertical-align: top;
@@ -130,6 +135,14 @@
       margin-right: 3px;
     }
 
+    .chk-box.checked::after {
+      content: "✓";
+      font-size: 11px;
+      position: relative;
+      left: 1px;
+      top: -2px;
+    }
+
     .notice-bar {
       background-color: #ffffff;
       font-weight: bold;
@@ -144,6 +157,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <!-- HOJA 1 -->
@@ -165,34 +179,35 @@
       <tr>
         <td style="width: 45%;">
           <span class="lbl">NOMBRES Y APELLIDOS (COMPLETOS):</span><br><br>
-          <span class="val" style="font-size: 8.5pt;">{{nombres_apellidos}}</span>
+          <span class="val" style="font-size: 8.5pt;">{{fichaMadre.inversionista.titular.nombres_apellidos}}</span>
         </td>
         <td style="width: 55%;" colspan="3">
           <table style="width: 100%; border: none; border-collapse: collapse;">
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">ESTADO CIVIL (QUE FIGURA EN SU DNI):</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{estado_civil}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.estado_civil}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">PAIS DE RESIDENCIA:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{pais_residencia}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.pais_residencia}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">LUGAR DE NACIMIENTO:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{departamento}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.pais_nacimiento}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">FECHA DE NACIMIENTO:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{fecha_nacimiento}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.fecha_nacimiento}}</td>
             </tr>
             <tr>
               <td style="border: none; padding: 1px;"><span class="lbl">GRADO DE INSTRUCCIÓN:</span></td>
-              <td style="border: none; padding: 1px;" class="val">{{grado_instruccion}}</td>
+              <td style="border: none; padding: 1px;" class="val">{{fichaMadre.inversionista.titular.grado_instruccion}}</td>
             </tr>
             <tr>
-              <td style="border: none; padding: 1px;"><span class="lbl">¿ES UD. UN INVERSIONISTA</span></td>
+              <td style="border: none; padding: 1px;"><span class="lbl">¿ES UD. UN INVERSIONISTA?</span></td>
               <td style="border: none; padding: 1px;">
-                <span class="chk-box">X</span> Sí &nbsp;&nbsp; <span class="chk-box"></span> No
+                <span class="chk-box {{#if es_inversionista}}checked{{/if}}"></span>Sí &nbsp;&nbsp; <span
+                  class="chk-box {{#unless es_inversionista}}checked{{/unless}}"></span> No
               </td>
             </tr>
           </table>
@@ -200,17 +215,23 @@
       </tr>
       <tr>
         <td colspan="4">
-          <span class="lbl">TIPO DE DOCUMENTO:</span> <span class="val">{{tipo_documento}}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <span class="lbl">NÚMERO DE DOCUMENTO:</span> <span class="val">{{numero_documento}}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <span class="lbl">NACIONALIDAD:</span> <span class="val">{{nacionalidad}}</span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <span class="lbl">SEXO:</span> <span class="val">{{sexo}}</span>
+          <span class="lbl">TIPO DE DOCUMENTO:</span> <span class="val">{{fichaMadre.inversionista.titular.tipo_documento}}</span>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="lbl">NÚMERO DE DOCUMENTO:</span> <span class="val">{{fichaMadre.inversionista.titular.numero_documento}}</span>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="lbl">NACIONALIDAD:</span> <span class="val">{{fichaMadre.inversionista.titular.nacionalidad}}</span>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="lbl">SEXO:</span> <span class="val">{{fichaMadre.inversionista.titular.sexo}}</span>
         </td>
       </tr>
       <tr>
         <td colspan="4">
           <span class="lbl">¿ES UD. UNA PERSONA EXPUESTA POLÍTICAMENTE?</span>
-          &nbsp;&nbsp; <span class="chk-box">{{pep_si}}</span> Sí &nbsp;&nbsp; <span class="chk-box">{{pep_no}}</span> No<br>
-          <span class="lbl">*SI ES PEP; INDICAR LA INSTITUCIÓN Y CARGO:</span> <span class="val">{{pep_institucion_cargo}}</span>
+          &nbsp;&nbsp; <span class="chk-box {{#if fichaMadre.inversionista.titular.pep}}checked{{/if}}"></span> Sí &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.titular.pep}}checked{{/unless}}"></span> No<br>
+          {{#if fichaMadre.inversionista.titular.pep}}
+          <span class="lbl">INDICAR LA INSTITUCIÓN Y CARGO:</span> <span class="val">{{fichaMadre.inversionista.titular.pep_institucion_cargo}}</span>
+          {{/if}}
         </td>
       </tr>
 
@@ -220,16 +241,19 @@
       </tr>
       <tr>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*¿ES USTED DOMICILIADO?:</span> &nbsp;&nbsp; <span class="chk-box"></span> Sí &nbsp;&nbsp; <span class="chk-box">X</span> No<br>
-          <span class="lbl">DISTRITO:</span> <span class="val">{{distrito}}</span><br>
-          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{departamento}}</span><br>
-          <span class="lbl">*TELEFONO FIJO O CELULAR:</span> <span class="val">{{telefono_celular}}</span>
+          <span class="lbl">*¿ES USTED DOMICILIADO?:</span> &nbsp;&nbsp; <span
+            class="chk-box {{#if fichaMadre.inversionista.es_domiciliado}}checked{{/if}}"></span> Sí &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.es_domiciliado}}checked{{/unless}}"></span> No<br>
+
+          <span class="lbl">DISTRITO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.distrito}}</span><br>
+          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.departamento}}</span><br>
+          <span class="lbl">*TELEFONO FIJO O CELULAR:</span> <span class="val">{{fichaMadre.inversionista.titular.telefono_celular}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*PAIS DEL DOMICILIO:</span> <span class="val">{{pais_residencia}}</span><br>
-          <span class="lbl">PROVINCIA:</span> <span class="val">{{provincia}}</span><br>
-          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span> <span class="val">{{direccion_completa}}</span><br>
-          <span class="lbl">EMAIL:</span> <span class="val">{{correo_electronico}}</span>
+          <span class="lbl">*PAIS DEL DOMICILIO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.pais_domicilio}}</span><br>
+          <span class="lbl">PROVINCIA:</span> <span class="val">{{fichaMadre.inversionista.domicilio.provincia}}</span><br>
+          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span> <span class="val">{{fichaMadre.inversionista.domicilio.direccion_completa}}</span><br>
+          <span class="lbl">EMAIL:</span> <span class="val">{{fichaMadre.inversionista.titular.correo_electronico}}</span>
         </td>
       </tr>
 
@@ -239,30 +263,33 @@
       </tr>
       <tr>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*SITUACIÓN LABORAL:</span> <span class="val">DEPENDIENTE</span><br>
-          <span class="lbl">*PROFESIÓN:</span> <span class="val">{{profesion}}</span><br>
-          <span class="lbl">*INGRESO PROMEDIO ANUAL:</span> <span class="val">S/. 80,000.00</span>
+          <span class="lbl">*SITUACIÓN LABORAL:</span> <span class="val">{{situacion_laboral}}</span><br>
+          <span class="lbl">*PROFESIÓN:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.profesion}}</span><br>
+          <span class="lbl">*INGRESO PROMEDIO ANUAL:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.ingreso_promedio_anual}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">NOMBRE DEL CENTRO DE TRABAJO:</span> <span class="val">{{empresa_centro_trabajo}}</span><br>
-          <span class="lbl">*OCUPACIÓN:</span> <span class="val">{{ocupacion}}</span>
+          <span class="lbl">NOMBRE DEL CENTRO DE TRABAJO:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.empresa_centro_trabajo}}</span><br>
+          <span class="lbl">*OCUPACIÓN:</span> <span class="val">{{fichaMadre.inversionista.informacion_laboral.ocupacion}}</span>
         </td>
       </tr>
 
       <!-- 1.4. DIRECCIÓN DE CORRESPONDENCIA -->
       <tr>
-        <td colspan="4" class="sub-title">1.4. DIRECCIÓN DE CORRESPONDENCIA</td>
+        <td colspan="4" class="sub-title">
+          1.4. DIRECCIÓN DE CORRESPONDENCIA
+        </td>
       </tr>
       <tr>
         <td style="width: 50%;" colspan="2">
           <span class="lbl">*SU DIRECCIÓN DE CORRESPONDENCIA ES LA MISMA QUE:</span><br>
-          <span class="lbl">En caso no ser su domicilio, completar direccion:</span> &nbsp;&nbsp;&nbsp;&nbsp; <span class="chk-box">X</span> <span class="val">Domicilio</span><br>
-          <span class="lbl">DISTRITO:</span> <span class="val">{{distrito}}</span>
+          <span class="lbl">En caso no ser su domicilio, completar direccion:</span> &nbsp;&nbsp;&nbsp;&nbsp; <span
+            class="chk-box {{#if fichaMadre.inversionista.usar_misma_direccion_correspondencia}}checked{{/if}}"></span> <span class="val">Domicilio</span><br>
+          <span class="lbl">DISTRITO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.distrito}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{departamento}}</span><br>
-          <span class="lbl">*PAÍS DEL DOMICILIO:</span> <span class="val">{{pais_residencia}}</span><br>
-          <span class="lbl">PROVINCIA:</span> <span class="val">{{provincia}}</span>
+          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.departamento}}</span><br>
+          <span class="lbl">*PAÍS DEL DOMICILIO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.pais_domicilio}}</span><br>
+          <span class="lbl">PROVINCIA:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.provincia}}</span>
         </td>
       </tr>
     </table>
@@ -275,18 +302,42 @@
       </tr>
       <tr>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">NOMBRES Y APELLIDOS (COMPLETOS):</span><br><br>
-          <span class="lbl">TIPO DE DOCUMENTO:</span><br>
-          <span class="lbl">NÚMERO DE DOCUMENTO:</span><br>
-          <span class="lbl">NACIONALIDAD:</span><br>
+          <span class="lbl">NOMBRES Y APELLIDOS (COMPLETOS):</span><br>
+          <span class="val">{{fichaMadre.inversionista.apoderado.nombres_apellidos}}</span>
+          <br><br>
+
+          <span class="lbl">TIPO DE DOCUMENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.tipo_documento}}</span>
+          <br>
+
+          <span class="lbl">NÚMERO DE DOCUMENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.numero_documento}}</span>
+          <br>
+          <span class="lbl">NACIONALIDAD:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.nacionalidad}}</span>
+
           <span class="lbl">SEXO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.sexo}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">ESTADO CIVIL (QUE FIGURA EN SU DNI):</span><br>
-          <span class="lbl">PAIS DE NACIMIENTO:</span><br>
-          <span class="lbl">FECHA DE NACIMIENTO:</span><br>
-          <span class="lbl">PAIS DE RESIDENCIA:</span><br>
+          <span class="lbl">ESTADO CIVIL (QUE FIGURA EN SU DNI):</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.estado_civil}}</span>
+          <br>
+
+          <span class="lbl">PAIS DE NACIMIENTO:</span>
+          <spanc class="val">{{fichaMadre.inversionista.apoderado.pais_nacimiento}}</span>
+          <br>
+
+          <span class="lbl">FECHA DE NACIMIENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.fecha_nacimiento}}</span>
+          <br>
+
+          <span class="lbl">PAIS DE RESIDENCIA:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.pais_residencia}}</span>
+          <br>
+
           <span class="lbl">GRADO DE INSTRUCCIÓN:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.grado_instruccion}}</span>
         </td>
       </tr>
       <tr>
@@ -294,16 +345,36 @@
       </tr>
       <tr>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*¿ES USTED DOMICILIADO?:</span> &nbsp;&nbsp; <span class="chk-box"></span> Sí &nbsp;&nbsp; <span class="chk-box"></span> No<br>
-          <span class="lbl">DISTRITO:</span><br>
-          <span class="lbl">DEPARTAMENTO:</span><br>
+          <span class="lbl">*¿ES USTED DOMICILIADO?:</span> 
+          &nbsp;&nbsp; <span class="chk-box {{#if fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/if}}"></span> Sí 
+          &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/unless}}"></span> No<br>
+          <span class="lbl">DISTRITO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.distrito}}</span>
+          <br>
+
+          <span class="lbl">DEPARTAMENTO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.departamento}}</span>
+          <br>
+
           <span class="lbl">*TELEFONO FIJO O CELULAR:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.telefono_celular}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*PAIS DEL DOMICILIO:</span><br>
-          <span class="lbl">PROVINCIA:</span><br>
-          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span><br>
+          <span class="lbl">*PAIS DEL DOMICILIO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.pais_domicilio}}</span>
+          <br>
+
+          <span class="lbl">PROVINCIA:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.provincia}}</span>
+          <br>
+
+          <span class="lbl">*DIRECCIÓN DE DOMICILIO:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.direccion_completa}}</span>
+          <br>
+
           <span class="lbl">EMAIL:</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.correo_electronico}}</span>
         </td>
       </tr>
     </table>
@@ -313,11 +384,25 @@
     <table class="tbl-form">
       <tr>
         <td style="width: 50%;">
-          <span class="lbl">¿ES UD, VINCULADO A CORFID O A GRUPO CORIL?</span> &nbsp;&nbsp; <span class="chk-box"></span> Sí &nbsp;&nbsp; <span class="chk-box">X</span> No<br><br>
-          <span class="lbl">¿HA SIDO CLIENTE DE OTRA FIDUCIARIA?</span> &nbsp;&nbsp; <span class="chk-box"></span> Sí &nbsp;&nbsp; <span class="chk-box">X</span> No
+          <span class="lbl">¿ES UD, VINCULADO A CORFID O A GRUPO CORIL?</span>
+          &nbsp;&nbsp;
+          <span class="chk-box {{#if fichaMadre.inversionista.vinculaciones.es_vinculado_corfid_grupo_coril}}checked{{/if}}"></span> Sí
+          &nbsp;&nbsp;
+
+          <span class="chk-box {{#unless fichaMadre.inversionista.vinculaciones.es_vinculado_corfid_grupo_coril}}checked{{/unless}}"></span> No<br><br>
+          
+          <span class="lbl">¿HA SIDO CLIENTE DE OTRA FIDUCIARIA?</span>
+          &nbsp;&nbsp;
+          <span class="chk-box {{#if fichaMadre.inversionista.vinculaciones.ha_sido_cliente_otra_fiduciaria}}checked{{/if}}"></span> Sí
+          &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.vinculaciones.ha_sido_cliente_otra_fiduciaria}}checked{{/unless}}"></span>No
         </td>
         <td style="width: 50%;">
-          <span class="lbl">¿HA SIDO TRABAJADOR DE OTRA FIDUCIARIA?</span> &nbsp;&nbsp; <span class="chk-box"></span> Sí &nbsp;&nbsp; <span class="chk-box">X</span> No
+          <span class="lbl">¿HA SIDO TRABAJADOR DE OTRA FIDUCIARIA?</span>
+          &nbsp;&nbsp;
+          <span class="chk-box {{#if fichaMadre.inversionista.vinculaciones.ha_sido_trabajador_otra_fiduciaria}}checked{{/if}}"></span> Sí
+          &nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.vinculaciones.ha_sido_trabajador_otra_fiduciaria}}checked{{/unless}}"></span>No
         </td>
       </tr>
     </table>
@@ -327,61 +412,90 @@
     <table class="tbl-form">
       <tr>
         <td style="width: 60%;">
-          <span class="lbl">VALOR APROXIMADO (S/) DEL PATRIMONIO (INMUEBLES, MUEBLES, INVERSIONES, FLUJOS DINERARIOS, TITULOS VALORES U OTROS):</span>
+          <span class="lbl">VALOR APROXIMADO (S/) DEL PATRIMONIO (INMUEBLES, MUEBLES, INVERSIONES, FLUJOS DINERARIOS,
+            TITULOS VALORES U OTROS):</span>
         </td>
         <td style="width: 40%; vertical-align: middle;">
-          <span class="val">S/. 200,000</span>
+          <span class="val">S/. {{fichaMadre.inversionista.vinculaciones.valor_aproximado_patrimonio}}</span>
         </td>
       </tr>
     </table>
 
     <!-- 5. DECLARACIÓN JURADA DE ORIGEN DE LOS FONDOS -->
-    <div class="sec-header">5. *DECLARACIÓN JURADA DE ORIGEN DE LOS FONDOS (Complete, especifique y adjunte el sustento de lo que declare)</div>
+    <div class="sec-header">5. *DECLARACIÓN JURADA DE ORIGEN DE LOS FONDOS (Complete, especifique y adjunte el sustento
+      de lo que declare)</div>
     <table class="tbl-form">
       <tr>
         <td style="width: 50%;">
-          <span class="lbl"><strong>FONDOS O RECURSOS PROPIOS.</strong> (especifique el origen, por ejemplo: i) Herencia (precisar el testimonio N° Kárdex, fecha y Notaría), ii) Actividad económica (describir la actividad comercial principal, el volumen de divisas y ventas totales); iii) Compraventa de inmueble (indicar el testimonio, fecha y Notaría), iv) Arrendamiento u otro; adjuntar copia respectiva.</span>
+          <span class="lbl"><strong>FONDOS O RECURSOS PROPIOS.</strong> (especifique el origen, por ejemplo: i) Herencia
+            (precisar el testimonio N° Kárdex, fecha y Notaría), ii) Actividad económica (describir la actividad
+            comercial principal, el volumen de divisas y ventas totales); iii) Compraventa de inmueble (indicar el
+            testimonio, fecha y Notaría), iv) Arrendamiento u otro; adjuntar copia respectiva.</span>
         </td>
         <td style="width: 50%; vertical-align: middle;">
           <span class="lbl"><strong>Especifique:</strong></span><br>
-          <span class="val">{{detalle_origen_fondos}}</span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.fondos_propios_detalle}}</span>
         </td>
       </tr>
       <tr>
         <td>
-          <span class="lbl"><strong>VENTA DE ACTIVOS.</strong> Especificar el bien y el N° de escritura pública o Kárdex, fecha y Notario.</span>
+          <span class="lbl"><strong>VENTA DE ACTIVOS.</strong> Especificar el bien y el N° de escritura pública o
+            Kárdex, fecha y Notario.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.venta_activos_detalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
-          <span class="lbl"><strong>FINANCIAMIENTOS.</strong> Por ejemplo: Precisar la entidad financiera, monto y número de cuenta.</span>
+          <span class="lbl"><strong>FINANCIAMIENTOS.</strong> Por ejemplo: Precisar la entidad financiera, monto y
+            número de cuenta.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.financiamientos_detalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
-          <span class="lbl"><strong>DIVIDENDOS Y PARTICIPACIONES.</strong> Por ejemplo: Indicar la empresa y su % participación o accionariado, monto.</span>
+          <span class="lbl"><strong>DIVIDENDOS Y PARTICIPACIONES.</strong> Por ejemplo: Indicar la empresa y su %
+            participación o accionariado, monto.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.dividendos_participaciones_detalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
-          <span class="lbl"><strong>CONTRATO DE OBRA, LICITACION PUBLICA.</strong> (precisar monto, n° de contrato y fecha, N° de Kx y Escritura, Notaría), adjuntar copia o scan.</span>
+          <span class="lbl"><strong>CONTRATO DE OBRA, LICITACION PUBLICA.</strong> (precisar monto, n° de contrato y
+            fecha, N° de Kx y Escritura, Notaría), adjuntar copia o scan.</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.contrato_obra_licitacion_detalle}}</span>
+        </td>
       </tr>
       <tr>
         <td>
-          <span class="lbl"><strong>PATRIMONIO FIDEICOMETIDO.</strong> (precisar N° de Escritura, fecha, partes, monto, plazo)</span>
+          <span class="lbl"><strong>PATRIMONIO FIDEICOMETIDO.</strong> (precisar N° de Escritura, fecha, partes, monto,
+            plazo)</span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.patrimonio_fideicometido_detalle}}</span>
+        </td>
+        
       </tr>
       <tr>
         <td>
           <span class="lbl"><strong>OTROS. (Especificar):</strong></span>
         </td>
-        <td><span class="lbl"><strong>Especifique:</strong></span></td>
+        <td>
+          <span class="lbl"><strong>Especifique:</strong></span><br>
+          <span class="val">{{fichaMadre.inversionista.origen_fondos.otros_fondos_detalle}}</span>
+        </td>
       </tr>
     </table>
 
@@ -390,16 +504,27 @@
     <table class="tbl-form">
       <tr>
         <td style="width: 75%;">
-          <span class="lbl"><strong>6.1. ¿Ud. ha sido alguna vez investigado, denunciado, condenado o sentenciado por delitos de lavado de activos y/o financiamiento del terrorismo, corrupción o delitos precedentes (como delitos contra la administración pública, tráfico ilícito de drogas, terrorismo, minería ilegal, trata de personas, tráfico de migrantes y de armas, delitos tributarios, extorsión, robo, delitos aduaneros u otro que genere ganancias ilícitas)?</strong></span>
+          <span class="lbl"><strong>6.1. ¿Ud. ha sido alguna vez investigado, denunciado, condenado o sentenciado por
+              delitos de lavado de activos y/o financiamiento del terrorismo, corrupción o delitos precedentes (como
+              delitos contra la administración pública, tráfico ilícito de drogas, terrorismo, minería ilegal, trata de
+              personas, tráfico de migrantes y de armas, delitos tributarios, extorsión, robo, delitos aduaneros u otro
+              que genere ganancias ilícitas)?</strong></span>
         </td>
         <td style="width: 25%; vertical-align: middle;">
-          <span class="chk-box"></span> Sí &nbsp;&nbsp;&nbsp;&nbsp; <span class="chk-box">X</span> No<br><br>
+          <span class="chk-box {{#if fichaMadre.inversionista.antecedentes_penales_judiciales.es_investigado_delitos}}checked{{/if}}"></span> Sí
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="chk-box {{#unless fichaMadre.inversionista.antecedentes_penales_judiciales.es_investigado_delitos}}checked{{/unless}}"></span> No<br><br>
+
           <span class="lbl">Especificar:</span>
+          <span class="val">{{fichaMadre.inversionista.antecedentes_penales_judiciales.especificar_delitos}}</span>
         </td>
       </tr>
       <tr>
         <td colspan="2" style="font-size: 6.8pt; background-color: #f9fafb;">
-          <strong>NOTA:</strong> En caso cuente con procesos judiciales penales o investigaciones fiscales relacionadas a los delitos mencionados en el punto 6.1 y que se encuentren vigentes a la fecha, por favor especificar y proceder a completar la Declaración Jurada de Antecedentes Judiciales y Procesos Fiscales ANEXO N°2 (ver tercera pagina)
+          <strong>NOTA:</strong> En caso cuente con procesos judiciales penales o investigaciones fiscales relacionadas
+          a los delitos mencionados en el punto 6.1 y que se encuentren vigentes a la fecha, por favor especificar y
+          proceder a completar la Declaración Jurada de Antecedentes Judiciales y Procesos Fiscales ANEXO N°2 (ver
+          tercera pagina)
         </td>
       </tr>
     </table>
@@ -407,20 +532,35 @@
 
   <!-- HOJA 2 -->
   <div class="page-a4 page-break">
-    <div class="sec-header">7. *DECLARACIÓN JURADA DEL REGISTRO DE FICHA CLIENTE / AUTORIZACIÓN Y CONSENTIMIENTO DE TRATAMIENTO DE DATOS PERSONALES</div>
-    
+    <div class="sec-header">7. *DECLARACIÓN JURADA DEL REGISTRO DE FICHA CLIENTE / AUTORIZACIÓN Y CONSENTIMIENTO DE
+      TRATAMIENTO DE DATOS PERSONALES</div>
+
     <div style="border: 1px solid #000; padding: 12px; font-size: 8pt; line-height: 1.5; margin-top: 6px;">
-      <p>Doy conformidad con haber leido y aceptado lo expuesto en el <strong>ANEXO Nro 1</strong> referente al consentimiento de tratamiento de datos personales <em>(ver segunda página)</em></p>
+      <p>Doy conformidad con haber leido y aceptado lo expuesto en el <strong>ANEXO Nro 1</strong> referente al
+        consentimiento de tratamiento de datos personales <em>(ver segunda página)</em></p>
 
-      <p>Asimismo, declaro bajo juramento que toda la información contenida en esta Ficha tiene carácter de Declaración Jurada, corresponde a la verdad de los hechos y autorizo a que se realicen consultas para datos o fuentes privadas para su verificación y de ser falsa la declaración efectuada, me encontraré sujeto a las responsabilidades administrativas y penales correspondientes, de conformidad con la normativa vigente.</p>
+      <p>Asimismo, declaro bajo juramento que toda la información contenida en esta Ficha tiene carácter de Declaración
+        Jurada, corresponde a la verdad de los hechos y autorizo a que se realicen consultas para datos o fuentes
+        privadas para su verificación y de ser falsa la declaración efectuada, me encontraré sujeto a las
+        responsabilidades administrativas y penales correspondientes, de conformidad con la normativa vigente.</p>
 
-      <p>Finalmente, me comprometo a comunicar por escrito a CORFID Corporación Fiduciaria S.A., en un plazo máximo de cinco (5) días hábiles de ocurrido el hecho, la modificación de cualquier circunstancia mencionada en la Ficha para que se actualice la información pertinente, de conformidad con el Reglamento de gestión de riesgos de lavado de activos y del financiamiento del terrorismo, Res. SBS N°2660-2015 y modificatorias</p>
+      <p>Finalmente, me comprometo a comunicar por escrito a CORFID Corporación Fiduciaria S.A., en un plazo máximo de
+        cinco (5) días hábiles de ocurrido el hecho, la modificación de cualquier circunstancia mencionada en la Ficha
+        para que se actualice la información pertinente, de conformidad con el Reglamento de gestión de riesgos de
+        lavado de activos y del financiamiento del terrorismo, Res. SBS N°2660-2015 y modificatorias</p>
 
       <br><br><br><br>
 
-      <div style="text-align: right; font-weight: bold; margin-top: 40px;">
-        <span style="margin-right: 80px;">FECHA: &nbsp;&nbsp; {{dia}}/{{mes}}/{{anio}}</span>
-        <span style="text-transform: uppercase;">{{nombres_apellidos}}</span>
+      <div
+        style="text-align: right; font-weight: bold; margin-top: 20px; display: flex; flex-direction: column; align-items: flex-end;">
+        {{#if fichaMadre.metadata.firmado}}
+        <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
+          style="max-height: 80px; width: auto; max-width: 220px; margin-bottom: 4px; margin-right: 40px; object-fit: contain;" />
+        {{/if}}
+        <div>
+          <span style="margin-right: 80px;">FECHA: &nbsp;&nbsp; {{dia}}/{{mes}}/{{anio}}</span>
+          <span style="text-transform: uppercase;">{{fichaMadre.inversionista.titular.nombres_apellidos}}</span>
+        </div>
       </div>
     </div>
 
@@ -429,7 +569,8 @@
       Nota: Los campos marcados con * son obligatorios
     </div>
 
-    <div style="border: 1px solid #000; border-top: none; padding: 6px; text-align: center; font-size: 7pt; color: #000; line-height: 1.2;">
+    <div
+      style="border: 1px solid #000; border-top: none; padding: 6px; text-align: center; font-size: 7pt; color: #000; line-height: 1.2;">
       Prohibido reproducir sin autorización<br>
       COPIA NO CONTROLADA
     </div>
@@ -438,28 +579,61 @@
   <!-- HOJA 3 -->
   <div class="page-a4 page-break">
     <div class="sec-header">ANEXO Nro 1<br>AUTORIZACIONES Y CONSENTIMIENTO DE TRATAMIENTO DE DATOS PERSONALES</div>
-    
-    <div style="border: 1px solid #000; padding: 12px; font-size: 7.8pt; line-height: 1.45; text-align: justify; margin-top: 6px;">
-      <p>El cliente consiente de manera libre, previa, expresa, informada e inequívoca de conformidad con la Ley Nro. 29733, y a la vez autorizo a CORFID CORPORACIÓN FIDUCIARIA S.A. (en adelante, CORFID) a hacer uso, recopilar, registrar, organizar, almacenar, transferir, conservar, extraer, consultar, mis datos personales así como a grabar y guardar en cualquier medio de almacenamiento de información, las conversaciones telefónicas, correos y documentos de la negociación, acuerdos y ejecución de operaciones realizadas por mi persona y/o mis representantes y los funcionarios y/o empleados de CORFID. El cliente, de acuerdo a la Ley N° 29733, cuenta con los derechos de acceso a la información, actualización, inclusión, rectificación, impedimento de suministro, inclusión,supresión, oposición, revocación y cancelación en el tratamiento de sus datos personales; para cuyo fin deberá remitir una comunicación escrita en cualquier momento a CORFID, quien deberá acceder a la misma en un plazo máximo de 5 días hábiles contados a partir del día siguiente de su presentación; sin que ello implique la pérdida de su calidad de cliente, ni el impedimento al cumplimiento de las normas sobre prevención de lavado de activos.</p>
 
-      <p>El CLIENTE y/o sus representantes declaran contar con la debida representatividad para firmar el presente contrato. El CLIENTE se compromete a informar a CORFID CORPORACIÓN FIDUCIARIA S.A. cada vez que la representatividad del CLIENTE sea modificada. Asimismo, se compromete a comunicar a CORFID CORPORACIÓN FIDUCIARIA S.A. dentro de los cinco (5) días hábiles siguientes de ocurrido tal hecho.</p>
+    <div
+      style="border: 1px solid #000; padding: 12px; font-size: 7.8pt; line-height: 1.45; text-align: justify; margin-top: 6px;">
+      <p>El cliente consiente de manera libre, previa, expresa, informada e inequívoca de conformidad con la Ley Nro.
+        29733, y a la vez autorizo a CORFID CORPORACIÓN FIDUCIARIA S.A. (en adelante, CORFID) a hacer uso, recopilar,
+        registrar, organizar, almacenar, transferir, conservar, extraer, consultar, mis datos personales así como a
+        grabar y guardar en cualquier medio de almacenamiento de información, las conversaciones telefónicas, correos y
+        documentos de la negociación, acuerdos y ejecución de operaciones realizadas por mi persona y/o mis
+        representantes y los funcionarios y/o empleados de CORFID. El cliente, de acuerdo a la Ley N° 29733, cuenta con
+        los derechos de acceso a la información, actualización, inclusión, rectificación, impedimento de suministro,
+        inclusión,supresión, oposición, revocación y cancelación en el tratamiento de sus datos personales; para cuyo
+        fin deberá remitir una comunicación escrita en cualquier momento a CORFID, quien deberá acceder a la misma en un
+        plazo máximo de 5 días hábiles contados a partir del día siguiente de su presentación; sin que ello implique la
+        pérdida de su calidad de cliente, ni el impedimento al cumplimiento de las normas sobre prevención de lavado de
+        activos.</p>
 
-      <p>El cliente se compromete a actualizar los datos personales e información comercial, financiera y relacionada o que CORFID considere pertinente, al menos una vez al año.</p>
+      <p>El CLIENTE y/o sus representantes declaran contar con la debida representatividad para firmar el presente
+        contrato. El CLIENTE se compromete a informar a CORFID CORPORACIÓN FIDUCIARIA S.A. cada vez que la
+        representatividad del CLIENTE sea modificada. Asimismo, se compromete a comunicar a CORFID CORPORACIÓN
+        FIDUCIARIA S.A. dentro de los cinco (5) días hábiles siguientes de ocurrido tal hecho.</p>
 
-      <p>Toda información es de carácter reservado, CORFID podrá hacer uso de la información solo por mandato judicial, absteniéndose de divulgarlas con fines distintos a lo previsto, sin contar con el consentimiento del cliente.</p>
+      <p>El cliente se compromete a actualizar los datos personales e información comercial, financiera y relacionada o
+        que CORFID considere pertinente, al menos una vez al año.</p>
 
-      <p>Autorizo a CORFID para que obtenga de cualquier fuente y reporte de cualquier banco de datos información que requiera de mi persona como de mis ordenantes/fideicomitentes/representantes/fideicomisarios. En caso de incumplimiento de obligaciones del cliente, CORFID enviara la información comercial en las centrales de riesgo; así como también, toda información comercial de los representante(s) legal(es), apoderado(s) y/u ordenante(s). Asimismo la transferencia de datos que se realice por o a favor de CORFID respecto a empresas pertenecientes a su mismo grupo económico se efectuará conforme a las normas internas de protección de datos personales, para cuyo fin se deberá tomar en cuenta que toda transferencia de información comprendida en el deber de reserva sólo se podrá realizar en los casos contemplados en la Ley Nro. 26702, Ley General del Sistema Financiero y del Sistema de Seguros y Orgánica de la Superintendencia de Banca, Seguros y Administradora de Fondos de Pensiones. En caso de negativa de proporcionar información, el Gerente General podrá adoptar las medidas necesarias para contar con la misma, tomando en cuenta su relevancia para el cumplimiento de las normas de lavado de activos y financiamiento del terrorismo.</p>
+      <p>Toda información es de carácter reservado, CORFID podrá hacer uso de la información solo por mandato judicial,
+        absteniéndose de divulgarlas con fines distintos a lo previsto, sin contar con el consentimiento del cliente.
+      </p>
+
+      <p>Autorizo a CORFID para que obtenga de cualquier fuente y reporte de cualquier banco de datos información que
+        requiera de mi persona como de mis ordenantes/fideicomitentes/representantes/fideicomisarios. En caso de
+        incumplimiento de obligaciones del cliente, CORFID enviara la información comercial en las centrales de riesgo;
+        así como también, toda información comercial de los representante(s) legal(es), apoderado(s) y/u ordenante(s).
+        Asimismo la transferencia de datos que se realice por o a favor de CORFID respecto a empresas pertenecientes a
+        su mismo grupo económico se efectuará conforme a las normas internas de protección de datos personales, para
+        cuyo fin se deberá tomar en cuenta que toda transferencia de información comprendida en el deber de reserva sólo
+        se podrá realizar en los casos contemplados en la Ley Nro. 26702, Ley General del Sistema Financiero y del
+        Sistema de Seguros y Orgánica de la Superintendencia de Banca, Seguros y Administradora de Fondos de Pensiones.
+        En caso de negativa de proporcionar información, el Gerente General podrá adoptar las medidas necesarias para
+        contar con la misma, tomando en cuenta su relevancia para el cumplimiento de las normas de lavado de activos y
+        financiamiento del terrorismo.</p>
     </div>
   </div>
 
   <!-- HOJA 4 -->
   <div class="page-a4 page-break">
-    <div class="sec-header">ANEXO Nro 2<br>DECLARACIÓN JURADA DE ANTECEDENTES JUDICIALES PENALES Y PROCESOS FISCALES RELACIONADOS A LAFT</div>
+    <div class="sec-header">ANEXO Nro 2<br>DECLARACIÓN JURADA DE ANTECEDENTES JUDICIALES PENALES Y PROCESOS FISCALES
+      RELACIONADOS A LAFT</div>
 
     <div style="border: 1px solid #000; padding: 10px; font-size: 7.5pt; line-height: 1.35; margin-top: 6px;">
       <p><strong>Declaro bajo juramento lo siguiente:</strong></p>
 
-      <p>- Que a la fecha no cuento con procesos judiciales penales relacionados a los delitos de Lavado de Activos, Financiamiento del Terrorismo (en adelante LAFT) u otros delitos precedentes <strong>con sentencia firme o condenatoria</strong>, <u>sin embargo</u> actualmente tengo los siguientes procesos judiciales penales o fiscales referentes a LAFT, a conocimiento de CORFID S.A.:</p>
+      <p>- Que a la fecha no cuento con procesos judiciales penales relacionados a los delitos de Lavado de Activos,
+        Financiamiento del Terrorismo (en adelante LAFT) u otros delitos precedentes <strong>con sentencia firme o
+          condenatoria</strong>, <u>sin embargo</u> actualmente tengo los siguientes procesos judiciales penales o
+        fiscales referentes a LAFT, a conocimiento de CORFID S.A.:</p>
 
       <table class="tbl-form" style="margin-top: 6px; margin-bottom: 6px;">
         <tr>
@@ -495,24 +669,49 @@
       </table>
 
       <p style="font-size: 6.8pt; color: #333;">
-        1. Esta Declaración aplica para clientes que son Personas naturales que actúan en calidad de Fideicomitente, Fideicomisario o lo que fuera aplicable. También aplica para las Personas naturales que a la fecha de la suscripción del presente documento cuenten con investigaciones judiciales penales, procesos fiscales aperturados o en trámite por delitos relacionados a LAFT u otros delitos precedentes de Lavados de Activos y, en caso de ser notificado posteriormente de un nuevo proceso deberá informarlo a Corfid con la finalidad de actualizar el status del cliente.<br>
-        2. Adjuntar a la presente Declaración Jurada el sustento del proceso judicial (copia de la resolución) o el sustento del procedimiento fiscal (copia de la declaración del investigado, copia del auto de apertura, copia del archivamiento del proceso, etc).
+        1. Esta Declaración aplica para clientes que son Personas naturales que actúan en calidad de Fideicomitente,
+        Fideicomisario o lo que fuera aplicable. También aplica para las Personas naturales que a la fecha de la
+        suscripción del presente documento cuenten con investigaciones judiciales penales, procesos fiscales aperturados
+        o en trámite por delitos relacionados a LAFT u otros delitos precedentes de Lavados de Activos y, en caso de ser
+        notificado posteriormente de un nuevo proceso deberá informarlo a Corfid con la finalidad de actualizar el
+        status del cliente.<br>
+        2. Adjuntar a la presente Declaración Jurada el sustento del proceso judicial (copia de la resolución) o el
+        sustento del procedimiento fiscal (copia de la declaración del investigado, copia del auto de apertura, copia
+        del archivamiento del proceso, etc).
       </p>
 
-      <p>Que he actuado y seguiré actuando de conformidad con la Ley y la prevención de prácticas corruptas en relación con cada aspecto de esta operación. Se considera que es ilegal cualquier soborno o pago con fines corruptos a un Funcionario Público hecho con la finalidad de obtener o conservar operaciones comerciales, orientar operaciones comerciales a cualquier persona o asegurarse de cualquier ventaja inapropiada.</p>
+      <p>Que he actuado y seguiré actuando de conformidad con la Ley y la prevención de prácticas corruptas en relación
+        con cada aspecto de esta operación. Se considera que es ilegal cualquier soborno o pago con fines corruptos a un
+        Funcionario Público hecho con la finalidad de obtener o conservar operaciones comerciales, orientar operaciones
+        comerciales a cualquier persona o asegurarse de cualquier ventaja inapropiada.</p>
 
-      <p>Así mismo declaro y garantizo que no se ha ofrecido, pagado, entregado, hecho promesas de pago o autorizado el pago, de modo directo o indirecto, de dinero, regalos o cualquier objeto de valor a i) una "Persona Sujeta a Restricciones" (definida como cualquier Funcionario Público, partido político o cargo de partido político, o un candidato a un cargo político en cualquier país), o bien ii) una persona a sabiendas de que todo o parte del citado dinero, regalo u objeto de valor será ofrecido, pagado, entregado o prometido, de modo directo o indirecto, a una Persona Sujeta a Restricciones.</p>
+      <p>Así mismo declaro y garantizo que no se ha ofrecido, pagado, entregado, hecho promesas de pago o autorizado el
+        pago, de modo directo o indirecto, de dinero, regalos o cualquier objeto de valor a i) una "Persona Sujeta a
+        Restricciones" (definida como cualquier Funcionario Público, partido político o cargo de partido político, o un
+        candidato a un cargo político en cualquier país), o bien ii) una persona a sabiendas de que todo o parte del
+        citado dinero, regalo u objeto de valor será ofrecido, pagado, entregado o prometido, de modo directo o
+        indirecto, a una Persona Sujeta a Restricciones.</p>
 
-      <p>En ese sentido, declaro que no me encuentro involucrado en ningún proceso de lavado de activos y financiamiento del terrorismo y, que mis fondos, valores y/o activos tienen procedencia legal y que el Patrimonio fideicometido no será utilizado como mecanismo para constituir delitos de lavado de activos y otros delitos precedentes.</p>
+      <p>En ese sentido, declaro que no me encuentro involucrado en ningún proceso de lavado de activos y financiamiento
+        del terrorismo y, que mis fondos, valores y/o activos tienen procedencia legal y que el Patrimonio fideicometido
+        no será utilizado como mecanismo para constituir delitos de lavado de activos y otros delitos precedentes.</p>
 
-      <p>Finalmente, declaro conocer que, de resultar falsa la declaración efectuada, me encontraré sujeto a las responsabilidades administrativas y penales correspondientes, de conformidad con la normativa vigente.<br>
-      Se emite la presente declaración en cumplimiento de lo establecido en las normas internas de Corfid Corporación Fiduciaria S.A.<br>
-      Para mayor constancia y validez y en cumplimiento firmo la presente declaración para los fines legales correspondientes.</p>
+      <p>Finalmente, declaro conocer que, de resultar falsa la declaración efectuada, me encontraré sujeto a las
+        responsabilidades administrativas y penales correspondientes, de conformidad con la normativa vigente.<br>
+        Se emite la presente declaración en cumplimiento de lo establecido en las normas internas de Corfid Corporación
+        Fiduciaria S.A.<br>
+        Para mayor constancia y validez y en cumplimiento firmo la presente declaración para los fines legales
+        correspondientes.</p>
 
       <br>
 
       <div style="text-align: center; margin-top: 25px; font-size: 8pt; line-height: 1.6;">
+        {{#if fichaMadre.metadata.firmado}}
+        <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
+          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+        {{else}}
         .......................................................................<br>
+        {{/if}}
         <strong>Firma del Declarante</strong><br><br>
         <strong>Nombre del Declarante:</strong> <span class="val">{{nombres_apellidos}}</span><br>
         <strong>DNI:</strong> <span class="val">{{numero_documento}}</span><br>
@@ -521,10 +720,19 @@
     </div>
 
     <div style="font-size: 6.5pt; margin-top: 6px; text-align: justify; color: #444;">
-      "El Lavado de activos es el proceso por el cual se busca introducir, en la estructura económica y financiera de un país, recursos (dinero, bienes, efectos o ganancias) provenientes de actividades ilícitas (delitos precedentes), con la finalidad de darles apariencia de legalidad. Son delitos precedentes del delito del lavado de activos, los delitos contra la administración pública, tráfico ilícito de drogas, terrorismo, minería ilegal, trata de personas, tráfico de migrantes, tráfico de armas, secuestro, proxenetismo, delitos tributarios, extorsión, robo, delitos aduaneros u otro que genere ganancias ilegales (excepto el artículo 194 del Código Penal)". Fuente: http://www.sbs.gob.pe/prevencion-de-lavado-activos/Sistema-de-Lucha-Contra-el-LA-FT/Lavado-de-Activos<br>
-      Esta Declaración Jurada debe ser entregada y suscrita con fecha anterior a la firma de la minuta de constitución de fideicomiso. Se prohíbe la modificación y reproducción de la presente declaración, sin el consentimiento de Corfid.
+      "El Lavado de activos es el proceso por el cual se busca introducir, en la estructura económica y financiera de un
+      país, recursos (dinero, bienes, efectos o ganancias) provenientes de actividades ilícitas (delitos precedentes),
+      con la finalidad de darles apariencia de legalidad. Son delitos precedentes del delito del lavado de activos, los
+      delitos contra la administración pública, tráfico ilícito de drogas, terrorismo, minería ilegal, trata de
+      personas, tráfico de migrantes, tráfico de armas, secuestro, proxenetismo, delitos tributarios, extorsión, robo,
+      delitos aduaneros u otro que genere ganancias ilegales (excepto el artículo 194 del Código Penal)". Fuente:
+      http://www.sbs.gob.pe/prevencion-de-lavado-activos/Sistema-de-Lucha-Contra-el-LA-FT/Lavado-de-Activos<br>
+      Esta Declaración Jurada debe ser entregada y suscrita con fecha anterior a la firma de la minuta de constitución
+      de fideicomiso. Se prohíbe la modificación y reproducción de la presente declaración, sin el consentimiento de
+      Corfid.
     </div>
   </div>
 
 </body>
+
 </html>

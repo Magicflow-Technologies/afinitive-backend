@@ -3,6 +3,7 @@ import { FichaMadreService } from './ficha-madre.service.js';
 import { CreateFichaMadreDto } from './dto/create-ficha-madre.dto.js';
 import { UpdateFichaMadreDto } from './dto/update-ficha-madre.dto.js';
 import { CreateFichaInicialDto } from './dto/create-ficha-inicial.dto.js';
+import { SaveInversionistaDto } from './dto/save-inversionista.dto.js';
 
 @Controller('fichas-madre')
 export class FichaMadreController {
@@ -16,6 +17,11 @@ export class FichaMadreController {
   @Post('inicial')
   createInicial(@Body() dto: CreateFichaInicialDto) {
     return this.fichaMadreService.createInicial(dto);
+  }
+
+  @Put(':id/inversionista')
+  saveInversionista(@Param('id', ParseUUIDPipe) id: string, @Body() dto: SaveInversionistaDto) {
+    return this.fichaMadreService.saveInversionista(id, dto);
   }
 
   @Get()

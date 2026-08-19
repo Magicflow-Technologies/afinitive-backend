@@ -1,0 +1,121 @@
+{
+  "fichaMadre": {
+    "inversionista": {
+      "titular": {
+        "nombres_apellidos": "Florencio Jorge Vilca Taipe",
+        "tipo_documento": "DNI",
+        "numero_documento": "76396947",
+        "nacionalidad": "Peruana",
+        "sexo": "MASCULINO",
+        "pais_nacimiento": "Perú",
+        "departamento_nacimiento": "Lima",
+        "fecha_nacimiento": "2006-08-16",
+        "pais_residencia": "Perú",
+        "grado_instruccion": "Superior Universitaria",
+        "estado_civil": "SOLTERO",
+        "es_inversionista": true,
+        "correo_electronico": "florencio.vilca@email.com",
+        "telefono_celular": "928627325",
+        "conyuge": {
+          "nombres_apellidos": "",
+          "tipo_documento": "DNI",
+          "numero_documento": "",
+          "regimen_patrimonial": "GANANCIALES",
+          "fecha_regimen": ""
+        },
+        "pep": false,
+        "pep_institucion_cargo": null
+      },
+      "es_domiciliado": true,
+      "domicilio": {
+        "direccion_completa": "Av. Los Tulipanes 123",
+        "distrito": "SANTA EULALIA",
+        "provincia": "HUAROCHIRI",
+        "departamento": "LIMA",
+        "pais_domicilio": "Perú",
+        "codigo_postal": "15559"
+      },
+      "usar_misma_direccion_correspondencia": true,
+      "direccion_correspondencia": {
+        "direccion_completa": "",
+        "distrito": "",
+        "provincia": "",
+        "departamento": "",
+        "pais_domicilio": "",
+        "codigo_postal": ""
+      },
+      "informacion_laboral": {
+        "situacion_laboral": "DEPENDIENTE",
+        "profesion": "Ingeniería de Software",
+        "ocupacion": "Programador Full Stack",
+        "empresa_centro_trabajo": "Footloose",
+        "ingreso_promedio_anual": "45000.00"
+      },
+      "tiene_apoderado": false,
+      "apoderado": {
+        "nombres_apellidos": "",
+        "tipo_documento": "DNI",
+        "numero_documento": "",
+        "nacionalidad": "Peruana",
+        "sexo": "MASCULINO",
+        "estado_civil": "SOLTERO",
+        "pais_nacimiento": "Perú",
+        "fecha_nacimiento": "",
+        "pais_residencia": "Perú",
+        "grado_instruccion": "",
+        "es_domiciliado": true,
+        "correo_electronico": "",
+        "telefono_celular": "",
+        "domicilio": {
+          "direccion_completa": "",
+          "distrito": "",
+          "provincia": "",
+          "departamento": "",
+          "pais_domicilio": "Perú",
+          "codigo_postal": ""
+        },
+        "poder_registral": {
+          "partida_registral": "",
+          "asiento": "",
+          "zona_registral": ""
+        }
+      },
+      "vinculaciones": {
+        "es_vinculado_corfid_grupo_coril": false,
+        "ha_sido_cliente_otra_fiduciaria": false,
+        "ha_sido_trabajador_otra_fiduciaria": false,
+        "valor_aproximado_patrimonio": "123100.00"
+      },
+      "origen_fondos": {
+        "fondos_propios_detalle": "Ahorros por remuneraciones y actividad profesional",
+        "venta_activos_detalle": "",
+        "financiamientos_detalle": "",
+        "dividendos_participaciones_detalle": "",
+        "contrato_obra_licitacion_detalle": "",
+        "patrimonio_fideicometido_detalle": "",
+        "otros_fondos_detalle": ""
+      },
+      "antecedentes_penales_judiciales": {
+        "es_investigado_delitos": false,
+        "especificar_delitos": ""
+      },
+      "residencia_fiscal": {
+        "tiene_residencia_fiscal_extranjera": false,
+        "paises": []
+      },
+      "inversion": {
+        "moneda": "USD",
+        "monto_inicial": 120000.00,
+        "monto_inicial_letras": "CIENTO VEINTE MIL CON 00/100 DÓLARES AMERICANOS",
+        "origen_recursos": "Ahorros personales"
+      }
+    },
+    "metadata": {
+      "id_expediente": "EXP-2026-0089",
+      "lugar_firma": "Lima",
+      "fecha_actual": "16/08/2026",
+      "firmado": false,
+      "firma_imagen": ""
+    }
+  }
+}

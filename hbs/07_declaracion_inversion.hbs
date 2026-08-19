@@ -294,11 +294,16 @@
 
     <!-- SECCIÓN DE FIRMA CENTRADA -->
     <div class="signature-container">
+      {{#if fichaMadre.metadata.firmado}}
+      <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Inversionista"
+        style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+      {{/if}}
       <div class="sig-line"></div>
       <span style="text-transform: uppercase;">{{nombres_apellidos}}</span><br>
-      DNI N° {{numero_documento}}
+      {{tipo_documento}} N° {{numero_documento}}
     </div>
   </div>
 
 </body>
 </html>
+ 
