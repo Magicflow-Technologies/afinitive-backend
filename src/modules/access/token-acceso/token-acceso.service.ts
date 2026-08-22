@@ -76,6 +76,13 @@ export class TokenAccesoService {
   async validate(token: string) {
     const tokenAcceso = await this.prisma.tokenAcceso.findUnique({
       where: { token },
+      include: {
+        documentos: {
+          select: {
+            documentoGeneralId: true,
+          },
+        },
+      },
     });
     if (!tokenAcceso) throw new NotFoundException('Token no encontrado');
     if (tokenAcceso.estado === 'REVOCADO')
@@ -102,12 +109,45 @@ export class TokenAccesoService {
   }
 
   async findAll() {
-    return this.prisma.tokenAcceso.findMany({ include: { fichaMadre: true } });
+    return this.prisma.tokenAcceso.findMany({
+      include: {
+        fichaMadre: true,
+        documentos: {
+          select: {
+            documentoGeneralId: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: string) {
     return this.prisma.tokenAcceso.findUniqueOrThrow({
       where: { id },
+      include: {
+        fichaMadre: true,
+        documentos: {
+          select: {
+            documentoGeneralId: true,
+          },
+        },
+      },
+    });
+  }
+
+  async consume(token: string) {
+    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({
+      where: { token },
+    });
+    if (!tokenAcceso) throw new NotFoundException('Token no encontrado');
+
+    return this.prisma.tokenAcceso.update({
+      where: { id: tokenAcceso.id },
+      data: {
+        estado: 'USADO',
+        usadoEn: new Date(),
+      },
       include: { fichaMadre: true },
     });
   }

@@ -190,7 +190,7 @@ export class DocumentoGeneralService {
     });
   }
 
-  private async buildReplacements(fichaMadre: any) {
+  private async buildReplacements(fichaMadre: any, currentDoc?: any) {
     const fm = toFichaMadreObject(fichaMadre);
     const inv = fm.fichaMadre.inversionista ?? {};
     const titular = inv.titular ?? {};
@@ -208,26 +208,22 @@ export class DocumentoGeneralService {
     const hoy = new Date();
     const fechaActualStr = `${hoy.getDate()} de ${meses[hoy.getMonth()]} de ${hoy.getFullYear()}`;
 
-    // Buscar si existe alguna firma realizada en los documentos de esta ficha
+    // Buscar si existe firma realizada EXCLUSIVAMENTE en este documento específico
     let firmaImagen = '';
     let estaFirmado = false;
     let fechaFirmaStr = '';
 
-    if (fichaMadre.documentos && Array.isArray(fichaMadre.documentos)) {
-      for (const doc of fichaMadre.documentos) {
-        if (doc.firmas && Array.isArray(doc.firmas)) {
-          const firmaFirmada = doc.firmas.find(
-            (f: any) => f.estado === 'FIRMADO' && f.datosCertificado?.firmaImagen,
-          );
-          if (firmaFirmada) {
-            estaFirmado = true;
-            firmaImagen = firmaFirmada.datosCertificado.firmaImagen;
-            if (firmaFirmada.fechaFirma) {
-              const ff = new Date(firmaFirmada.fechaFirma);
-              fechaFirmaStr = `${ff.getDate()} de ${meses[ff.getMonth()]} de ${ff.getFullYear()}`;
-            }
-            break;
-          }
+    if (currentDoc) {
+      const docFirmas = currentDoc.firmas || [];
+      const firmaFirmada = docFirmas.find(
+        (f: any) => f.estado === 'FIRMADO' && f.datosCertificado?.firmaImagen,
+      );
+      if (firmaFirmada) {
+        estaFirmado = true;
+        firmaImagen = firmaFirmada.datosCertificado.firmaImagen;
+        if (firmaFirmada.fechaFirma) {
+          const ff = new Date(firmaFirmada.fechaFirma);
+          fechaFirmaStr = `${ff.getDate()} de ${meses[ff.getMonth()]} de ${ff.getFullYear()}`;
         }
       }
     }
@@ -435,7 +431,7 @@ export class DocumentoGeneralService {
   async generatePdfPrimerosCinco(fichaMadreId: string) {
     const documentos = await this.prisma.documentoGeneral.findMany({
       where: { fichaMadreId },
-      include: { documentoPlantilla: true },
+      include: { documentoPlantilla: true, firmas: true },
     });
 
     const seleccionados = this.sortDocumentosByTemplateOrder(documentos).slice(0, 5);
@@ -446,7 +442,6 @@ export class DocumentoGeneralService {
     }
 
     const fichaMadre = await this.loadFichaMadreConData(fichaMadreId);
-    const replacements = await this.buildReplacements(fichaMadre);
 
     const htmls: string[] = [];
     for (const doc of seleccionados) {
@@ -456,6 +451,7 @@ export class DocumentoGeneralService {
           `El documento ${doc.nombreArchivo} no tiene una plantilla asociada.`,
         );
       }
+      const replacements = await this.buildReplacements(fichaMadre, doc);
       htmls.push(await this.renderPlantillaHtml(archivo, replacements));
     }
 
@@ -528,7 +524,7 @@ export class DocumentoGeneralService {
     }
 
     const fichaMadre = await this.loadFichaMadreConData(doc.fichaMadreId);
-    const replacements = await this.buildReplacements(fichaMadre);
+    const replacements = await this.buildReplacements(fichaMadre, doc);
 
     return this.renderPlantillaHtml(archivo, replacements);
   }
