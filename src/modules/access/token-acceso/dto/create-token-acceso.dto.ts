@@ -1,4 +1,4 @@
-import { IsUUID, IsEmail, IsOptional, IsIn, IsInt } from 'class-validator';
+import { IsUUID, IsEmail, IsOptional, IsInt, IsArray } from 'class-validator';
 
 export class CreateTokenAccesoDto {
   @IsUUID()
@@ -9,6 +9,10 @@ export class CreateTokenAccesoDto {
 
   @IsOptional()
   @IsInt()
-  @IsIn([2, 5, 7])
   documentosFirmaCantidad?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID('4', { each: true })
+  documentosIds?: string[];
 }
