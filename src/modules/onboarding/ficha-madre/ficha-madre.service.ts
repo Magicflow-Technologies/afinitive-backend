@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, Logger } from '@nestjs/common';
+import { Injectable, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma/prisma.service.js';
 import { CreateFichaMadreDto } from './dto/create-ficha-madre.dto.js';
 import { UpdateFichaMadreDto } from './dto/update-ficha-madre.dto.js';
@@ -175,6 +175,16 @@ export class FichaMadreService {
 
   async saveInversionista(id: string, dto: SaveInversionistaDto) {
     this.logger.log(`Saving inversionista data for Ficha Madre: ${id}`);
+
+    const ficha = await this.prisma.fichaMadre.findUnique({
+      where: { id },
+      select: { estado: true },
+    });
+    if (ficha && ficha.estado === 'APROBADA') {
+      throw new BadRequestException(
+        'El expediente ya se encuentra aprobado fiduciariamente y no puede ser modificado.',
+      );
+    }
 
     const inversionista = await this.prisma.inversionista.upsert({
       where: { fichaMadreId: id },

@@ -269,9 +269,12 @@ export function toFichaMadreObject(ficha: any): any {
 
   return {
     fichaMadre: {
+      id: ficha?.id ?? '',
+      estado: ficha?.estado ?? 'BORRADOR',
       inversionista,
       metadata: {
         id_expediente: ficha?.codigo ?? '',
+        estado: ficha?.estado ?? 'BORRADOR',
         lugar_firma: '',
         fecha_actual: '',
         firmado: false,
