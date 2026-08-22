@@ -96,6 +96,16 @@ export class FirmaService {
     const tokenAcceso = await this.prisma.tokenAcceso.findUnique({
       where: { token },
       include: {
+        documentos: {
+          include: {
+            documentoGeneral: {
+              include: {
+                documentoPlantilla: true,
+                firmas: true,
+              },
+            },
+          },
+        },
         fichaMadre: {
           include: {
             documentos: {
@@ -125,19 +135,23 @@ export class FirmaService {
       throw new UnauthorizedException('Token expirado');
     }
 
-    const documentosPendientes = tokenAcceso.fichaMadre.documentos.filter(
-      (documento) => documento.estado !== 'FIRMADO',
-    );
-    const documentosOrdenados = this.sortDocumentosByTemplateOrder(
-      documentosPendientes,
-    );
-    const documentosSeleccionados = documentosOrdenados.slice(
-      0,
-      tokenAcceso.documentosFirmaCantidad || 5,
-    );
-    if (documentosSeleccionados.length === 0) {
-      throw new BadRequestException(
-        'No hay documentos disponibles para firmar.',
+    // Si el token tiene documentos especificos asociados por checkbox, usamos esos: sino, el slice tradicional
+    let documentosSeleccionados: any[] = [];
+    if (tokenAcceso.documentos && tokenAcceso.documentos.length > 0) {
+      const docsFromToken = tokenAcceso.documentos
+        .map((td) => td.documentoGeneral)
+        .filter((doc) => doc.estado !== 'FIRMADO');
+      documentosSeleccionados =
+        this.sortDocumentosByTemplateOrder(docsFromToken);
+    } else {
+      const documentosPedientes = tokenAcceso.fichaMadre.documentos.filter(
+        (documento) => documento.estado !== 'FIRMADO',
+      );
+      const documentosOrdenados =
+        this.sortDocumentosByTemplateOrder(documentosPedientes);
+      documentosSeleccionados = documentosOrdenados.slice(
+        0,
+        tokenAcceso.documentosFirmaCantidad || 5,
       );
     }
 
@@ -197,11 +211,22 @@ export class FirmaService {
           data: { estado: 'FIRMADO' },
         });
 
-        await tx.tokenAccesoDocumento.create({
-          data: {
+        await tx.tokenAccesoDocumento.upsert({
+          where: {
+            uk_token_documento: {
+              tokenAccesoId: tokenAcceso.id,
+              documentoGeneralId: documento.id,
+            },
+          },
+          create: {
             tokenAccesoId: tokenAcceso.id,
             documentoGeneralId: documento.id,
             roundNumber,
+            firmadoAt: fechaFirma,
+          },
+          update: {
+            roundNumber,
+            firmadoAt: fechaFirma,
           },
         });
 

@@ -280,16 +280,23 @@
         </td>
       </tr>
       <tr>
+        <td colspan="4">
+          <span class="lbl">*SU DIRECCIÓN DE CORRESPONDENCIA ES LA MISMA QUE:</span> &nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="chk-box {{#if fichaMadre.inversionista.usar_misma_direccion_correspondencia}}checked{{/if}}"></span> <span class="val">Domicilio</span>
+          &nbsp;&nbsp;&nbsp;&nbsp;
+          <span class="lbl">(En caso no ser su domicilio, completar dirección):</span>
+        </td>
+      </tr>
+      <tr>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">*SU DIRECCIÓN DE CORRESPONDENCIA ES LA MISMA QUE:</span><br>
-          <span class="lbl">En caso no ser su domicilio, completar direccion:</span> &nbsp;&nbsp;&nbsp;&nbsp; <span
-            class="chk-box {{#if fichaMadre.inversionista.usar_misma_direccion_correspondencia}}checked{{/if}}"></span> <span class="val">Domicilio</span><br>
-          <span class="lbl">DISTRITO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.distrito}}</span>
+          <span class="lbl">DISTRITO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.distrito}}</span><br>
+          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.departamento}}</span><br>
+          <span class="lbl">*DIRECCIÓN DE CORRESPONDENCIA:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.direccion_completa}}</span>
         </td>
         <td style="width: 50%;" colspan="2">
-          <span class="lbl">DEPARTAMENTO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.departamento}}</span><br>
           <span class="lbl">*PAÍS DEL DOMICILIO:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.pais_domicilio}}</span><br>
-          <span class="lbl">PROVINCIA:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.provincia}}</span>
+          <span class="lbl">PROVINCIA:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.provincia}}</span><br>
+          <span class="lbl">CÓDIGO POSTAL:</span> <span class="val">{{fichaMadre.inversionista.direccion_correspondencia.codigo_postal}}</span>
         </td>
       </tr>
     </table>
@@ -325,7 +332,7 @@
           <br>
 
           <span class="lbl">PAIS DE NACIMIENTO:</span>
-          <spanc class="val">{{fichaMadre.inversionista.apoderado.pais_nacimiento}}</span>
+          <span class="val">{{fichaMadre.inversionista.apoderado.pais_nacimiento}}</span>
           <br>
 
           <span class="lbl">FECHA DE NACIMIENTO:</span>
@@ -346,9 +353,9 @@
       <tr>
         <td style="width: 50%;" colspan="2">
           <span class="lbl">*¿ES USTED DOMICILIADO?:</span> 
-          &nbsp;&nbsp; <span class="chk-box {{#if fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/if}}"></span> Sí 
+          &nbsp;&nbsp; <span class="chk-box {{#if fichaMadre.inversionista.tiene_apoderado}}{{#if fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/if}}{{/if}}"></span> Sí 
           &nbsp;&nbsp;
-          <span class="chk-box {{#unless fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/unless}}"></span> No<br>
+          <span class="chk-box {{#if fichaMadre.inversionista.tiene_apoderado}}{{#unless fichaMadre.inversionista.apoderado.es_domiciliado}}checked{{/unless}}{{/if}}"></span> No<br>
           <span class="lbl">DISTRITO:</span>
           <span class="val">{{fichaMadre.inversionista.apoderado.domicilio.distrito}}</span>
           <br>

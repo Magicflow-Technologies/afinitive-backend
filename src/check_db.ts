@@ -8,9 +8,9 @@ import bcryptjs from 'bcryptjs';
 
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
-  options: '-c search_path=afinitivebd_test',
+  options: '-c search_path=afinitivebd',
 });
-const adapter = new PrismaPg(pool, { schema: 'afinitivebd_test' });
+const adapter = new PrismaPg(pool, { schema: 'afinitivebd' });
 const prisma = new PrismaClient({ adapter });
 
 const FORMATOS = [
@@ -99,15 +99,14 @@ async function main() {
     const persona = await prisma.persona.create({
       data: {
         tipoDocumento: 'DNI',
-        numeroDocumento: `1000000${
-          rolNombre === 'admin'
+        numeroDocumento: `1000000${rolNombre === 'admin'
             ? '1'
             : rolNombre === 'operador'
               ? '2'
               : rolNombre === 'analista'
                 ? '3'
                 : '4'
-        }`,
+          }`,
         nombres: rolNombre === 'cliente' ? 'Carlos Alberto' : 'Usuario',
         apellidos:
           rolNombre === 'cliente'

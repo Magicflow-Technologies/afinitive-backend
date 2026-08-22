@@ -26,6 +26,11 @@ export class TokenAccesoController {
     return this.service.findOne(id);
   }
 
+  @Put('consume/:token')
+  consume(@Param('token') token: string) {
+    return this.service.consume(token);
+  }
+
   @Put(':id/revoke')
   revoke(@Param('id', ParseUUIDPipe) id: string) {
     return this.service.revoke(id);

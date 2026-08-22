@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../../core/database/prisma/prisma.service.js';
 import { CreateTokenAccesoDto } from './dto/create-token-acceso.dto.js';
 import { randomBytes } from 'crypto';
@@ -10,8 +14,13 @@ export class TokenAccesoService {
   constructor(private readonly prisma: PrismaService) {}
 
   private getTokenExpirationDays() {
-    const parsed = Number.parseInt(process.env.TOKEN_ACCESO_EXPIRACION_DIAS ?? '', 10);
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TOKEN_EXPIRATION_DAYS;
+    const parsed = Number.parseInt(
+      process.env.TOKEN_ACCESO_EXPIRACION_DIAS ?? '',
+      10,
+    );
+    return Number.isFinite(parsed) && parsed > 0
+      ? parsed
+      : DEFAULT_TOKEN_EXPIRATION_DAYS;
   }
 
   private normalizeDocumentosFirmaCantidad(value?: number | null) {
@@ -36,21 +45,55 @@ export class TokenAccesoService {
     const token = randomBytes(32).toString('hex');
     const expiraEn = new Date();
     expiraEn.setDate(expiraEn.getDate() + this.getTokenExpirationDays());
-    const documentosFirmaCantidad = this.normalizeDocumentosFirmaCantidad(dto.documentosFirmaCantidad);
+    const documentosFirmaCantidad =
+      dto.documentosIds?.length ||
+      this.normalizeDocumentosFirmaCantidad(dto.documentosFirmaCantidad);
 
-    return this.prisma.tokenAcceso.create({
-      data: { ...dto, documentosFirmaCantidad, token, expiraEn },
+    const tokenCreado = await this.prisma.tokenAcceso.create({
+      data: {
+        fichaMadreId: dto.fichaMadreId,
+        emailDestino: dto.emailDestino,
+        documentosFirmaCantidad,
+        token,
+        expiraEn,
+      },
       include: { fichaMadre: true },
     });
+
+    // Si el analista seleccionó documentos específicos con checkbox, los vinculamos al toke
+    if (dto.documentosIds && dto.documentosIds.length > 0) {
+      await this.prisma.tokenAccesoDocumento.createMany({
+        data: dto.documentosIds.map((docId) => ({
+          tokenAccesoId: tokenCreado.id,
+          documentoGeneralId: docId,
+        })),
+      });
+    }
+
+    return tokenCreado;
   }
 
   async validate(token: string) {
-    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({ where: { token } });
+    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({
+      where: { token },
+      include: {
+        documentos: {
+          select: {
+            documentoGeneralId: true,
+          },
+        },
+      },
+    });
     if (!tokenAcceso) throw new NotFoundException('Token no encontrado');
-    if (tokenAcceso.estado === 'REVOCADO') throw new UnauthorizedException('Token cerrado');
-    if (tokenAcceso.estado === 'EXPIRADO') throw new UnauthorizedException('Token expirado');
+    if (tokenAcceso.estado === 'REVOCADO')
+      throw new UnauthorizedException('Token cerrado');
+    if (tokenAcceso.estado === 'EXPIRADO')
+      throw new UnauthorizedException('Token expirado');
     if (new Date() > tokenAcceso.expiraEn) {
-      await this.prisma.tokenAcceso.update({ where: { id: tokenAcceso.id }, data: { estado: 'EXPIRADO' } });
+      await this.prisma.tokenAcceso.update({
+        where: { id: tokenAcceso.id },
+        data: { estado: 'EXPIRADO' },
+      });
       throw new UnauthorizedException('Token expirado');
     }
 
@@ -66,15 +109,53 @@ export class TokenAccesoService {
   }
 
   async findAll() {
-    return this.prisma.tokenAcceso.findMany({ include: { fichaMadre: true } });
+    return this.prisma.tokenAcceso.findMany({
+      include: {
+        fichaMadre: true,
+        documentos: {
+          select: {
+            documentoGeneralId: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: string) {
-    return this.prisma.tokenAcceso.findUniqueOrThrow({ where: { id }, include: { fichaMadre: true } });
+    return this.prisma.tokenAcceso.findUniqueOrThrow({
+      where: { id },
+      include: {
+        fichaMadre: true,
+        documentos: {
+          select: {
+            documentoGeneralId: true,
+          },
+        },
+      },
+    });
+  }
+
+  async consume(token: string) {
+    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({
+      where: { token },
+    });
+    if (!tokenAcceso) throw new NotFoundException('Token no encontrado');
+
+    return this.prisma.tokenAcceso.update({
+      where: { id: tokenAcceso.id },
+      data: {
+        estado: 'USADO',
+        usadoEn: new Date(),
+      },
+      include: { fichaMadre: true },
+    });
   }
 
   async revoke(id: string) {
-    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({ where: { id } });
+    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({
+      where: { id },
+    });
     if (!tokenAcceso) throw new NotFoundException('Token no encontrado');
 
     return this.prisma.tokenAcceso.update({
@@ -85,7 +166,9 @@ export class TokenAccesoService {
   }
 
   async reactivate(id: string) {
-    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({ where: { id } });
+    const tokenAcceso = await this.prisma.tokenAcceso.findUnique({
+      where: { id },
+    });
     if (!tokenAcceso) throw new NotFoundException('Token no encontrado');
 
     const expiraEn = new Date();
