@@ -107,6 +107,9 @@ export class DocumentoGeneralService {
       where: { fichaMadreId },
     });
     for (const docAnt of docsAnteriores) {
+      await this.prisma.tokenAccesoDocumento.deleteMany({
+        where: { documentoGeneralId: docAnt.id },
+      });
       await this.prisma.firma.deleteMany({
         where: { documentoGeneralId: docAnt.id },
       });
