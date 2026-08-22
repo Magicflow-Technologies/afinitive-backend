@@ -109,13 +109,23 @@ const VACIO = {
   },
 };
 
-function domicilioObj(d?: any, fallbackDireccion?: string) {
+function domicilioObj(d?: any, fallbackDireccion?: string, defaultPais: string = '') {
+  if (!d && !fallbackDireccion) {
+    return {
+      direccion_completa: '',
+      distrito: '',
+      provincia: '',
+      departamento: '',
+      pais_domicilio: '',
+      codigo_postal: '',
+    };
+  }
   return {
     direccion_completa: d?.direccionCompleta || fallbackDireccion || '',
     distrito: d?.distrito ?? '',
     provincia: d?.provincia ?? '',
     departamento: d?.departamento ?? '',
-    pais_domicilio: d?.pais || 'Perú',
+    pais_domicilio: d?.pais || defaultPais,
     codigo_postal: d?.codigoPostal ?? '',
   };
 }
@@ -160,8 +170,11 @@ export function toFichaMadreObject(ficha: any): any {
     pep_institucion_cargo: titular?.pepInstitucionCargo ?? '',
   };
 
-  const domicilioObjMapped = domicilioObj(dom, persona?.direccion);
-  const domicilioCorrObjMapped = domicilioObj(domCorr, persona?.direccion);
+  const domicilioObjMapped = domicilioObj(dom, persona?.direccion, 'Perú');
+  const domicilioCorrObjMapped =
+    inv?.usarMismaDireccionCorrespondencia || !domCorr
+      ? { ...domicilioObjMapped }
+      : domicilioObj(domCorr, persona?.direccion, 'Perú');
 
   const inversionista = {
     es_domiciliado: inv?.esDomiciliado ?? true,
@@ -181,29 +194,30 @@ export function toFichaMadreObject(ficha: any): any {
             : null,
         }
       : VACIO.informacion_laboral,
-    apoderado: inv?.apoderado
-      ? {
-          nombres_apellidos: inv.apoderado.nombresApellidos ?? '',
-          tipo_documento: inv.apoderado.tipoDocumento ?? '',
-          numero_documento: inv.apoderado.numeroDocumento ?? '',
-          nacionalidad: inv.apoderado.nacionalidad ?? '',
-          sexo: inv.apoderado.sexo ?? '',
-          estado_civil: inv.apoderado.estadoCivil ?? '',
-          pais_nacimiento: inv.apoderado.paisNacimiento ?? '',
-          fecha_nacimiento: inv.apoderado.fechaNacimiento ?? '',
-          pais_residencia: inv.apoderado.paisResidencia ?? '',
-          grado_instruccion: inv.apoderado.gradoInstruccion ?? '',
-          es_domiciliado: inv.apoderado.esDomiciliado ?? false,
-          correo_electronico: inv.apoderado.correoElectronico ?? '',
-          telefono_celular: inv.apoderado.telefonoCelular ?? '',
-          domicilio: domicilioObj(getDomicilio('APODERADO')),
-          poder_registral: {
-            partida_registral: inv.apoderado.partidaRegistral ?? '',
-            asiento: inv.apoderado.asiento ?? '',
-            zona_registral: inv.apoderado.zonaRegistral ?? '',
-          },
-        }
-      : VACIO.apoderado,
+    apoderado:
+      inv?.tieneApoderado && inv?.apoderado
+        ? {
+            nombres_apellidos: inv.apoderado.nombresApellidos ?? '',
+            tipo_documento: inv.apoderado.tipoDocumento ?? '',
+            numero_documento: inv.apoderado.numeroDocumento ?? '',
+            nacionalidad: inv.apoderado.nacionalidad ?? '',
+            sexo: inv.apoderado.sexo ?? '',
+            estado_civil: inv.apoderado.estadoCivil ?? '',
+            pais_nacimiento: inv.apoderado.paisNacimiento ?? '',
+            fecha_nacimiento: inv.apoderado.fechaNacimiento ?? '',
+            pais_residencia: inv.apoderado.paisResidencia ?? '',
+            grado_instruccion: inv.apoderado.gradoInstruccion ?? '',
+            es_domiciliado: inv.apoderado.esDomiciliado ?? false,
+            correo_electronico: inv.apoderado.correoElectronico ?? '',
+            telefono_celular: inv.apoderado.telefonoCelular ?? '',
+            domicilio: domicilioObj(getDomicilio('APODERADO'), undefined, 'Perú'),
+            poder_registral: {
+              partida_registral: inv.apoderado.partidaRegistral ?? '',
+              asiento: inv.apoderado.asiento ?? '',
+              zona_registral: inv.apoderado.zonaRegistral ?? '',
+            },
+          }
+        : VACIO.apoderado,
     vinculaciones: inv?.vinculaciones
       ? {
           es_vinculado_corfid_grupo_coril: inv.vinculaciones.esVinculadoCorfidGrupoCoril ?? false,
