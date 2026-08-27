@@ -6,7 +6,7 @@
   <style>
     @page {
       size: A4;
-      margin: 20mm 18mm;
+      margin: 0;
     }
 
     * {
@@ -48,10 +48,16 @@
       }
       .page-a4 {
         width: 100%;
-        padding: 0;
+        min-height: 297mm;
+        padding: 20mm 18mm;
         box-shadow: none;
         border: none;
         page-break-after: always;
+        break-after: page;
+      }
+      .page-a4:last-child {
+        page-break-after: auto;
+        break-after: auto;
       }
     }
 
