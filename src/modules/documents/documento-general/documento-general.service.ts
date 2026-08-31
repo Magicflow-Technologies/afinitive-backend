@@ -7,6 +7,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import Handlebars from 'handlebars';
 import { chromium } from 'playwright';
+import { PDFDocument } from 'pdf-lib';
 
 const TEMPLATE_FILE_FALLBACKS: Record<string, string> = {
   '01_carta_solicitud_participacion.hbs': '05_carta_solicitud_participacion.hbs',
@@ -468,51 +469,43 @@ export class DocumentoGeneralService {
         viewport: { width: 1240, height: 1754 },
       });
 
-      const wrapperHtml = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <style>
-      @page { size: A4; margin: 0; }
-      html, body { margin: 0; padding: 0; background: #fff; }
-      body { font-family: Arial, sans-serif; }
-      .sheet { width: 210mm; min-height: 297mm; break-after: page; overflow: hidden; }
-      .sheet:last-child { break-after: auto; }
-      iframe { width: 210mm; height: 297mm; border: 0; display: block; }
-    </style>
-  </head>
-  <body>
-    ${htmls
-      .map(
-        (html) =>
-          `<section class="sheet"><iframe srcdoc="${this.escapeForAttribute(html)}"></iframe></section>`,
-      )
-      .join('')}
-  </body>
-</html>`;
+      const pdfBuffers: Buffer[] = [];
 
-      await page.setContent(wrapperHtml, { waitUntil: 'load' });
-      await page.waitForTimeout(700);
-      const pdf = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        preferCSSPageSize: true,
-      });
+      for (const html of htmls) {
+        await page.setContent(html, { waitUntil: 'load' });
+        await page.waitForTimeout(300);
+        const singlePdf = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          preferCSSPageSize: true,
+          margin: {
+            top: '0mm',
+            right: '0mm',
+            bottom: '0mm',
+            left: '0mm',
+          },
+        });
+        pdfBuffers.push(Buffer.from(singlePdf));
+      }
 
       await page.close();
-      return Buffer.from(pdf);
+
+      if (pdfBuffers.length === 1) {
+        return pdfBuffers[0];
+      }
+
+      const mergedPdf = await PDFDocument.create();
+      for (const buffer of pdfBuffers) {
+        const doc = await PDFDocument.load(buffer);
+        const copiedPages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+        copiedPages.forEach((p) => mergedPdf.addPage(p));
+      }
+
+      const finalPdfBytes = await mergedPdf.save();
+      return Buffer.from(finalPdfBytes);
     } finally {
       await browser.close();
     }
-  }
-
-  private escapeForAttribute(value: string) {
-    return value
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
   }
 
   async getPreview(id: string) {
