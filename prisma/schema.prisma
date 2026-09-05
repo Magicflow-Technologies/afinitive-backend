@@ -61,6 +61,17 @@ enum EstadoToken {
   REVOCADO
 }
 
+enum Metodo2FA {
+  EMAIL
+  SMS
+  TOTP_APP
+}
+
+enum TipoOtp {
+  LOGIN_2FA
+  PASSWORD_RESET
+}
+
 // ============================================
 // IDENTITY BOUNDED CONTEXT
 // ============================================
@@ -89,10 +100,10 @@ model Persona {
 }
 
 model Rol {
-  id          String @id @default(uuid()) @db.Uuid
-  nombre      String @unique
+  id          String  @id @default(uuid()) @db.Uuid
+  nombre      String  @unique
   descripcion String?
-  permisos    Json   @default("[]")
+  permisos    Json    @default("[]")
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -102,13 +113,19 @@ model Rol {
 }
 
 model Usuario {
-  id           String    @id @default(uuid()) @db.Uuid
-  personaId    String    @unique @map("persona_id") @db.Uuid
-  rolId        String    @map("rol_id") @db.Uuid
-  username     String    @unique
-  passwordHash String    @map("password_hash")
-  activo       Boolean   @default(true)
-  ultimoAcceso DateTime? @map("ultimo_acceso")
+  id                  String    @id @default(uuid()) @db.Uuid
+  personaId           String    @unique @map("persona_id") @db.Uuid
+  rolId               String    @map("rol_id") @db.Uuid
+  username            String    @unique
+  passwordHash        String    @map("password_hash")
+  activo              Boolean   @default(true)
+  ultimoAcceso        DateTime? @map("ultimo_acceso")
+  requiere2FA         Boolean   @default(true) @map("requiere_2fa")
+  metodo2FAPreferido  Metodo2FA @default(EMAIL) @map("metodo_2fa_preferido")
+  debeCambiarPassword Boolean   @default(false) @map("debe_cambiar_password")
+  passwordCambiadoEn  DateTime? @map("password_cambiado_en")
+  intentosFallidos    Int       @default(0) @map("intentos_fallidos")
+  bloqueadoHasta      DateTime? @map("bloqueado_hasta")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -117,10 +134,34 @@ model Usuario {
   rol     Rol     @relation(fields: [rolId], references: [id])
 
   auditorias Auditoria[]
+  codigoOtps CodigoOtp[]
 
   @@index([personaId])
   @@index([rolId])
   @@map("usuario")
+}
+
+model CodigoOtp {
+  id             String    @id @default(uuid()) @db.Uuid
+  usuarioId      String    @map("usuario_id") @db.Uuid
+  challengeToken String    @unique @map("challenge_token")
+  codigoHash      String    @map("codigo_hash")
+  tipo           TipoOtp   @map("tipo")
+  metodo        Metodo2FA  @default(EMAIL) @map("metodo")
+  intentos       Int       @default(0)
+  maxIntentos    Int       @default(3) @map("max_intentos")
+  destinoEnvio   String    @map("destino_envio")
+  expiraEn       DateTime  @map("expira_en")
+  usado          Boolean   @default(false)
+  usadoEn        DateTime? @map("usado_en")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId, tipo])
+  @@index([expiraEn])
+  @@map("codigo_otp")
 }
 
 // ============================================
@@ -188,58 +229,58 @@ model FichaMadre {
 // ------------------------------------------------------------------
 
 model Inversionista {
-  id          String @id @default(uuid()) @db.Uuid
+  id           String @id @default(uuid()) @db.Uuid
   fichaMadreId String @unique @map("ficha_madre_id") @db.Uuid
 
-  esDomiciliado                    Boolean @default(true) @map("es_domiciliado")
+  esDomiciliado                     Boolean @default(true) @map("es_domiciliado")
   usarMismaDireccionCorrespondencia Boolean @default(true) @map("usar_misma_direccion_correspondencia")
-  tieneApoderado                   Boolean @default(false) @map("tiene_apoderado")
+  tieneApoderado                    Boolean @default(false) @map("tiene_apoderado")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  fichaMadre        FichaMadre          @relation(fields: [fichaMadreId], references: [id])
-  titular           Titular?
-  domicilios        Domicilio[]
-  informacionLaboral InformacionLaboral?
-  apoderado         Apoderado?
-  vinculaciones     Vinculaciones?
-  origenFondos      OrigenFondos?
+  fichaMadre          FichaMadre           @relation(fields: [fichaMadreId], references: [id])
+  titular             Titular?
+  domicilios          Domicilio[]
+  informacionLaboral  InformacionLaboral?
+  apoderado           Apoderado?
+  vinculaciones       Vinculaciones?
+  origenFondos        OrigenFondos?
   antecedentesPenales AntecedentesPenales?
-  residenciaFiscal  ResidenciaFiscal?
-  inversion         Inversion?
+  residenciaFiscal    ResidenciaFiscal?
+  inversion           Inversion?
 
   @@map("inversionista")
 }
 
 model Titular {
-  id               String @id @default(uuid()) @db.Uuid
-  inversionistaId  String @unique @map("inversionista_id") @db.Uuid
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
 
-  nombresApellidos        String?       @map("nombres_apellidos")
-  tipoDocumento           TipoDocumento? @map("tipo_documento")
-  numeroDocumento         String?       @map("numero_documento")
-  nacionalidad            String?
-  sexo                    String?
-  paisNacimiento          String?       @map("pais_nacimiento")
-  departamentoNacimiento  String?       @map("departamento_nacimiento")
-  fechaNacimiento         String?       @map("fecha_nacimiento")
-  paisResidencia          String?       @map("pais_residencia")
-  gradoInstruccion        String?       @map("grado_instruccion")
-  estadoCivil             String?       @map("estado_civil")
-  esInversionista         Boolean       @default(true) @map("es_inversionista")
-  correoElectronico       String?       @map("correo_electronico")
-  telefonoCelular         String?       @map("telefono_celular")
+  nombresApellidos       String?        @map("nombres_apellidos")
+  tipoDocumento          TipoDocumento? @map("tipo_documento")
+  numeroDocumento        String?        @map("numero_documento")
+  nacionalidad           String?
+  sexo                   String?
+  paisNacimiento         String?        @map("pais_nacimiento")
+  departamentoNacimiento String?        @map("departamento_nacimiento")
+  fechaNacimiento        String?        @map("fecha_nacimiento")
+  paisResidencia         String?        @map("pais_residencia")
+  gradoInstruccion       String?        @map("grado_instruccion")
+  estadoCivil            String?        @map("estado_civil")
+  esInversionista        Boolean        @default(true) @map("es_inversionista")
+  correoElectronico      String?        @map("correo_electronico")
+  telefonoCelular        String?        @map("telefono_celular")
 
   // Cónyuge (aplanado)
-  conyugeNombresApellidos String?              @map("conyuge_nombres_apellidos")
-  conyugeTipoDocumento    TipoDocumento?       @map("conyuge_tipo_documento")
-  conyugeNumeroDocumento  String?              @map("conyuge_numero_documento")
-  regimenPatrimonial      String?              @map("regimen_patrimonial")
-  fechaRegimen            String?              @map("fecha_regimen")
+  conyugeNombresApellidos String?        @map("conyuge_nombres_apellidos")
+  conyugeTipoDocumento    TipoDocumento? @map("conyuge_tipo_documento")
+  conyugeNumeroDocumento  String?        @map("conyuge_numero_documento")
+  regimenPatrimonial      String?        @map("regimen_patrimonial")
+  fechaRegimen            String?        @map("fecha_regimen")
 
   // PEP
-  pep                Boolean @default(false)
+  pep                 Boolean @default(false)
   pepInstitucionCargo String? @map("pep_institucion_cargo")
 
   inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
@@ -248,16 +289,16 @@ model Titular {
 }
 
 model Domicilio {
-  id              String         @id @default(uuid()) @db.Uuid
-  inversionistaId String         @map("inversionista_id") @db.Uuid
-  tipo            TipoDomicilio  @map("tipo")
+  id              String        @id @default(uuid()) @db.Uuid
+  inversionistaId String        @map("inversionista_id") @db.Uuid
+  tipo            TipoDomicilio @map("tipo")
 
   direccionCompleta String? @map("direccion_completa")
   distrito          String?
   provincia         String?
   departamento      String?
   pais              String?
-  codigoPostal      String?  @map("codigo_postal")
+  codigoPostal      String? @map("codigo_postal")
 
   inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
 
@@ -267,14 +308,14 @@ model Domicilio {
 }
 
 model InformacionLaboral {
-  id                  String  @id @default(uuid()) @db.Uuid
-  inversionistaId     String  @unique @map("inversionista_id") @db.Uuid
+  id              String @id @default(uuid()) @db.Uuid
+  inversionistaId String @unique @map("inversionista_id") @db.Uuid
 
-  situacionLaboral       String?  @map("situacion_laboral")
-  profesion              String?
-  ocupacion              String?
-  empresaCentroTrabajo   String?  @map("empresa_centro_trabajo")
-  ingresoPromedioAnual   Decimal? @map("ingreso_promedio_anual") @db.Decimal(18, 2)
+  situacionLaboral     String?  @map("situacion_laboral")
+  profesion            String?
+  ocupacion            String?
+  empresaCentroTrabajo String?  @map("empresa_centro_trabajo")
+  ingresoPromedioAnual Decimal? @map("ingreso_promedio_anual") @db.Decimal(18, 2)
 
   inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
 
@@ -285,19 +326,19 @@ model Apoderado {
   id              String @id @default(uuid()) @db.Uuid
   inversionistaId String @unique @map("inversionista_id") @db.Uuid
 
-  nombresApellidos       String?       @map("nombres_apellidos")
-  tipoDocumento          TipoDocumento? @map("tipo_documento")
-  numeroDocumento        String?       @map("numero_documento")
-  nacionalidad           String?
-  sexo                   String?
-  estadoCivil            String?       @map("estado_civil")
-  paisNacimiento         String?       @map("pais_nacimiento")
-  fechaNacimiento        String?       @map("fecha_nacimiento")
-  paisResidencia         String?       @map("pais_residencia")
-  gradoInstruccion       String?       @map("grado_instruccion")
-  esDomiciliado          Boolean       @default(true) @map("es_domiciliado")
-  correoElectronico      String?       @map("correo_electronico")
-  telefonoCelular        String?       @map("telefono_celular")
+  nombresApellidos  String?        @map("nombres_apellidos")
+  tipoDocumento     TipoDocumento? @map("tipo_documento")
+  numeroDocumento   String?        @map("numero_documento")
+  nacionalidad      String?
+  sexo              String?
+  estadoCivil       String?        @map("estado_civil")
+  paisNacimiento    String?        @map("pais_nacimiento")
+  fechaNacimiento   String?        @map("fecha_nacimiento")
+  paisResidencia    String?        @map("pais_residencia")
+  gradoInstruccion  String?        @map("grado_instruccion")
+  esDomiciliado     Boolean        @default(true) @map("es_domiciliado")
+  correoElectronico String?        @map("correo_electronico")
+  telefonoCelular   String?        @map("telefono_celular")
 
   // Poder registral (aplanado)
   partidaRegistral String? @map("partida_registral")
@@ -327,13 +368,13 @@ model OrigenFondos {
   id              String @id @default(uuid()) @db.Uuid
   inversionistaId String @unique @map("inversionista_id") @db.Uuid
 
-  fondosPropiosDetalle            String? @map("fondos_propios_detalle")
-  ventaActivosDetalle             String? @map("venta_activos_detalle")
-  financiamientosDetalle          String? @map("financiamientos_detalle")
+  fondosPropiosDetalle             String? @map("fondos_propios_detalle")
+  ventaActivosDetalle              String? @map("venta_activos_detalle")
+  financiamientosDetalle           String? @map("financiamientos_detalle")
   dividendosParticipacionesDetalle String? @map("dividendos_participaciones_detalle")
-  contratoObraLicitacionDetalle   String? @map("contrato_obra_licitacion_detalle")
-  patrimonioFideicometidoDetalle  String? @map("patrimonio_fideicometido_detalle")
-  otrosFondosDetalle              String? @map("otros_fondos_detalle")
+  contratoObraLicitacionDetalle    String? @map("contrato_obra_licitacion_detalle")
+  patrimonioFideicometidoDetalle   String? @map("patrimonio_fideicometido_detalle")
+  otrosFondosDetalle               String? @map("otros_fondos_detalle")
 
   inversionista Inversionista @relation(fields: [inversionistaId], references: [id])
 
@@ -358,18 +399,18 @@ model ResidenciaFiscal {
 
   tieneResidenciaFiscalExtranjera Boolean @default(false) @map("tiene_residencia_fiscal_extranjera")
 
-  inversionista Inversionista     @relation(fields: [inversionistaId], references: [id])
+  inversionista Inversionista          @relation(fields: [inversionistaId], references: [id])
   paises        ResidenciaFiscalPais[]
 
   @@map("residencia_fiscal")
 }
 
 model ResidenciaFiscalPais {
-  id                String @id @default(uuid()) @db.Uuid
-  residenciaFiscalId String @map("residencia_fiscal_id") @db.Uuid
-  pais              String?
-  nitTin            String? @map("nit_tin")
-  orden             Int    @default(0)
+  id                 String  @id @default(uuid()) @db.Uuid
+  residenciaFiscalId String  @map("residencia_fiscal_id") @db.Uuid
+  pais               String?
+  nitTin             String? @map("nit_tin")
+  orden              Int     @default(0)
 
   residenciaFiscal ResidenciaFiscal @relation(fields: [residenciaFiscalId], references: [id])
 
@@ -430,8 +471,8 @@ model DocumentoGeneral {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  fichaMadre         FichaMadre         @relation(fields: [fichaMadreId], references: [id])
-  documentoPlantilla DocumentoPlantilla @relation(fields: [documentoPlantillaId], references: [id])
+  fichaMadre         FichaMadre             @relation(fields: [fichaMadreId], references: [id])
+  documentoPlantilla DocumentoPlantilla     @relation(fields: [documentoPlantillaId], references: [id])
   firmas             Firma[]
   tokensDocumentos   TokenAccesoDocumento[]
 
@@ -473,16 +514,16 @@ model Firma {
 // ============================================
 
 model TokenAcceso {
-  id           String      @id @default(uuid()) @db.Uuid
-  fichaMadreId String      @map("ficha_madre_id") @db.Uuid
-  token        String      @unique
-  emailDestino String      @map("email_destino")
+  id                      String      @id @default(uuid()) @db.Uuid
+  fichaMadreId            String      @map("ficha_madre_id") @db.Uuid
+  token                   String      @unique
+  emailDestino            String      @map("email_destino")
   documentosFirmaCantidad Int         @default(5) @map("documentos_firma_cantidad")
-  estado       EstadoToken @default(ACTIVO)
-  expiraEn     DateTime    @map("expira_en")
-  usadoEn      DateTime?   @map("usado_en")
-  intentos     Int         @default(0)
-  maxIntentos  Int         @default(3) @map("max_intentos")
+  estado                  EstadoToken @default(ACTIVO)
+  expiraEn                DateTime    @map("expira_en")
+  usadoEn                 DateTime?   @map("usado_en")
+  intentos                Int         @default(0)
+  maxIntentos             Int         @default(3) @map("max_intentos")
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -496,10 +537,10 @@ model TokenAcceso {
 }
 
 model TokenAccesoDocumento {
-  id                 String  @id @default(uuid()) @db.Uuid
-  tokenAccesoId      String  @map("token_acceso_id") @db.Uuid
-  documentoGeneralId String  @map("documento_general_id") @db.Uuid
-  roundNumber        Int?    @map("round_number")
+  id                 String    @id @default(uuid()) @db.Uuid
+  tokenAccesoId      String    @map("token_acceso_id") @db.Uuid
+  documentoGeneralId String    @map("documento_general_id") @db.Uuid
+  roundNumber        Int?      @map("round_number")
   firmadoAt          DateTime? @map("firmado_at")
 
   tokenAcceso      TokenAcceso      @relation(fields: [tokenAccesoId], references: [id])
