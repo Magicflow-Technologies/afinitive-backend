@@ -53,17 +53,14 @@
 
       .page-a4 {
         width: 100%;
-        min-height: 297mm;
-        padding: 25.4mm;
+        height: 297mm;
+        max-height: 297mm;
+        padding: 14mm 20mm;
         box-shadow: none;
         border: none;
-        page-break-after: always;
-        break-after: page;
-      }
-
-      .page-a4:last-child {
-        page-break-after: auto;
-        break-after: auto;
+        overflow: hidden;
+        page-break-after: avoid;
+        break-after: avoid;
       }
     }
 
@@ -71,7 +68,7 @@
       text-align: center;
       font-weight: bold;
       font-size: 11pt;
-      margin-bottom: 24px;
+      margin-bottom: 12px;
       text-transform: uppercase;
     }
 
@@ -80,32 +77,32 @@
     }
 
     .section-block {
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
 
     .info-table {
-      margin-top: 15px;
-      margin-bottom: 15px;
+      margin-top: 6px;
+      margin-bottom: 6px;
       width: 100%;
       border-collapse: collapse;
     }
 
     .info-table td {
       font-style: italic;
-      padding: 3px 0;
+      padding: 2px 0;
     }
 
     .table-cloned {
       width: 100%;
       border-collapse: collapse;
-      margin: 18px 0;
+      margin: 10px 0;
     }
 
     .table-cloned td {
       border: 1px solid #000000;
-      padding: 5px 10px;
+      padding: 4px 8px;
       font-style: italic;
-      font-size: 11pt;
+      font-size: 10pt;
     }
 
     .table-cloned td.col-label {
@@ -114,12 +111,14 @@
 
     .paragraph {
       text-align: justify;
-      margin-bottom: 14px;
+      margin-bottom: 8px;
       font-style: italic;
+      font-size: 10pt;
+      line-height: 1.35;
     }
 
     .signatures-container {
-      margin-top: 60px;
+      margin-top: 25px;
       display: flex;
       justify-content: space-between;
       width: 100%;
@@ -128,13 +127,13 @@
     .signature-box {
       width: 42%;
       text-align: center;
-      font-size: 10pt;
+      font-size: 9.5pt;
       font-style: normal;
     }
 
     .signature-line {
       border-top: 1px solid #000000;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       width: 100%;
     }
   </style>
@@ -236,7 +235,7 @@
     </div>
 
     <!-- DESPEDIDA -->
-    <div class="section-block text-italic" style="margin-top: 20px;">
+    <div class="section-block text-italic" style="margin-top: 10px;">
       Atentamente,
     </div>
 
@@ -245,7 +244,7 @@
       <div class="signature-box">
         {{#if fichaMadre.metadata.firmado}}
         <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Titular"
-          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+          style="max-height: 50px; width: auto; max-width: 180px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
         {{/if}}
         <div class="signature-line"></div>
         <strong style="text-transform: uppercase;">{{nombres_apellidos}}</strong><br>

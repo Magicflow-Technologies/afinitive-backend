@@ -53,17 +53,15 @@
 
       .page-a4 {
         width: 100%;
-        min-height: 297mm;
-        padding: 20mm 15mm;
+        height: 297mm;
+        max-height: 297mm;
+        padding: 12mm 15mm;
         box-shadow: none;
         border: none;
-        page-break-after: always;
-        break-after: page;
-      }
-
-      .page-a4:last-child {
-        page-break-after: auto;
-        break-after: auto;
+        position: relative;
+        overflow: hidden;
+        page-break-after: avoid;
+        break-after: avoid;
       }
     }
 
@@ -71,47 +69,47 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .logo-img {
-      height: 45px;
+      height: 40px;
       width: auto;
     }
 
     .header-title {
       text-align: right;
       font-weight: bold;
-      font-size: 13pt;
+      font-size: 12pt;
       color: #1e3a8a;
       /* Azul institucional CORFID */
-      line-height: 1.25;
+      line-height: 1.2;
     }
 
     .header-line {
       border-top: 1.5px solid #1e3a8a;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .sub-notice {
       text-align: center;
       font-size: 7.5pt;
       color: #333333;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .date-right {
       text-align: right;
-      font-size: 9.5pt;
-      margin-bottom: 15px;
+      font-size: 9pt;
+      margin-bottom: 8px;
     }
 
     .field-row {
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .field-label {
-      font-size: 9.5pt;
+      font-size: 9pt;
     }
 
     .underlined-value {
@@ -132,14 +130,14 @@
 
     .address-grid {
       margin-left: 20px;
-      margin-top: 6px;
-      margin-bottom: 12px;
+      margin-top: 4px;
+      margin-bottom: 8px;
     }
 
     .address-line {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
 
     .checkbox-square {
@@ -164,39 +162,40 @@
 
     .sub-section {
       margin-left: 20px;
-      margin-top: 6px;
-      margin-bottom: 10px;
+      margin-top: 4px;
+      margin-bottom: 8px;
       text-align: justify;
     }
 
     .bullets-list {
-      margin-left: 30px;
-      margin-top: 6px;
-      margin-bottom: 20px;
+      margin-left: 20px;
+      margin-top: 4px;
+      margin-bottom: 10px;
       padding-left: 0;
     }
 
     .bullets-list li {
       list-style-type: disc;
-      margin-bottom: 6px;
+      margin-bottom: 3px;
       text-align: justify;
-      font-size: 9pt;
+      font-size: 8pt;
+      line-height: 1.25;
     }
 
     .signature-section {
-      margin-top: 45px;
-      width: 320px;
+      margin-top: 15px;
+      width: 300px;
     }
 
     .signature-line {
       border-top: 1.5px solid #000000;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       width: 100%;
     }
 
     .footer-page-num {
       position: absolute;
-      bottom: 15mm;
+      bottom: 8mm;
       left: 15mm;
       font-size: 8pt;
       color: #555555;
@@ -363,7 +362,7 @@
     <div class="signature-section">
       {{#if fichaMadre.metadata.firmado}}
       <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
-          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+          style="max-height: 50px; width: auto; max-width: 200px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
       {{/if}}
       <div class="signature-line"></div>
       <strong>Firma:</strong><br><br>

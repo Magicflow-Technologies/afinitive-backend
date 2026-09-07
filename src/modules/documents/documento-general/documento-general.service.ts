@@ -468,6 +468,7 @@ export class DocumentoGeneralService {
       const page = await browser.newPage({
         viewport: { width: 1240, height: 1754 },
       });
+      await page.emulateMedia({ media: 'print' });
 
       const pdfBuffers: Buffer[] = [];
 

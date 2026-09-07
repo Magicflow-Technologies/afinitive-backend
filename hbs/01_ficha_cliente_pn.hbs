@@ -50,17 +50,19 @@
 
         .page-a4 {
           width: 100%;
-          min-height: 297mm;
-          padding: 12mm 12mm;
+          height: 297mm;
+          max-height: 297mm;
+          padding: 5mm 9mm;
           box-shadow: none;
           border: none;
+          overflow: hidden;
           page-break-after: always;
           break-after: page;
         }
 
         .page-a4:last-child {
-          page-break-after: auto;
-          break-after: auto;
+          page-break-after: avoid;
+          break-after: avoid;
         }
       }
 
@@ -69,24 +71,24 @@
         justify-content: space-between;
         align-items: center;
         border: 1.5px solid #000000;
-        padding: 4px 8px;
-        margin-bottom: 6px;
+        padding: 2px 6px;
+        margin-bottom: 2px;
         font-weight: bold;
       }
 
       .top-header img {
-        height: 28px;
+        height: 22px;
         width: auto;
       }
 
       .top-header .title {
-        font-size: 9pt;
+        font-size: 8.5pt;
         text-align: center;
         flex-grow: 1;
       }
 
       .top-header .code {
-        font-size: 8pt;
+        font-size: 7.5pt;
       }
 
       .sec-header {
@@ -95,75 +97,77 @@
         color: #000;
         font-weight: bold;
         text-align: center;
-        font-size: 8pt;
-        padding: 1px;
-        border: 2px solid #000000;
+        font-size: 7pt;
+        padding: 0.5px;
+        border: 1.5px solid #000000;
       }
 
       .tbl-form {
         width: 100%;
         table-layout: fixed;
         border-collapse: collapse;
-        margin-bottom: 2px;
+        margin-bottom: 1px;
       }
 
       .tbl-form td,
       .tbl-form th {
-        border: 2px solid #000000;
-        padding: 3px 5px;
+        border: 1px solid #000000;
+        padding: 0.5px 3px;
         vertical-align: middle;
         word-wrap: break-word;
         overflow-wrap: break-word;
+        line-height: 1.05;
       }
 
       .tbl-cabecera {
         width: 100%;
-        height: 60px;
         border-collapse: collapse;
-        margin-bottom: 2px;
+        margin-bottom: 1px;
       }
 
       .tbl-cabecera td,
       .tbl-cabecera th {
-        border: 2px solid #000000;
-        padding: 3px 5px;
+        border: 1.5px solid #000000;
+        padding: 1px 4px;
         vertical-align: middle;
       }
 
       .tbl-form .sub-title {
         background-color: #e5e7eb;
         font-weight: bold;
-        font-size: 8px;
+        font-size: 6.8pt;
+        padding: 0.5px 3px;
       }
 
       .lbl {
         font-weight: normal;
         color: #000000;
-        line-height: 1.1;
-        font-size: 8px;
+        line-height: 1.02;
+        font-size: 6.2pt;
       }
 
       .val {
         font-weight: normal;
         color: #000000;
-        font-size: 8px;
+        font-size: 6.2pt;
         text-align: center;
+        line-height: 1.02;
       }
 
       .chk-box {
         display: inline-block;
-        width: 10px;
-        height: 10px;
+        width: 9px;
+        height: 9px;
         border: 1px solid #000000;
         text-align: center;
-        line-height: 1.1;
-        font-size: 7pt;
-        margin-right: 3px;
+        line-height: 1.0;
+        font-size: 6.5pt;
+        margin-right: 2px;
       }
 
       .chk-box.checked::after {
         content: "✓";
-        font-size: 11px;
+        font-size: 10px;
         position: relative;
         left: 1px;
         top: -2px;
@@ -172,10 +176,10 @@
       .notice-bar {
         background-color: #ffffff;
         font-weight: bold;
-        font-size: 7pt;
-        padding: 2px 5px;
-        border-left: 2px solid #000;
-        border-right: 2px solid #000;
+        font-size: 6.2pt;
+        padding: 1px 3px;
+        border-left: 1.5px solid #000;
+        border-right: 1.5px solid #000;
       }
 
       .page-break {
@@ -199,7 +203,7 @@
       <table class="tbl-cabecera">
         
         <tr>
-          <td style="width: 20%"><img src="{{logo_corfid}}" alt="CORFID" style="width: 120px; height: 40px; object-fit: contain;" /></td>
+          <td style="width: 20%"><img src="{{logo_corfid}}" alt="CORFID" style="width: 90px; height: 25px; object-fit: contain;" /></td>
           <td
             style="
               width: 60%;
@@ -1413,10 +1417,10 @@
                 src="{{fichaMadre.metadata.firma_imagen}}"
                 alt="Firma del Declarante"
                 style="
-                  max-height: 80px;
+                  max-height: 40px;
                   width: auto;
-                  max-width: 220px;
-                  margin-bottom: 4px;
+                  max-width: 150px;
+                  margin-bottom: 2px;
                   margin-right: 40px;
                   object-fit: contain;
                 "

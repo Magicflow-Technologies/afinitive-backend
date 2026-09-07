@@ -55,17 +55,19 @@
 
       .page-a4 {
         width: 100%;
-        min-height: 297mm;
-        padding: 18mm 15mm;
+        height: 297mm;
+        max-height: 297mm;
+        padding: 14mm 15mm;
         box-shadow: none;
         border: none;
+        overflow: hidden;
         page-break-after: always;
         break-after: page;
       }
 
       .page-a4:last-child {
-        page-break-after: auto;
-        break-after: auto;
+        page-break-after: avoid;
+        break-after: avoid;
       }
     }
 
@@ -73,7 +75,7 @@
       text-align: center;
       font-weight: bold;
       font-size: 9.5pt;
-      margin-top: 3rem;
+      margin-top: 0.5rem;
       margin-bottom: 3px;
       text-transform: uppercase;
     }
@@ -650,10 +652,10 @@
       </tr>
     </table>
 
-    <div style="margin-top: 50px; text-align: left;">
+    <div style="margin-top: 15px; text-align: left;">
       {{#if fichaMadre.metadata.firmado}}
       <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Declarante"
-        style="max-height: 80px; width: auto; max-width: 220px; display: block;  object-fit: contain;" />
+        style="max-height: 50px; width: auto; max-width: 200px; display: block;  object-fit: contain;" />
       {{/if}}
       <div style="width: 260px; ">
         ---------------------------------------
