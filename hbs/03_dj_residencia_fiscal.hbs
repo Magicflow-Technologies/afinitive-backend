@@ -131,6 +131,10 @@
     }
 
     .address-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 30px;
+      row-gap: 8px;
       margin-left: 20px;
       margin-top: 6px;
       margin-bottom: 12px;
@@ -138,9 +142,31 @@
 
     .address-line {
       display: flex;
-      justify-content: space-between;
-      margin-bottom: 8px;
+      align-items: flex-end;
     }
+
+    .address-label {
+      font-size: 9pt;
+      font-weight: normal;
+      white-space: nowrap;
+      margin-right: 4px;
+      flex-shrink: 0;
+    }
+
+    .address-line-fill {
+      flex: 1;
+      border-bottom: 1px solid #000000;
+      font-weight: bold;
+      font-size: 9pt;
+      padding-left: 4px;
+      padding-bottom: 1px;
+      min-height: 14px;
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
 
     .checkbox-square {
       display: inline-block;
@@ -263,16 +289,28 @@
       <strong>6. Dirección de Residencia:</strong>
       <div class="address-grid">
         <div class="address-line">
-          <span>Calle <span class="underlined-value" style="width: 320px;">{{fichaMadre.inversionista.domicilio.direccion_completa}}</span></span>
-          <span>Número <span class="underlined-value" style="width: 200px;"></span></span>
+          <span class="address-label">Calle:</span>
+          <span class="address-line-fill">{{#if fichaMadre.inversionista.domicilio.direccion_completa}}{{fichaMadre.inversionista.domicilio.direccion_completa}}{{else}}&nbsp;{{/if}}</span>
         </div>
         <div class="address-line">
-          <span>Ciudad <span class="underlined-value" style="width: 250px;">{{fichaMadre.inversionista.domicilio.distrito}}</span></span>
-          <span>Provincia <span class="underlined-value" style="width: 230px;">{{fichaMadre.inversionista.domicilio.provincia}}</span></span>
+          <span class="address-label">Número:</span>
+          <span class="address-line-fill">{{#if fichaMadre.inversionista.domicilio.numero}}{{fichaMadre.inversionista.domicilio.numero}}{{else if numero}}{{numero}}{{else if domicilio.numero}}{{domicilio.numero}}{{else}}&nbsp;{{/if}}</span>
         </div>
         <div class="address-line">
-          <span>Código Postal <span class="underlined-value" style="width: 180px;">{{fichaMadre.inversionista.domicilio.codigo_postal}}</span></span>
-          <span>País <span class="underlined-value" style="width: 250px;">{{fichaMadre.inversionista.domicilio.pais_domicilio}}</span></span>
+          <span class="address-label">Ciudad:</span>
+          <span class="address-line-fill">{{#if fichaMadre.inversionista.domicilio.distrito}}{{fichaMadre.inversionista.domicilio.distrito}}{{else}}&nbsp;{{/if}}</span>
+        </div>
+        <div class="address-line">
+          <span class="address-label">Provincia:</span>
+          <span class="address-line-fill">{{#if fichaMadre.inversionista.domicilio.provincia}}{{fichaMadre.inversionista.domicilio.provincia}}{{else}}&nbsp;{{/if}}</span>
+        </div>
+        <div class="address-line">
+          <span class="address-label">Código Postal:</span>
+          <span class="address-line-fill">{{#if fichaMadre.inversionista.domicilio.codigo_postal}}{{fichaMadre.inversionista.domicilio.codigo_postal}}{{else}}&nbsp;{{/if}}</span>
+        </div>
+        <div class="address-line">
+          <span class="address-label">País:</span>
+          <span class="address-line-fill">{{#if fichaMadre.inversionista.domicilio.pais_domicilio}}{{fichaMadre.inversionista.domicilio.pais_domicilio}}{{else}}&nbsp;{{/if}}</span>
         </div>
       </div>
     </div>

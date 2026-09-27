@@ -321,11 +321,12 @@ export class FichaMadreService {
   private async upsertDomicilio(
     inversionistaId: string,
     tipo: 'DOMICILIO' | 'CORRESPONDENCIA' | 'APODERADO',
-    dto: { direccion_completa?: string; distrito?: string; provincia?: string; departamento?: string; pais_domicilio?: string; codigo_postal?: string },
+    dto: { direccion_completa?: string; numero?: string; distrito?: string; provincia?: string; departamento?: string; pais_domicilio?: string; codigo_postal?: string },
   ) {
     const data = {
       tipo,
       direccionCompleta: dto.direccion_completa,
+      numero: dto.numero,
       distrito: dto.distrito,
       provincia: dto.provincia,
       departamento: dto.departamento,

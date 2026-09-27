@@ -304,6 +304,7 @@ export class DocumentoGeneralService {
       departamento: domicilio.departamento ?? '',
       pais_residencia: titular.pais_residencia ?? '',
       codigo_postal: domicilio.codigo_postal ?? '',
+      numero: domicilio.numero ?? '',
       es_domiciliado: inv.es_domiciliado ?? false,
 
       // Documento de identidad
@@ -314,7 +315,7 @@ export class DocumentoGeneralService {
       es_dni: tipoDoc === 'DNI',
       es_ce: tipoDoc === 'CE',
       es_pasaporte: tipoDoc === 'PASAPORTE',
-      doc_nit: '',
+      doc_nit: paisesFiscales[0]?.nit_tin ?? '',
 
       // Estado civil
       es_soltero: isVal(estadoCivil, 'soltero'),
@@ -337,8 +338,9 @@ export class DocumentoGeneralService {
       regimen_fecha: conyuge.fecha_regimen ?? '',
 
       // Residencia fiscal
-      tiene_residencia_fiscal_extranjera: residencia.tiene_residencia_fiscal_extranjera ?? false,
-      residencia_fiscal_fuera: residencia.tiene_residencia_fiscal_extranjera ?? false,
+      tiene_residencia_fiscal_extranjera: Boolean(residencia.tiene_residencia_fiscal_extranjera),
+      no_tiene_residencia_fiscal_extranjera: !Boolean(residencia.tiene_residencia_fiscal_extranjera),
+      residencia_fiscal_fuera: Boolean(residencia.tiene_residencia_fiscal_extranjera),
       pais_residencia_fiscal_extranjero: paisesFiscales[0]?.pais ?? '',
       pais_residencia_fiscal_extranjero_2: paisesFiscales[1]?.pais ?? '',
       pais_residencia_fiscal_extranjero_3: paisesFiscales[2]?.pais ?? '',
