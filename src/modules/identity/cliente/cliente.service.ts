@@ -12,11 +12,39 @@ export class ClienteService {
   }
 
   async findAll() {
-    return this.prisma.cliente.findMany({ include: { persona: true } });
+    return this.prisma.cliente.findMany({
+      include: {
+        persona: {
+          include: {
+            usuario: {
+              include: {
+                rol: true,
+              },
+            },
+          },
+        },
+        fichaMadre: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 
   async findOne(id: string) {
-    return this.prisma.cliente.findUniqueOrThrow({ where: { id }, include: { persona: true, fichaMadre: true } });
+    return this.prisma.cliente.findUniqueOrThrow({
+      where: { id },
+      include: {
+        persona: {
+          include: {
+            usuario: {
+              include: {
+                rol: true,
+              },
+            },
+          },
+        },
+        fichaMadre: true,
+      },
+    });
   }
 
   async update(id: string, dto: UpdateClienteDto) {
