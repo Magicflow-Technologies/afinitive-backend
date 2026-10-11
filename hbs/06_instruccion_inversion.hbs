@@ -46,38 +46,36 @@
       }
       .page-a4 {
         width: 100%;
-        min-height: 297mm;
-        padding: 20mm 18mm;
+        height: 297mm;
+        max-height: 297mm;
+        padding: 12mm 18mm;
         box-shadow: none;
         border: none;
-        page-break-after: always;
-        break-after: page;
-      }
-      .page-a4:last-child {
-        page-break-after: auto;
-        break-after: auto;
+        overflow: hidden;
+        page-break-after: avoid;
+        break-after: avoid;
       }
     }
 
     .doc-title {
       text-align: center;
       font-weight: bold;
-      font-size: 12pt;
-      margin-bottom: 20px;
+      font-size: 11pt;
+      margin-bottom: 10px;
     }
 
     .recipient-block {
       font-style: italic;
-      margin-bottom: 15px;
-      line-height: 1.35;
+      margin-bottom: 8px;
+      line-height: 1.25;
     }
 
     .attn-ref-grid {
       display: grid;
       grid-template-columns: 90px 1fr;
-      row-gap: 8px;
+      row-gap: 4px;
       font-style: italic;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .attn-ref-grid .label {
@@ -88,13 +86,14 @@
     .salutation {
       font-style: italic;
       font-weight: bold;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
     }
 
     p {
       text-align: justify;
-      margin-bottom: 14px;
+      margin-bottom: 6px;
       font-style: italic;
+      line-height: 1.3;
     }
 
     .highlight-var {
@@ -107,14 +106,14 @@
     .tbl-instruccion {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 15px;
-      margin-bottom: 18px;
-      font-size: 8.5pt;
+      margin-top: 6px;
+      margin-bottom: 8px;
+      font-size: 8pt;
     }
 
     .tbl-instruccion th, .tbl-instruccion td {
       border: 1px solid #000000;
-      padding: 5px 4px;
+      padding: 3px 4px;
       vertical-align: top;
       word-wrap: break-word;
     }
@@ -248,7 +247,7 @@
       <div class="sig-col">
         {{#if fichaMadre.metadata.firmado}}
         <img src="{{fichaMadre.metadata.firma_imagen}}" alt="Firma del Inversionista"
-          style="max-height: 80px; width: auto; max-width: 220px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
+          style="max-height: 50px; width: auto; max-width: 180px; display: block; margin: 0 auto 4px auto; object-fit: contain;" />
         {{/if}}
         <div class="sig-line" style="border-top: 1px solid #000; width: 220px; margin: 0 auto 5px auto;"></div>
         <div>INVERSIONISTA</div>

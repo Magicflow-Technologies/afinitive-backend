@@ -19,6 +19,11 @@ export const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
+
+  // Redis
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_PORT: z.coerce.number().int().positive(),
+  REDIS_PASSWORD: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
