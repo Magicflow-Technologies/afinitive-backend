@@ -26,6 +26,7 @@ const VACIO = {
   },
   domicilio: {
     direccion_completa: '',
+    numero: '',
     distrito: '',
     provincia: '',
     departamento: '',
@@ -34,6 +35,7 @@ const VACIO = {
   },
   direccion_correspondencia: {
     direccion_completa: '',
+    numero: '',
     distrito: '',
     provincia: '',
     departamento: '',
@@ -63,6 +65,7 @@ const VACIO = {
     telefono_celular: '',
     domicilio: {
       direccion_completa: '',
+      numero: '',
       distrito: '',
       provincia: '',
       departamento: '',
@@ -113,6 +116,7 @@ function domicilioObj(d?: any, fallbackDireccion?: string, defaultPais: string =
   if (!d && !fallbackDireccion) {
     return {
       direccion_completa: '',
+      numero: '',
       distrito: '',
       provincia: '',
       departamento: '',
@@ -122,6 +126,7 @@ function domicilioObj(d?: any, fallbackDireccion?: string, defaultPais: string =
   }
   return {
     direccion_completa: d?.direccionCompleta || fallbackDireccion || '',
+    numero: d?.numero ?? d?.numero_domicilio ?? d?.numeroDomicilio ?? '',
     distrito: d?.distrito ?? '',
     provincia: d?.provincia ?? '',
     departamento: d?.departamento ?? '',
