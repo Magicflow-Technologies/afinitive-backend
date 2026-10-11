@@ -8,9 +8,23 @@ import { SigningModule } from './modules/signing/signing.module.js';
 import { AccessModule } from './modules/access/access.module.js';
 import { AuditModule } from './modules/audit/audit.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { MailModule } from './core/mail/mail.module.js';
+import { BullModule } from '@nestjs/bullmq';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_HOST', 'localhost'),
+          port: configService.get<number>('REDIS_PORT', 6379),
+          password: configService.get<string>('REDIS_PASSWORD'),
+        }
+      })
+    }),
     ConfigModule,
     PrismaModule,
     IdentityModule,
@@ -20,6 +34,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
     AccessModule,
     AuditModule,
     AuthModule,
+    MailModule,
   ],
   controllers: [],
   providers: [],
