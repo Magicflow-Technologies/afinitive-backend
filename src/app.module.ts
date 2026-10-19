@@ -11,6 +11,8 @@ import { AuthModule } from './modules/auth/auth.module.js';
 import { MailModule } from './core/mail/mail.module.js';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
+import { StorageModule } from './core/storage/storage.module.js';
+
 
 @Module({
   imports: [
@@ -35,6 +37,7 @@ import { ConfigService } from '@nestjs/config';
     AuditModule,
     AuthModule,
     MailModule,
+    StorageModule,
   ],
   controllers: [],
   providers: [],

@@ -8,6 +8,8 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { chromium } from 'playwright';
 import { PDFDocument } from 'pdf-lib';
+import { StorageService } from '../../../core/storage/storage.service.js';
+
 
 const TEMPLATE_FILE_FALLBACKS: Record<string, string> = {
   '01_carta_solicitud_participacion.hbs': '05_carta_solicitud_participacion.hbs',
@@ -28,7 +30,10 @@ const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
 
 @Injectable()
 export class DocumentoGeneralService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   private getArchivoFromItem(
     item?: {
@@ -527,5 +532,131 @@ export class DocumentoGeneralService {
 
   async remove(id: string) {
     return this.prisma.documentoGeneral.delete({ where: { id } });
+  }
+
+  /**
+   * Sube el documento fisico a Supabase Storage y lo registra con estado FIRMADO en la base de datos.
+   */
+  async uploadDocumentoMasivo(
+    fichaMadreId: string,
+    file: Express.Multer.File,
+    dto?: { documentoPlantillaId?: string; nombreArchivo?: string },
+  ) {
+    const fichaMadre = await this.prisma.fichaMadre.findUniqueOrThrow({
+      where: { id: fichaMadreId },
+      include: { cliente: { include: { persona: true } } }, 
+    });
+
+    // 1. Resolver plantila
+    let plantillaId = dto?.documentoPlantillaId;
+    if (!plantillaId) {
+      const primeraPlantilla = await this.prisma.documentoPlantilla.findFirst({
+        where: { activo: true },
+      });
+      if (!primeraPlantilla) {
+        throw new BadRequestException('No existen plantillas activas en el sistema. ');
+      }
+      plantillaId = primeraPlantilla.id;
+    }
+
+    // 2. Subir directamente a Subapase Storage
+    const timestamp = Date.now();
+    const cleanFileName = file.originalname.replace(/\s+/g, '_');
+    const finalFileName = `${timestamp}_${cleanFileName}`;
+    const folderPath = `expedientes/${fichaMadre.codigo}`; // Carpeta por expediente eje: expedientes/FM-2025-0001
+
+    const supabasePublicUrl = await this.storageService.uploadFile(
+      folderPath,
+      finalFileName,
+      file.buffer,
+      file.mimetype || 'application/pdf',
+    );
+
+    // 3. Crear o actualizar registro en Documento General con la URL pública de Supabase
+    const nombreDoc = dto?.nombreArchivo || file.originalname;
+
+    let docGeneral = await this.prisma.documentoGeneral.findFirst({
+      where: {
+        fichaMadreId,
+        documentoPlantillaId: plantillaId,
+      },
+    });
+
+    if (docGeneral) {
+      docGeneral = await this.prisma.documentoGeneral.update({
+        where: { id: docGeneral.id },
+        data: {
+          nombreArchivo: nombreDoc,
+          rutaArchivo: supabasePublicUrl,
+          estado: 'FIRMADO',
+        },
+        include: {
+          documentoPlantilla: true,
+        },
+      });
+
+      await this.prisma.firma.deleteMany({
+        where: { documentoGeneralId: docGeneral.id },
+      });
+    } else {
+      docGeneral = await this.prisma.documentoGeneral.create({
+        data: {
+          fichaMadreId,
+          documentoPlantillaId: plantillaId,
+          nombreArchivo: nombreDoc,
+          rutaArchivo: supabasePublicUrl,
+          estado: 'FIRMADO',
+        },
+        include: {
+          documentoPlantilla: true,
+        },
+      });
+    }
+
+    // 4. Registrar la firma histórica/digitalizada como FIRMADO
+    await this.prisma.firma.create({
+      data: {
+        documentoGeneralId: docGeneral.id,
+        tipo: 'ELECTRONICA',
+        estado: 'FIRMADO',
+        fechaFirma: new Date(),
+        firmanteNombre: `${fichaMadre.cliente.persona?.nombres} ${fichaMadre.cliente.persona?.apellidos}`,
+        firmanteDocumento: fichaMadre.cliente.persona?.numeroDocumento,
+        firmanteEmail: fichaMadre.cliente.persona?.correo,
+        datosCertificado: {
+          tipoCarga: 'SUPABASE_HISTORICO',
+          fechaCarga: new Date(),
+          nombreOriginal: file.originalname,
+          sizeBytes: file.size,
+          urlStorage: supabasePublicUrl,
+        },
+      },
+    });
+
+    // 5. Actualizar dinámicamente el estado del expediente según los documentos subidos
+    const totalDocsFirmados = await this.prisma.documentoGeneral.count({
+      where: {
+        fichaMadreId,
+        estado: 'FIRMADO',
+      },
+    });
+
+    const totalPlantillasActivas = await this.prisma.documentoPlantilla.count({
+      where: { activo: true },
+    });
+
+    if (totalPlantillasActivas > 0 && totalDocsFirmados >= totalPlantillasActivas) {
+      await this.prisma.fichaMadre.update({
+        where: { id: fichaMadreId },
+        data: { estado: 'COMPLETADA' },
+      });
+    } else if (totalDocsFirmados > 0 && fichaMadre.estado === 'PENDIENTE') {
+      await this.prisma.fichaMadre.update({
+        where: { id: fichaMadreId },
+        data: { estado: 'EN_PROCESO' },
+      });
+    }
+
+    return docGeneral;
   }
 }
