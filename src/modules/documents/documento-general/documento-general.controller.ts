@@ -1,7 +1,21 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseUUIDPipe, StreamableFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Body,
+  Param,
+  Query,
+  ParseUUIDPipe,
+  StreamableFile,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { DocumentoGeneralService } from './documento-general.service.js';
 import { CreateDocumentoGeneralDto } from './dto/create-documento-general.dto.js';
 import { UpdateDocumentoGeneralDto } from './dto/update-documento-general.dto.js';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('documentos-generales')
 export class DocumentoGeneralController {
@@ -17,8 +31,29 @@ export class DocumentoGeneralController {
     return this.service.generate(fichaMadreId);
   }
 
+  @Post('upload-masivo/:fichaMadreId')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadDoccumentoMasivo(
+    @Param('fichaMadreId', ParseUUIDPipe) fichaMadreId: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('documentoPlantillaId') documentoPlantillaId?: string,
+    @Body('nombreArchivo') nombreArchivo?: string,
+  ) {
+
+    if (!file) {
+      throw new Error('No se ha proporcionado un archivo para la importación masiva.');
+    } 
+
+    return await this.service.uploadDocumentoMasivo(fichaMadreId, file, {
+      documentoPlantillaId,
+      nombreArchivo,
+    });
+  }
+
   @Get('pdf/:fichaMadreId')
-  async downloadPdf(@Param('fichaMadreId', ParseUUIDPipe) fichaMadreId: string) {
+  async downloadPdf(
+    @Param('fichaMadreId', ParseUUIDPipe) fichaMadreId: string,
+  ) {
     const pdf = await this.service.generatePdfPrimerosCinco(fichaMadreId);
     return new StreamableFile(pdf, {
       type: 'application/pdf',
@@ -36,7 +71,10 @@ export class DocumentoGeneralController {
   }
 
   @Put(':id')
-  update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateDocumentoGeneralDto) {
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateDocumentoGeneralDto,
+  ) {
     return this.service.update(id, dto);
   }
 

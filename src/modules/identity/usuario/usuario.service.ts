@@ -243,6 +243,24 @@ export class UsuarioService {
     const rol = await this.prisma.rol.findUnique({ where: { id: rolId } });
     if (!rol) throw new NotFoundException('Rol no encontrado.');
 
+    const usuario = await this.prisma.usuario.findUnique({
+      where: { id: usuarioId },
+      include: { persona: { include: { empleado: true } } },
+    });
+    if (!usuario) throw new NotFoundException('Usuario no encontrado.');
+
+    // Si el rol nuevo no es 'cliente' y no cuenta con perfil de empleado, crearlo automáticamente
+    if (rol.nombre.toLowerCase() !== 'cliente' && !usuario.persona.empleado) {
+      await this.prisma.empleado.create({
+        data: {
+          personaId: usuario.persona.id,
+          cargo: rol.nombre.toLowerCase() === 'analista' ? 'Analista de Inversiones' : rol.nombre.toLowerCase() === 'admin' ? 'Administrador' : 'Operador de Onboarding',
+          area: 'Operaciones',
+          activo: true,
+        },
+      });
+    }
+
     return this.prisma.usuario.update({
       where: { id: usuarioId },
       data: { rolId },
