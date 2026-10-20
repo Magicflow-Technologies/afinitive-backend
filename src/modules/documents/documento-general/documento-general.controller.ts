@@ -80,8 +80,8 @@ export class DocumentoGeneralController {
 
   @Get(':id/preview')
   async getPreview(@Param('id', ParseUUIDPipe) id: string) {
-    const html = await this.service.getPreview(id);
-    return { html };
+    return await this.service.getPreview(id);
+
   }
 
   @Delete(':id')
