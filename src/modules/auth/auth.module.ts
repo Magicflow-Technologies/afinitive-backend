@@ -4,10 +4,12 @@ import { ConfigService, ConfigModule } from '@nestjs/config';
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
 import { PrismaModule } from '../../core/database/prisma/prisma.module.js';
+import { MailModule } from '../../core/mail/mail.module.js';
 
 @Module({
   imports: [
     PrismaModule,
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

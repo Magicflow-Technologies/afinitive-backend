@@ -19,6 +19,16 @@ export const envSchema = z.object({
   LOG_LEVEL: z
     .enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace'])
     .default('info'),
+
+  // Redis
+  REDIS_HOST: z.string().default('localhost'),
+  REDIS_PORT: z.coerce.number().int().positive(),
+  REDIS_PASSWORD: z.string().optional(),
+
+  // Supabase Storage
+  SUPABASE_URL: z.url('SUPABASE_URL debe ser una URL válida'),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY es requerido'),
+  SUPABASE_BUCKET_DOCUMENTOS: z.string().min(1, 'SUPABASE_BUCKET_DOCUMENTOS es requerido'),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

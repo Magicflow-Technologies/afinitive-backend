@@ -18,6 +18,7 @@ class ConyugeDto {
 
 class DomicilioDto {
   @IsOptional() @IsString() direccion_completa?: string;
+  @IsOptional() @IsString() numero?: string;
   @IsOptional() @IsString() distrito?: string;
   @IsOptional() @IsString() provincia?: string;
   @IsOptional() @IsString() departamento?: string;

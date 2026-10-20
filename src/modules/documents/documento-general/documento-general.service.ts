@@ -8,6 +8,8 @@ import path from 'path';
 import Handlebars from 'handlebars';
 import { chromium } from 'playwright';
 import { PDFDocument } from 'pdf-lib';
+import { StorageService } from '../../../core/storage/storage.service.js';
+
 
 const TEMPLATE_FILE_FALLBACKS: Record<string, string> = {
   '01_carta_solicitud_participacion.hbs': '05_carta_solicitud_participacion.hbs',
@@ -28,7 +30,10 @@ const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
 
 @Injectable()
 export class DocumentoGeneralService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly storageService: StorageService,
+  ) {}
 
   private getArchivoFromItem(
     item?: {
@@ -304,6 +309,7 @@ export class DocumentoGeneralService {
       departamento: domicilio.departamento ?? '',
       pais_residencia: titular.pais_residencia ?? '',
       codigo_postal: domicilio.codigo_postal ?? '',
+      numero: domicilio.numero ?? '',
       es_domiciliado: inv.es_domiciliado ?? false,
 
       // Documento de identidad
@@ -314,7 +320,7 @@ export class DocumentoGeneralService {
       es_dni: tipoDoc === 'DNI',
       es_ce: tipoDoc === 'CE',
       es_pasaporte: tipoDoc === 'PASAPORTE',
-      doc_nit: '',
+      doc_nit: paisesFiscales[0]?.nit_tin ?? '',
 
       // Estado civil
       es_soltero: isVal(estadoCivil, 'soltero'),
@@ -337,8 +343,9 @@ export class DocumentoGeneralService {
       regimen_fecha: conyuge.fecha_regimen ?? '',
 
       // Residencia fiscal
-      tiene_residencia_fiscal_extranjera: residencia.tiene_residencia_fiscal_extranjera ?? false,
-      residencia_fiscal_fuera: residencia.tiene_residencia_fiscal_extranjera ?? false,
+      tiene_residencia_fiscal_extranjera: Boolean(residencia.tiene_residencia_fiscal_extranjera),
+      no_tiene_residencia_fiscal_extranjera: !Boolean(residencia.tiene_residencia_fiscal_extranjera),
+      residencia_fiscal_fuera: Boolean(residencia.tiene_residencia_fiscal_extranjera),
       pais_residencia_fiscal_extranjero: paisesFiscales[0]?.pais ?? '',
       pais_residencia_fiscal_extranjero_2: paisesFiscales[1]?.pais ?? '',
       pais_residencia_fiscal_extranjero_3: paisesFiscales[2]?.pais ?? '',
@@ -444,72 +451,79 @@ export class DocumentoGeneralService {
 
     const fichaMadre = await this.loadFichaMadreConData(fichaMadreId);
 
-    const htmls: string[] = [];
-    for (const doc of seleccionados) {
-      const archivo = doc.documentoPlantilla?.archivo;
-      if (!archivo) {
-        throw new BadRequestException(
-          `El documento ${doc.nombreArchivo} no tiene una plantilla asociada.`,
-        );
-      }
-      const replacements = await this.buildReplacements(fichaMadre, doc);
-      htmls.push(await this.renderPlantillaHtml(archivo, replacements));
-    }
-
-    return this.renderHtmlsToPdf(htmls);
-  }
-
-  private async renderHtmlsToPdf(htmls: string[]): Promise<Buffer> {
-    const browser = await chromium.launch({
-      headless: true,
-    });
+    const pdfBuffers: Buffer[] = [];
+    let browser: any = null;
 
     try {
-      const page = await browser.newPage({
-        viewport: { width: 1240, height: 1754 },
-      });
+      for (const doc of seleccionados) {
+        // Si el archivo ya es un PDF subido a Supabase Storage (http/https), obtener directamente su buffer
+        if (doc.rutaArchivo && doc.rutaArchivo.startsWith('http')) {
+          try {
+            const resp = await fetch(doc.rutaArchivo);
+            if (resp.ok) {
+              const arrayBuf = await resp.arrayBuffer();
+              pdfBuffers.push(Buffer.from(arrayBuf));
+              continue;
+            }
+          } catch (fetchErr) {
+            console.warn(`No se pudo descargar PDF de storage ${doc.rutaArchivo}:`, fetchErr);
+          }
+        }
 
-      const pdfBuffers: Buffer[] = [];
+        // Si no es un PDF de storage o fallo, compilar Handlebars y generar con Chromium
+        const archivo = doc.documentoPlantilla?.archivo;
+        if (!archivo) {
+          throw new BadRequestException(
+            `El documento ${doc.nombreArchivo} no tiene una plantilla asociada.`,
+          );
+        }
+        const replacements = await this.buildReplacements(fichaMadre, doc);
+        const html = await this.renderPlantillaHtml(archivo, replacements);
 
-      for (const html of htmls) {
+        if (!browser) {
+          browser = await chromium.launch({ headless: true });
+        }
+        const page = await browser.newPage({ viewport: { width: 1240, height: 1754 } });
+        await page.emulateMedia({ media: 'print' });
         await page.setContent(html, { waitUntil: 'load' });
         await page.waitForTimeout(300);
         const singlePdf = await page.pdf({
           format: 'A4',
           printBackground: true,
           preferCSSPageSize: true,
-          margin: {
-            top: '0mm',
-            right: '0mm',
-            bottom: '0mm',
-            left: '0mm',
-          },
+          margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
         });
+        await page.close();
         pdfBuffers.push(Buffer.from(singlePdf));
       }
-
-      await page.close();
-
-      if (pdfBuffers.length === 1) {
-        return pdfBuffers[0];
-      }
-
-      const mergedPdf = await PDFDocument.create();
-      for (const buffer of pdfBuffers) {
-        const doc = await PDFDocument.load(buffer);
-        const copiedPages = await mergedPdf.copyPages(doc, doc.getPageIndices());
-        copiedPages.forEach((p) => mergedPdf.addPage(p));
-      }
-
-      const finalPdfBytes = await mergedPdf.save();
-      return Buffer.from(finalPdfBytes);
     } finally {
-      await browser.close();
+      if (browser) {
+        await browser.close();
+      }
     }
+
+    if (pdfBuffers.length === 1) {
+      return pdfBuffers[0];
+    }
+
+    const mergedPdf = await PDFDocument.create();
+    for (const buffer of pdfBuffers) {
+      const doc = await PDFDocument.load(buffer);
+      const copiedPages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+      copiedPages.forEach((p) => mergedPdf.addPage(p));
+    }
+
+    const finalPdfBytes = await mergedPdf.save();
+    return Buffer.from(finalPdfBytes);
   }
 
   async getPreview(id: string) {
     const doc = await this.findOne(id);
+
+    // Si el documento tiene archivo real subido a Supabase Storage (http o https)
+    if (doc.rutaArchivo && doc.rutaArchivo.startsWith('http')) {
+      return { url: doc.rutaArchivo, html: null };
+    }
 
     const archivo = doc.documentoPlantilla?.archivo;
     if (!archivo) {
@@ -519,10 +533,137 @@ export class DocumentoGeneralService {
     const fichaMadre = await this.loadFichaMadreConData(doc.fichaMadreId);
     const replacements = await this.buildReplacements(fichaMadre, doc);
 
-    return this.renderPlantillaHtml(archivo, replacements);
+    const html = await this.renderPlantillaHtml(archivo, replacements);
+    return { url: null, html };
   }
 
   async remove(id: string) {
     return this.prisma.documentoGeneral.delete({ where: { id } });
+  }
+
+  /**
+   * Sube el documento fisico a Supabase Storage y lo registra con estado FIRMADO en la base de datos.
+   */
+  async uploadDocumentoMasivo(
+    fichaMadreId: string,
+    file: Express.Multer.File,
+    dto?: { documentoPlantillaId?: string; nombreArchivo?: string },
+  ) {
+    const fichaMadre = await this.prisma.fichaMadre.findUniqueOrThrow({
+      where: { id: fichaMadreId },
+      include: { cliente: { include: { persona: true } } }, 
+    });
+
+    // 1. Resolver plantila
+    let plantillaId = dto?.documentoPlantillaId;
+    if (!plantillaId) {
+      const primeraPlantilla = await this.prisma.documentoPlantilla.findFirst({
+        where: { activo: true },
+      });
+      if (!primeraPlantilla) {
+        throw new BadRequestException('No existen plantillas activas en el sistema. ');
+      }
+      plantillaId = primeraPlantilla.id;
+    }
+
+    // 2. Subir directamente a Subapase Storage
+    const timestamp = Date.now();
+    const cleanFileName = file.originalname.replace(/\s+/g, '_');
+    const finalFileName = `${timestamp}_${cleanFileName}`;
+    const folderPath = `expedientes/${fichaMadre.codigo}`; // Carpeta por expediente eje: expedientes/FM-2025-0001
+
+    const supabasePublicUrl = await this.storageService.uploadFile(
+      folderPath,
+      finalFileName,
+      file.buffer,
+      file.mimetype || 'application/pdf',
+    );
+
+    // 3. Crear o actualizar registro en Documento General con la URL pública de Supabase
+    const nombreDoc = dto?.nombreArchivo || file.originalname;
+
+    let docGeneral = await this.prisma.documentoGeneral.findFirst({
+      where: {
+        fichaMadreId,
+        documentoPlantillaId: plantillaId,
+      },
+    });
+
+    if (docGeneral) {
+      docGeneral = await this.prisma.documentoGeneral.update({
+        where: { id: docGeneral.id },
+        data: {
+          nombreArchivo: nombreDoc,
+          rutaArchivo: supabasePublicUrl,
+          estado: 'FIRMADO',
+        },
+        include: {
+          documentoPlantilla: true,
+        },
+      });
+
+      await this.prisma.firma.deleteMany({
+        where: { documentoGeneralId: docGeneral.id },
+      });
+    } else {
+      docGeneral = await this.prisma.documentoGeneral.create({
+        data: {
+          fichaMadreId,
+          documentoPlantillaId: plantillaId,
+          nombreArchivo: nombreDoc,
+          rutaArchivo: supabasePublicUrl,
+          estado: 'FIRMADO',
+        },
+        include: {
+          documentoPlantilla: true,
+        },
+      });
+    }
+
+    // 4. Registrar la firma histórica/digitalizada como FIRMADO
+    await this.prisma.firma.create({
+      data: {
+        documentoGeneralId: docGeneral.id,
+        tipo: 'ELECTRONICA',
+        estado: 'FIRMADO',
+        fechaFirma: new Date(),
+        firmanteNombre: `${fichaMadre.cliente.persona?.nombres} ${fichaMadre.cliente.persona?.apellidos}`,
+        firmanteDocumento: fichaMadre.cliente.persona?.numeroDocumento,
+        firmanteEmail: fichaMadre.cliente.persona?.correo,
+        datosCertificado: {
+          tipoCarga: 'SUPABASE_HISTORICO',
+          fechaCarga: new Date(),
+          nombreOriginal: file.originalname,
+          sizeBytes: file.size,
+          urlStorage: supabasePublicUrl,
+        },
+      },
+    });
+
+    // 5. Actualizar dinámicamente el estado del expediente según los documentos subidos
+    const totalDocsFirmados = await this.prisma.documentoGeneral.count({
+      where: {
+        fichaMadreId,
+        estado: 'FIRMADO',
+      },
+    });
+
+    const totalPlantillasActivas = await this.prisma.documentoPlantilla.count({
+      where: { activo: true },
+    });
+
+    if (totalPlantillasActivas > 0 && totalDocsFirmados >= totalPlantillasActivas) {
+      await this.prisma.fichaMadre.update({
+        where: { id: fichaMadreId },
+        data: { estado: 'COMPLETADA' },
+      });
+    } else if (totalDocsFirmados > 0 && fichaMadre.estado === 'PENDIENTE') {
+      await this.prisma.fichaMadre.update({
+        where: { id: fichaMadreId },
+        data: { estado: 'EN_PROCESO' },
+      });
+    }
+
+    return docGeneral;
   }
 }
