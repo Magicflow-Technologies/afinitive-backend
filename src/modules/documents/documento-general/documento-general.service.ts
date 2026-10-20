@@ -451,73 +451,79 @@ export class DocumentoGeneralService {
 
     const fichaMadre = await this.loadFichaMadreConData(fichaMadreId);
 
-    const htmls: string[] = [];
-    for (const doc of seleccionados) {
-      const archivo = doc.documentoPlantilla?.archivo;
-      if (!archivo) {
-        throw new BadRequestException(
-          `El documento ${doc.nombreArchivo} no tiene una plantilla asociada.`,
-        );
-      }
-      const replacements = await this.buildReplacements(fichaMadre, doc);
-      htmls.push(await this.renderPlantillaHtml(archivo, replacements));
-    }
-
-    return this.renderHtmlsToPdf(htmls);
-  }
-
-  private async renderHtmlsToPdf(htmls: string[]): Promise<Buffer> {
-    const browser = await chromium.launch({
-      headless: true,
-    });
+    const pdfBuffers: Buffer[] = [];
+    let browser: any = null;
 
     try {
-      const page = await browser.newPage({
-        viewport: { width: 1240, height: 1754 },
-      });
-      await page.emulateMedia({ media: 'print' });
+      for (const doc of seleccionados) {
+        // Si el archivo ya es un PDF subido a Supabase Storage (http/https), obtener directamente su buffer
+        if (doc.rutaArchivo && doc.rutaArchivo.startsWith('http')) {
+          try {
+            const resp = await fetch(doc.rutaArchivo);
+            if (resp.ok) {
+              const arrayBuf = await resp.arrayBuffer();
+              pdfBuffers.push(Buffer.from(arrayBuf));
+              continue;
+            }
+          } catch (fetchErr) {
+            console.warn(`No se pudo descargar PDF de storage ${doc.rutaArchivo}:`, fetchErr);
+          }
+        }
 
-      const pdfBuffers: Buffer[] = [];
+        // Si no es un PDF de storage o fallo, compilar Handlebars y generar con Chromium
+        const archivo = doc.documentoPlantilla?.archivo;
+        if (!archivo) {
+          throw new BadRequestException(
+            `El documento ${doc.nombreArchivo} no tiene una plantilla asociada.`,
+          );
+        }
+        const replacements = await this.buildReplacements(fichaMadre, doc);
+        const html = await this.renderPlantillaHtml(archivo, replacements);
 
-      for (const html of htmls) {
+        if (!browser) {
+          browser = await chromium.launch({ headless: true });
+        }
+        const page = await browser.newPage({ viewport: { width: 1240, height: 1754 } });
+        await page.emulateMedia({ media: 'print' });
         await page.setContent(html, { waitUntil: 'load' });
         await page.waitForTimeout(300);
         const singlePdf = await page.pdf({
           format: 'A4',
           printBackground: true,
           preferCSSPageSize: true,
-          margin: {
-            top: '0mm',
-            right: '0mm',
-            bottom: '0mm',
-            left: '0mm',
-          },
+          margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
         });
+        await page.close();
         pdfBuffers.push(Buffer.from(singlePdf));
       }
-
-      await page.close();
-
-      if (pdfBuffers.length === 1) {
-        return pdfBuffers[0];
-      }
-
-      const mergedPdf = await PDFDocument.create();
-      for (const buffer of pdfBuffers) {
-        const doc = await PDFDocument.load(buffer);
-        const copiedPages = await mergedPdf.copyPages(doc, doc.getPageIndices());
-        copiedPages.forEach((p) => mergedPdf.addPage(p));
-      }
-
-      const finalPdfBytes = await mergedPdf.save();
-      return Buffer.from(finalPdfBytes);
     } finally {
-      await browser.close();
+      if (browser) {
+        await browser.close();
+      }
     }
+
+    if (pdfBuffers.length === 1) {
+      return pdfBuffers[0];
+    }
+
+    const mergedPdf = await PDFDocument.create();
+    for (const buffer of pdfBuffers) {
+      const doc = await PDFDocument.load(buffer);
+      const copiedPages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+      copiedPages.forEach((p) => mergedPdf.addPage(p));
+    }
+
+    const finalPdfBytes = await mergedPdf.save();
+    return Buffer.from(finalPdfBytes);
   }
 
   async getPreview(id: string) {
     const doc = await this.findOne(id);
+
+    // Si el documento tiene archivo real subido a Supabase Storage (http o https)
+    if (doc.rutaArchivo && doc.rutaArchivo.startsWith('http')) {
+      return { url: doc.rutaArchivo, html: null };
+    }
 
     const archivo = doc.documentoPlantilla?.archivo;
     if (!archivo) {
@@ -527,7 +533,8 @@ export class DocumentoGeneralService {
     const fichaMadre = await this.loadFichaMadreConData(doc.fichaMadreId);
     const replacements = await this.buildReplacements(fichaMadre, doc);
 
-    return this.renderPlantillaHtml(archivo, replacements);
+    const html = await this.renderPlantillaHtml(archivo, replacements);
+    return { url: null, html };
   }
 
   async remove(id: string) {
