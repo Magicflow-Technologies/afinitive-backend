@@ -10,7 +10,6 @@ import { chromium } from 'playwright';
 import { PDFDocument } from 'pdf-lib';
 import { StorageService } from '../../../core/storage/storage.service.js';
 
-
 const TEMPLATE_FILE_FALLBACKS: Record<string, string> = {
   '01_carta_solicitud_participacion.hbs': '05_carta_solicitud_participacion.hbs',
   '03_formato_beneficiario_final.hbs': '04_formato_beneficiario_final.hbs',
@@ -28,12 +27,65 @@ const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
   '07_declaracion_inversion.hbs': 7,
 };
 
+const DOCUMENTOS_OFICIALES_CONFIG: Record<
+  number,
+  { orden: number; nombreFormal: string; storageFileName: string }
+> = {
+  1: {
+    orden: 1,
+    nombreFormal: '1. Ficha de Cliente PN',
+    storageFileName: '01_Ficha_de_Cliente_PN.pdf',
+  },
+  2: {
+    orden: 2,
+    nombreFormal: '2. DJ Titularidad y Origen de Flujos',
+    storageFileName: '02_DJ_Titularidad_y_Origen_de_Flujos.pdf',
+  },
+  3: {
+    orden: 3,
+    nombreFormal: '3. DJ Residencia Fiscal (FATCA / CRS)',
+    storageFileName: '03_DJ_Residencia_Fiscal_FATCA_CRS.pdf',
+  },
+  4: {
+    orden: 4,
+    nombreFormal: '4. Formato Beneficiario Final',
+    storageFileName: '04_Formato_Beneficiario_Final.pdf',
+  },
+  5: {
+    orden: 5,
+    nombreFormal: '5. Carta Solicitud de Participación',
+    storageFileName: '05_Carta_Solicitud_de_Participacion.pdf',
+  },
+  6: {
+    orden: 6,
+    nombreFormal: '6. Instrucción de Inversión',
+    storageFileName: '06_Instruccion_de_Inversion.pdf',
+  },
+  7: {
+    orden: 7,
+    nombreFormal: '7. Declaración de Inversión',
+    storageFileName: '07_Declaracion_de_Inversion.pdf',
+  },
+};
+
 @Injectable()
 export class DocumentoGeneralService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storageService: StorageService,
   ) {}
+
+  private detectDocOrder(text: string): number {
+    const t = text.toLowerCase();
+    if (t.includes('ficha') || t.includes('01')) return 1;
+    if (t.includes('titularidad') || t.includes('flujo') || t.includes('origen') || t.includes('02')) return 2;
+    if (t.includes('residencia') || t.includes('fiscal') || t.includes('fatca') || t.includes('crs') || t.includes('03')) return 3;
+    if (t.includes('beneficiario') || t.includes('04')) return 4;
+    if (t.includes('carta') || t.includes('solicitud') || t.includes('participacion') || t.includes('05')) return 5;
+    if (t.includes('instruccion') || t.includes('colocacion') || t.includes('06')) return 6;
+    if (t.includes('declaracion') || t.includes('riesgo') || t.includes('07')) return 7;
+    return 1;
+  }
 
   private getArchivoFromItem(
     item?: {
@@ -542,7 +594,7 @@ export class DocumentoGeneralService {
   }
 
   /**
-   * Sube el documento fisico a Supabase Storage y lo registra con estado FIRMADO en la base de datos.
+   * Sube el documento fisico a Supabase Storage con su nombre formal estandarizado y lo registra con estado FIRMADO en la base de datos.
    */
   async uploadDocumentoMasivo(
     fichaMadreId: string,
@@ -554,33 +606,46 @@ export class DocumentoGeneralService {
       include: { cliente: { include: { persona: true } } }, 
     });
 
-    // 1. Resolver plantila
+    // 1. Resolver plantilla
     let plantillaId = dto?.documentoPlantillaId;
-    if (!plantillaId) {
-      const primeraPlantilla = await this.prisma.documentoPlantilla.findFirst({
-        where: { activo: true },
-      });
-      if (!primeraPlantilla) {
-        throw new BadRequestException('No existen plantillas activas en el sistema. ');
-      }
-      plantillaId = primeraPlantilla.id;
+
+    let plantilla = plantillaId
+      ? await this.prisma.documentoPlantilla.findUnique({ where: { id: plantillaId } })
+      : null;
+
+    if (!plantilla) {
+      const todas = await this.prisma.documentoPlantilla.findMany({ where: { activo: true } });
+      const searchTarget = (dto?.nombreArchivo || file.originalname).toLowerCase();
+      plantilla =
+        todas.find((p) => {
+          const pNombre = (p.nombre || '').toLowerCase();
+          const pArchivo = (p.archivo || '').toLowerCase();
+          return searchTarget.includes(pNombre) || searchTarget.includes(pArchivo);
+        }) || todas[0];
+      plantillaId = plantilla?.id;
     }
 
-    // 2. Subir directamente a Subapase Storage
-    const timestamp = Date.now();
-    const cleanFileName = file.originalname.replace(/\s+/g, '_');
-    const finalFileName = `${timestamp}_${cleanFileName}`;
-    const folderPath = `expedientes/${fichaMadre.codigo}`; // Carpeta por expediente eje: expedientes/FM-2025-0001
+    if (!plantillaId) {
+      throw new BadRequestException('No existen plantillas activas en el sistema.');
+    }
 
+    // 2. Determinar orden y nombre formal del documento (ej: 01_Ficha_de_Cliente_PN.pdf)
+    const order = plantilla?.archivo
+      ? (TEMPLATE_DISPLAY_ORDER[plantilla.archivo] ?? this.detectDocOrder(dto?.nombreArchivo || file.originalname))
+      : this.detectDocOrder(dto?.nombreArchivo || file.originalname);
+
+    const configFormal = DOCUMENTOS_OFICIALES_CONFIG[order];
+    const nombreDoc = configFormal?.nombreFormal || dto?.nombreArchivo || plantilla?.nombre || file.originalname;
+    const finalFileName = configFormal?.storageFileName || `${String(order).padStart(2, '0')}_${this.storageService.sanitizeFileName(nombreDoc)}.pdf`;
+    const folderPath = `expedientes/${fichaMadre.codigo}`;
+
+    // 3. Subir directamente a Supabase Storage con el nombre formal oficial
     const supabasePublicUrl = await this.storageService.uploadFile(
       folderPath,
       finalFileName,
       file.buffer,
       file.mimetype || 'application/pdf',
     );
-
-    // 3. Crear o actualizar registro en Documento General con la URL pública de Supabase
-    const nombreDoc = dto?.nombreArchivo || file.originalname;
 
     let docGeneral = await this.prisma.documentoGeneral.findFirst({
       where: {
