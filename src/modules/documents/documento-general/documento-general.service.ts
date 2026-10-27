@@ -140,7 +140,11 @@ export class DocumentoGeneralService {
   async findByFichaMadre(fichaMadreId: string) {
     const documentos = await this.prisma.documentoGeneral.findMany({
       where: { fichaMadreId },
-      include: { documentoPlantilla: true, firmas: true },
+      include: {
+        documentoPlantilla: true,
+        firmas: true,
+        inversionFideicomiso: { include: { fideicomiso: true } },
+      },
     });
 
     return this.sortDocumentosByTemplateOrder(documentos);
@@ -149,7 +153,12 @@ export class DocumentoGeneralService {
   async findOne(id: string) {
     return this.prisma.documentoGeneral.findUniqueOrThrow({
       where: { id },
-      include: { documentoPlantilla: true, firmas: true, fichaMadre: true },
+      include: {
+        documentoPlantilla: true,
+        firmas: true,
+        fichaMadre: true,
+        inversionFideicomiso: { include: { fideicomiso: true } },
+      },
     });
   }
 
@@ -174,6 +183,39 @@ export class DocumentoGeneralService {
       await this.prisma.documentoGeneral.delete({ where: { id: docAnt.id } });
     }
 
+    // Resolver o inicializar la inversión por defecto en Fideicomiso si no existe
+    let invFidDefault = await this.prisma.inversionFideicomiso.findFirst({
+      where: { fichaMadreId },
+    });
+
+    if (!invFidDefault) {
+      let defaultFid = await this.prisma.fideicomiso.findFirst({
+        where: { nombre: 'AWM LIBRE 2' },
+      });
+      if (!defaultFid) {
+        defaultFid = await this.prisma.fideicomiso.findFirst({ where: { activo: true } });
+      }
+
+      if (defaultFid) {
+        const invData = fichaMadre.inversionista?.inversion;
+        invFidDefault = await this.prisma.inversionFideicomiso.create({
+          data: {
+            fichaMadreId,
+            fideicomisoId: defaultFid.id,
+            moneda: invData?.moneda || defaultFid.monedaDefault || 'USD',
+            monto: invData?.montoInicial ? String(invData.montoInicial) : '0',
+            montoLetras: invData?.montoInicialLetras || '',
+            tasaInteres: defaultFid.tasaInteresDefault || '10 %',
+            plazoEmision: defaultFid.plazoEmisionDefault || 'Hasta de 24 meses. Base ACT/360.',
+            bancoDestino: defaultFid.bancoNombre,
+            numeroCuentaDestino: defaultFid.numeroCuenta,
+            cuentaCciDestino: defaultFid.cuentaCci,
+            titularCuentaDestino: defaultFid.titularCuenta,
+          },
+        });
+      }
+    }
+
     const plantillas = this.sortDocumentosByTemplateOrder(
       await this.prisma.documentoPlantilla.findMany({
         where: { activo: true },
@@ -188,10 +230,20 @@ export class DocumentoGeneralService {
 
         Handlebars.compile(templateContent)(replacements);
 
+        const esFormatoFideicomiso = [
+          '05_carta_solicitud_participacion.hbs',
+          '06_instruccion_inversion.hbs',
+          '07_declaracion_inversion.hbs',
+          '01_carta_solicitud_participacion.hbs',
+        ].includes(plantilla.archivo);
+
+        const inversionFideicomisoId = esFormatoFideicomiso && invFidDefault ? invFidDefault.id : null;
+
         const docGen = await this.prisma.documentoGeneral.create({
           data: {
             fichaMadreId,
             documentoPlantillaId: plantilla.id,
+            inversionFideicomisoId,
             nombreArchivo: plantilla.nombre,
             rutaArchivo: `/hbs/${plantilla.archivo}`,
             estado: 'PENDIENTE_FIRMA',
@@ -238,6 +290,9 @@ export class DocumentoGeneralService {
             residenciaFiscal: { include: { paises: { orderBy: { orden: 'asc' } } } },
             inversion: true,
           },
+        },
+        inversionesFideicomiso: {
+          include: { fideicomiso: true },
         },
         documentos: {
           include: {
@@ -308,7 +363,12 @@ export class DocumentoGeneralService {
     const isVal = (v: any, target: string) =>
       String(v ?? '').toLowerCase() === target ? 'X' : ' ';
 
-    const montoNum = parseFloat(inversion.monto_inicial) || 0;
+    const invFid = currentDoc?.inversionFideicomiso;
+    const fideicomiso = invFid?.fideicomiso;
+
+    const montoVal = invFid?.monto ?? inversion.monto_inicial ?? '';
+    const monedaVal = invFid?.moneda ?? inversion.moneda ?? 'USD';
+    const montoNum = parseFloat(montoVal) || 0;
     const montoFormateado = montoNum.toLocaleString('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
@@ -426,40 +486,43 @@ export class DocumentoGeneralService {
       apoderado_email: apoderado.correo_electronico ?? '',
 
       // Inversión y datos bancarios
-      moneda: inversion.moneda ?? '',
-      moneda_simbolo: (inversion.moneda ?? 'USD').toUpperCase() === 'USD' ? '$' : 'S/',
-      monto_inicial: inversion.monto_inicial ?? '',
+      moneda: monedaVal,
+      moneda_simbolo: monedaVal.toUpperCase() === 'USD' ? '$' : 'S/',
+      monto_inicial: montoVal,
       monto_inicial_invertir_formateado: montoFormateado,
-      monto_inicial_letras: inversion.monto_inicial_letras ?? '',
-      monto_en_letras: inversion.monto_inicial_letras ?? '',
+      monto_inicial_letras: invFid?.montoLetras ?? inversion.monto_inicial_letras ?? '',
+      monto_en_letras: invFid?.montoLetras ?? inversion.monto_inicial_letras ?? '',
       origen_recursos: inversion.origen_recursos ?? '',
-      banco_nombre: inversion.banco_nombre ?? '',
-      numero_cuenta: inversion.numero_cuenta ?? '',
-      cuenta_cci: inversion.cuenta_cci ?? '',
+      banco_nombre: invFid?.bancoDestino ?? fideicomiso?.bancoNombre ?? inversion.banco_nombre ?? '',
+      numero_cuenta: invFid?.numeroCuentaDestino ?? fideicomiso?.numeroCuenta ?? inversion.numero_cuenta ?? '',
+      cuenta_cci: invFid?.cuentaCciDestino ?? fideicomiso?.cuentaCci ?? inversion.cuenta_cci ?? '',
 
-      // Datos del contrato / fideicomiso (configurables)
+      // Datos del contrato / fideicomiso (configurables dinámicamente)
       fecha_contrato: '27 de febrero 2024',
       empresa_interviniente: 'Inversiones Condominio Aventura S.A.C.',
-      interviniente_nombre: 'AFINITIVE S.A.C.',
+      interviniente_nombre: fideicomiso?.fideicomitente ?? 'AFINITIVE S.A.C.',
       representante_inversionistas_nombre: 'RICARDO MARTIN BERTALMIO RUIBAL',
       representante_inversionistas_dni: '07636192',
-      moneda_nombre: 'dólares americanos',
+      moneda_nombre: monedaVal.toUpperCase() === 'USD' ? 'dólares americanos' : 'soles',
       titular_cuenta_nombre:
+        invFid?.titularCuentaDestino ??
+        fideicomiso?.titularCuenta ??
         'Patrimonio en Fideicomiso PF AFINITIVE -D. LEG. N° 861, Titulo XI, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.',
-      titular_cuenta_ruc: '20609876543',
-      patrimonio_nombre: 'Patrimonio en Fideicomiso AFINITIVE',
+      titular_cuenta_ruc: fideicomiso?.ruc ?? '20609876543',
+      patrimonio_nombre: fideicomiso?.nombre ? `Patrimonio en Fideicomiso ${fideicomiso.nombre}` : 'Patrimonio en Fideicomiso AFINITIVE',
       patrimonio_nombre_largo:
+        fideicomiso?.patrimonioNombreLargo ??
         'Patrimonio en Fideicomiso AFINITIVE – D. Leg. N° 861, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.',
-      patrimonio_sigla: 'PF AFINITIVE',
-      fideicomiso_nombre: 'AWM LIBRE 2',
-      fideicomiso_patrimonio_nombre: 'Fideicomiso AFINITIVE',
-      fideicomitente_nombre: 'AFINITIVE S.A.C.',
-      notario_nombre: 'Notario Público de Lima Dr. Eduardo Laos de Lama',
-      cantidad_valores: 'Uno (01)',
-      serie_emision: 'Primera',
-      tasa_interes: '10 %',
-      plazo_emision: 'Hasta de 24 meses. Base ACT/360.',
-      vigencia_instruccion: 'Seis (06) días hábiles',
+      patrimonio_sigla: fideicomiso?.nombre ? `PF ${fideicomiso.nombre}` : 'PF AFINITIVE',
+      fideicomiso_nombre: fideicomiso?.nombre ?? 'AWM LIBRE 2',
+      fideicomiso_patrimonio_nombre: fideicomiso?.nombre ? `Fideicomiso ${fideicomiso.nombre}` : 'Fideicomiso AFINITIVE',
+      fideicomitente_nombre: fideicomiso?.fideicomitente ?? 'AFINITIVE S.A.C.',
+      notario_nombre: fideicomiso?.notario ?? 'Notario Público de Lima Dr. Eduardo Laos de Lama',
+      cantidad_valores: invFid?.cantidadValores ?? 'Uno (01)',
+      serie_emision: invFid?.serieEmision ?? 'Primera',
+      tasa_interes: invFid?.tasaInteres ?? fideicomiso?.tasaInteresDefault ?? '10 %',
+      plazo_emision: invFid?.plazoEmision ?? fideicomiso?.plazoEmisionDefault ?? 'Hasta de 24 meses. Base ACT/360.',
+      vigencia_instruccion: invFid?.vigenciaInstruccion ?? 'Seis (06) días hábiles',
     };
   }
 
@@ -569,6 +632,98 @@ export class DocumentoGeneralService {
     return Buffer.from(finalPdfBytes);
   }
 
+  async generatePdfPackFideicomiso(inversionFideicomisoId: string): Promise<Buffer> {
+    const invFid = await this.prisma.inversionFideicomiso.findUniqueOrThrow({
+      where: { id: inversionFideicomisoId },
+      include: {
+        fideicomiso: true,
+        documentos: {
+          include: { documentoPlantilla: true, firmas: true },
+        },
+      },
+    });
+
+    // 1. Obtener los documentos maestros KYC (Formatos 01 al 04 donde inversionFideicomisoId es null)
+    const docsMaestros = await this.prisma.documentoGeneral.findMany({
+      where: {
+        fichaMadreId: invFid.fichaMadreId,
+        inversionFideicomisoId: null,
+      },
+      include: { documentoPlantilla: true, firmas: true },
+    });
+
+    // 2. Unir los 4 maestros con los 3 del fideicomiso específico
+    const todosDocumentos = [...docsMaestros, ...invFid.documentos];
+    const seleccionados = this.sortDocumentosByTemplateOrder(todosDocumentos);
+
+    const fichaMadre = await this.loadFichaMadreConData(invFid.fichaMadreId);
+
+    const pdfBuffers: Buffer[] = [];
+    let browser: any = null;
+
+    try {
+      for (const doc of seleccionados) {
+        if (doc.rutaArchivo && doc.rutaArchivo.startsWith('http')) {
+          try {
+            const resp = await fetch(doc.rutaArchivo);
+            if (resp.ok) {
+              const arrayBuf = await resp.arrayBuffer();
+              pdfBuffers.push(Buffer.from(arrayBuf));
+              continue;
+            }
+          } catch (fetchErr) {
+            console.warn(`No se pudo descargar PDF de storage ${doc.rutaArchivo}:`, fetchErr);
+          }
+        }
+
+        const archivo = doc.documentoPlantilla?.archivo;
+        if (!archivo) {
+          throw new BadRequestException(
+            `El documento ${doc.nombreArchivo} no tiene una plantilla asociada.`,
+          );
+        }
+
+        const docConInversion = doc.inversionFideicomisoId ? { ...doc, inversionFideicomiso: invFid } : doc;
+        const replacements = await this.buildReplacements(fichaMadre, docConInversion);
+        const html = await this.renderPlantillaHtml(archivo, replacements);
+
+        if (!browser) {
+          browser = await chromium.launch({ headless: true });
+        }
+        const page = await browser.newPage({ viewport: { width: 1240, height: 1754 } });
+        await page.emulateMedia({ media: 'print' });
+        await page.setContent(html, { waitUntil: 'load' });
+        await page.waitForTimeout(300);
+        const singlePdf = await page.pdf({
+          format: 'A4',
+          printBackground: true,
+          preferCSSPageSize: true,
+          margin: { top: '0mm', right: '0mm', bottom: '0mm', left: '0mm' },
+        });
+        await page.close();
+        pdfBuffers.push(Buffer.from(singlePdf));
+      }
+    } finally {
+      if (browser) {
+        await browser.close();
+      }
+    }
+
+    if (pdfBuffers.length === 1) {
+      return pdfBuffers[0];
+    }
+
+    const mergedPdf = await PDFDocument.create();
+    for (const buffer of pdfBuffers) {
+      const doc = await PDFDocument.load(buffer);
+      const copiedPages = await mergedPdf.copyPages(doc, doc.getPageIndices());
+      copiedPages.forEach((p) => mergedPdf.addPage(p));
+    }
+
+    const finalPdfBytes = await mergedPdf.save();
+    return Buffer.from(finalPdfBytes);
+  }
+
   async getPreview(id: string) {
     const doc = await this.findOne(id);
 
@@ -599,19 +754,32 @@ export class DocumentoGeneralService {
   async uploadDocumentoMasivo(
     fichaMadreId: string,
     file: Express.Multer.File,
-    dto?: { documentoPlantillaId?: string; nombreArchivo?: string },
+    dto?: {
+      documentoPlantillaId?: string;
+      nombreArchivo?: string;
+      documentoGeneralId?: string;
+      inversionFideicomisoId?: string;
+    },
   ) {
     const fichaMadre = await this.prisma.fichaMadre.findUniqueOrThrow({
       where: { id: fichaMadreId },
       include: { cliente: { include: { persona: true } } }, 
     });
 
-    // 1. Resolver plantilla
-    let plantillaId = dto?.documentoPlantillaId;
-
-    let plantilla = plantillaId
-      ? await this.prisma.documentoPlantilla.findUnique({ where: { id: plantillaId } })
+    // 1. Resolver documento general y plantilla
+    let docGeneral: any = dto?.documentoGeneralId
+      ? await this.prisma.documentoGeneral.findUnique({
+          where: { id: dto.documentoGeneralId },
+          include: { documentoPlantilla: true },
+        })
       : null;
+
+    let plantilla: any = docGeneral?.documentoPlantilla;
+    let plantillaId = plantilla?.id || dto?.documentoPlantillaId;
+
+    if (!plantilla && plantillaId) {
+      plantilla = await this.prisma.documentoPlantilla.findUnique({ where: { id: plantillaId } });
+    }
 
     if (!plantilla) {
       const todas = await this.prisma.documentoPlantilla.findMany({ where: { activo: true } });
@@ -647,12 +815,16 @@ export class DocumentoGeneralService {
       file.mimetype || 'application/pdf',
     );
 
-    let docGeneral = await this.prisma.documentoGeneral.findFirst({
-      where: {
-        fichaMadreId,
-        documentoPlantillaId: plantillaId,
-      },
-    });
+    if (!docGeneral) {
+      docGeneral = await this.prisma.documentoGeneral.findFirst({
+        where: {
+          fichaMadreId,
+          documentoPlantillaId: plantillaId,
+          ...(dto?.inversionFideicomisoId ? { inversionFideicomisoId: dto.inversionFideicomisoId } : {}),
+        },
+        include: { documentoPlantilla: true },
+      });
+    }
 
     if (docGeneral) {
       docGeneral = await this.prisma.documentoGeneral.update({
@@ -675,6 +847,7 @@ export class DocumentoGeneralService {
         data: {
           fichaMadreId,
           documentoPlantillaId: plantillaId,
+          inversionFideicomisoId: dto?.inversionFideicomisoId,
           nombreArchivo: nombreDoc,
           rutaArchivo: supabasePublicUrl,
           estado: 'FIRMADO',

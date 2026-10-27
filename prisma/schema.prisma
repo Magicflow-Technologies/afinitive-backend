@@ -122,7 +122,8 @@ model FichaMadre {
   observaciones String?
   createdAt     DateTime           @default(now()) @map("created_at")
   updatedAt     DateTime           @updatedAt @map("updated_at")
-  documentos    DocumentoGeneral[]
+  documentos             DocumentoGeneral[]
+  inversionesFideicomiso InversionFideicomiso[]
   cliente       Cliente            @relation(fields: [clienteId], references: [id])
   empleado      Empleado           @relation(fields: [empleadoId], references: [id])
   inversionista Inversionista?
@@ -331,7 +332,8 @@ model DocumentoPlantilla {
 
 model DocumentoGeneral {
   id                   String                 @id @default(uuid()) @db.Uuid
-  fichaMadreId         String                 @map("ficha_madre_id") @db.Uuid
+  fichaMadreId           String                 @map("ficha_madre_id") @db.Uuid
+  inversionFideicomisoId String?                @map("inversion_fideicomiso_id") @db.Uuid
   documentoPlantillaId String                 @map("documento_plantilla_id") @db.Uuid
   nombreArchivo        String                 @map("nombre_archivo")
   rutaArchivo          String                 @map("ruta_archivo")
@@ -342,11 +344,14 @@ model DocumentoGeneral {
   updatedAt            DateTime               @updatedAt @map("updated_at")
   documentoPlantilla   DocumentoPlantilla     @relation(fields: [documentoPlantillaId], references: [id])
   fichaMadre           FichaMadre             @relation(fields: [fichaMadreId], references: [id])
+  inversionFideicomiso InversionFideicomiso?  @relation(fields: [inversionFideicomisoId], references: [id])
   firmas               Firma[]
   tokensDocumentos     TokenAccesoDocumento[]
 
   @@index([fichaMadreId])
+
   @@index([estado])
+  @@index([inversionFideicomisoId])
   @@map("documento_general")
 }
 
@@ -392,6 +397,7 @@ model TokenAcceso {
 
   @@index([token])
   @@index([fichaMadreId])
+
   @@map("token_acceso")
 }
 
@@ -542,6 +548,76 @@ enum Metodo2FA {
   EMAIL
   SMS
   TOTP_APP
+}
+
+model Fideicomiso {
+  id                    String                 @id @default(uuid()) @db.Uuid
+  nombre                String                 @unique
+  fideicomitente        String                 @default("AFINITIVE S.A.C.")
+  emisorFiduciario      String                 @default("Grupo Coril Sociedad Titulizadora S.A.") @map("emisor_fiduciario")
+  patrimonioNombreLargo String?                @map("patrimonio_nombre_largo")
+  denominacionValores   String?                @default("BONOS DE TITULIZACIÓN – PF AFINITIVE") @map("denominacion_valores")
+  tipoValor             String?                @default("Bonos de Titulización") @map("tipo_valor")
+  monedaDefault         String?                @default("USD") @map("moneda_default")
+  tasaInteresDefault    String?                @default("10 %") @map("tasa_interes_default")
+  plazoEmisionDefault   String?                @default("Hasta de 24 meses. Base ACT/360.") @map("plazo_emision_default")
+  notario               String?                @default("Notario Público de Lima Dr. Eduardo Laos de Lama")
+  bancoNombre           String?                @map("banco_nombre")
+  numeroCuenta          String?                @map("numero_cuenta")
+  cuentaCci             String?                @map("cuenta_cci")
+  titularCuenta         String?                @map("titular_cuenta")
+  ruc                   String?
+  direccionFiduciario   String?                @map("direccion_fiduciario")
+  representanteLegal    String?                @map("representante_legal")
+  correoOpCorilDefault  String?                @map("correo_op_coril_default")
+  correoOpCorfidDefault String?                @map("correo_op_corfid_default")
+  activo                Boolean                @default(true)
+  createdAt             DateTime               @default(now()) @map("created_at")
+  updatedAt             DateTime               @updatedAt @map("updated_at")
+  inversiones           InversionFideicomiso[]
+
+  @@map("fideicomiso")
+}
+
+model InversionFideicomiso {
+  id                   String             @id @default(uuid()) @db.Uuid
+  fichaMadreId         String             @map("ficha_madre_id") @db.Uuid
+  fideicomisoId        String             @map("fideicomiso_id") @db.Uuid
+  moneda               String             @default("USD")
+  monto                Decimal            @db.Decimal(18, 2)
+  montoLetras          String?            @map("monto_letras")
+  tasaInteres          String?            @default("10 %") @map("tasa_interes")
+  plazoEmision         String?            @default("Hasta de 24 meses. Base ACT/360.") @map("plazo_emision")
+  serieEmision         String?            @default("Primera") @map("serie_emision")
+  cantidadValores      String?            @default("Uno (01)") @map("cantidad_valores")
+  vigenciaInstruccion  String?            @default("Seis (06) días hábiles") @map("vigencia_instruccion")
+  bancoDestino         String?            @map("banco_destino")
+  numeroCuentaDestino  String?            @map("numero_cuenta_destino")
+  cuentaCciDestino     String?            @map("cuenta_cci_destino")
+  titularCuentaDestino String?            @map("titular_cuenta_destino")
+  vencimiento          String?            @map("vencimiento")
+  correoOpCoril        String?            @map("correo_op_coril")
+  correoOpCorfid       String?            @map("correo_op_corfid")
+  enlaceCronograma     String?            @map("enlace_cronograma")
+  estado               EstadoInversion    @default(PENDIENTE)
+  observaciones        String?
+  createdAt            DateTime           @default(now()) @map("created_at")
+  updatedAt            DateTime           @updatedAt @map("updated_at")
+  fichaMadre           FichaMadre         @relation(fields: [fichaMadreId], references: [id])
+  fideicomiso          Fideicomiso        @relation(fields: [fideicomisoId], references: [id])
+  documentos           DocumentoGeneral[]
+
+  @@index([fichaMadreId])
+  @@index([fideicomisoId])
+  @@index([estado])
+  @@map("inversion_fideicomiso")
+}
+
+enum EstadoInversion {
+  PENDIENTE
+  EN_PROCESO
+  FIRMADO
+  CANCELADO
 }
 
 enum TipoOtp {
