@@ -38,8 +38,9 @@ export class DocumentoGeneralController {
     @UploadedFile() file: Express.Multer.File,
     @Body('documentoPlantillaId') documentoPlantillaId?: string,
     @Body('nombreArchivo') nombreArchivo?: string,
+    @Body('documentoGeneralId') documentoGeneralId?: string,
+    @Body('inversionFideicomisoId') inversionFideicomisoId?: string,
   ) {
-
     if (!file) {
       throw new Error('No se ha proporcionado un archivo para la importación masiva.');
     } 
@@ -47,6 +48,8 @@ export class DocumentoGeneralController {
     return await this.service.uploadDocumentoMasivo(fichaMadreId, file, {
       documentoPlantillaId,
       nombreArchivo,
+      documentoGeneralId,
+      inversionFideicomisoId,
     });
   }
 
@@ -81,7 +84,6 @@ export class DocumentoGeneralController {
   @Get(':id/preview')
   async getPreview(@Param('id', ParseUUIDPipe) id: string) {
     return await this.service.getPreview(id);
-
   }
 
   @Delete(':id')

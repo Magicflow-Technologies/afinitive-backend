@@ -34,6 +34,37 @@ export class StorageService {
   }
 
   /**
+   * Sanitiza el nombre de archivo para cumplir con las restricciones de nombres de clave de Supabase Storage / S3.
+   * Elimina caracteres no permitidos como corchetes [], paréntesis (), comillas, tildes, etc.
+   */
+  public sanitizeFileName(fileName: string): string {
+    const extIndex = fileName.lastIndexOf('.');
+    const ext = extIndex !== -1 ? fileName.slice(extIndex).toLowerCase() : '';
+    const nameWithoutExt = extIndex !== -1 ? fileName.slice(0, extIndex) : fileName;
+
+    const cleanName = nameWithoutExt
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Quita tildes y diacríticos
+      .replace(/[^a-zA-Z0-9_\-]/g, '_') // Reemplaza corchetes, comas, espacios y símbolos por _
+      .replace(/_{2,}/g, '_') // Quita repeticiones de guiones bajos
+      .replace(/^_+|_+$/g, ''); // Quita guiones bajos al inicio y fin
+
+    const safeExt = ext.replace(/[^a-z0-9.]/g, '');
+    return `${cleanName || 'archivo'}${safeExt}`;
+  }
+
+  /**
+   * Sanitiza la ruta de la carpeta para asegurar que no contenga caracteres inválidos.
+   */
+  public sanitizeFolderPath(folderPath: string): string {
+    return folderPath
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_\-\/]/g, '_')
+      .replace(/_{2,}/g, '_');
+  }
+
+  /**
    * Sube un buffer a Supabase Storage y retorna la URL pública del archivo subido.
    * @param folderPath - La ruta de la carpeta donde se almacenará el archivo.
    * @param buffer - El buffer del archivo a subir.
@@ -53,8 +84,9 @@ export class StorageService {
       );
     }
 
-    const clearFileName = fileName.replace(/\s+/g, '_');
-    const storagePath = `${folderPath}/${clearFileName}`;
+    const cleanFolder = this.sanitizeFolderPath(folderPath);
+    const clearFileName = this.sanitizeFileName(fileName);
+    const storagePath = `${cleanFolder}/${clearFileName}`;
 
     const { error } = await this.supabase.storage
       .from(this.bucketName)
@@ -64,11 +96,11 @@ export class StorageService {
       });
 
     if (error) {
-        this.logger.error(`Error al subir archivo a Supabase Storage: ${error.message}`);
-        throw new Error(`Error al subir el archivo a Supabase Storage: ${error.message}`)
+      this.logger.error(`Error al subir archivo a Supabase Storage: ${error.message}`);
+      throw new Error(`Error al subir el archivo a Supabase Storage: ${error.message}`);
     }
 
-    // Obtener la URL pública oficial generado por Supabase
+    // Obtener la URL pública oficial generada por Supabase
     const { data } = this.supabase.storage.from(this.bucketName).getPublicUrl(storagePath);
 
     this.logger.log(`Archivo subido exitosamente a Supabase Storage: ${data.publicUrl}`);
