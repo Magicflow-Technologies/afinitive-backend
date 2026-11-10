@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -213,14 +213,14 @@
       <div class="ref-row">
         <div class="ref-label">Ref:</div>
         <div class="ref-content">
-          Inversión en valores mobiliarios emitidos mediante <span class="highlight-var">Patrimonio en Fideicomiso AFINITIVE</span>, constituido según Contrato de Fideicomiso celebrado con <span class="highlight-var">fecha {{fecha_actual}}</span> y elevado a Escritura Pública con <span class="highlight-var">fecha {{fecha_actual}}</span>, ante <span class="highlight-var">Notario Público de Lima Dr. Eduardo Laos de Lama</span> y los términos y condiciones contenidos en el Patrimonio en <span class="highlight-var">Fideicomiso AFINITIVE</span> (en adelante el "Patrimonio").
+          Inversión en valores mobiliarios emitidos mediante <span class="highlight-var">Patrimonio en Fideicomiso {{denominacion}}</span>, constituido según Contrato de Fideicomiso celebrado con <span class="highlight-var">fecha {{fecha_actual}}</span> y elevado a Escritura Pública con <span class="highlight-var">fecha {{fecha_actual}}</span>, ante <span class="highlight-var">{{notario_nombre}}</span> y los términos y condiciones contenidos en el Patrimonio en <span class="highlight-var">Fideicomiso {{denominacion}}</span> (en adelante el "Patrimonio").
         </div>
       </div>
     </div>
 
     <!-- PÁRRAFO INTRODUCTORIO -->
     <p>
-      Por medio de la presente y en virtud de lo señalado en el Contrato de Fideicomiso AWM LIBRE 2, por mi cuenta y riesgo, manifiesto a ustedes en calidad de Fiduciario del Patrimonio, mi intención de invertir en los siguientes valores:
+      Por medio de la presente y en virtud de lo señalado en el Contrato de Fideicomiso {{fideicomiso_nombre}}, por mi cuenta y riesgo, manifiesto a ustedes en calidad de Fiduciario del Patrimonio, mi intención de invertir en los siguientes valores:
     </p>
 
     <!-- TABLA DE VALORES -->
@@ -231,61 +231,61 @@
       </tr>
       <tr>
         <td class="col-label">Fideicomitente/Originador</td>
-        <td class="col-val"><span class="highlight-var">AFINITIVE S.A.C.</span></td>
+        <td class="col-val"><span class="highlight-var">{{fideicomiso_nombre}}</span></td>
       </tr>
       <tr>
         <td class="col-label">Patrimonio Fideicomitido</td>
-        <td class="col-val"><span class="highlight-var">Patrimonio en Fideicomiso AFINITIVE – D. Leg. N° 861, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.</span></td>
+        <td class="col-val"><span class="highlight-var">{{patrimonio_nombre}}</span></td>
       </tr>
       <tr>
         <td class="col-label">Tipo de valor:</td>
-        <td class="col-val">Bonos de Titulización</td>
+        <td class="col-val"><span class="highlight-var">{{tipo_valor}}</span></td>
       </tr>
       <tr>
         <td class="col-label">Denominación</td>
-        <td class="col-val">BONOS DE <span class="highlight-var">TITULIZACIÓN – PF AFINITIVE</span></td>
+        <td class="col-val"><span class="highlight-var">{{denominacion_completa}}</span></td>
       </tr>
       <tr>
         <td class="col-label">Emisor/Fiduciario</td>
-        <td class="col-val">Grupo Coril Sociedad Titulizadora S.A.</td>
+        <td class="col-val">{{fiduciaria_nombre}}</td>
       </tr>
       <tr>
         <td class="col-label">Colocador</td>
-        <td class="col-val">Grupo Coril Sociedad Titulizadora S.A.</td>
+        <td class="col-val">{{fiduciaria_nombre}}</td>
       </tr>
       <tr>
         <td class="col-label">Cantidad de valores a adquirir</td>
-        <td class="col-val">Uno (01)</td>
+        <td class="col-val">{{cantidad_valores}}</td>
       </tr>
       <tr>
         <td class="col-label">Moneda</td>
-        <td class="col-val">US$ dólares americanos</td>
+        <td class="col-val">{{moneda_nombre}}</td>
       </tr>
       <tr>
         <td class="col-label">Valor Nominal</td>
-        <td class="col-val"><span class="highlight-var">US$ {{monto_inicial_invertir_formateado}} (Cincuenta mil y /00 100 dólares americanos).</span></td>
+        <td class="col-val"><span class="highlight-var">{{moneda_abrev}} {{monto_inicial_invertir_formateado}} ({{monto_en_letras}}).</span></td>
       </tr>
       <tr>
         <td class="col-label">Serie/Emisión/Programa</td>
-        <td class="col-val"><span class="highlight-var">Primera</span> emisión</td>
+        <td class="col-val"><span class="highlight-var">{{serie_emision}}</span> emisión</td>
       </tr>
       <tr>
         <td class="col-label">Rendimiento o Tasa de Interés</td>
-        <td class="col-val">10 %</td>
+        <td class="col-val">{{tasa_interes}}</td>
       </tr>
       <tr>
         <td class="col-label">Plazo de la emisión</td>
-        <td class="col-val">Hasta de 24 meses. Base ACT/360.</td>
+        <td class="col-val">{{plazo_emision}}</td>
       </tr>
       <tr>
         <td class="col-label">Vigencia de la Instrucción</td>
-        <td class="col-val">Seis (06) días hábiles</td>
+        <td class="col-val">{{vigencia_instruccion}}</td>
       </tr>
     </table>
 
     <!-- DECLARACIÓN Y PUNTO 1 -->
     <p style="font-weight: bold;">
-      Mediante la presente DECLARACIÓN DE INVERSIÓN acepto expresamente todos los términos y condiciones detallados en el Acto Constitutivo del Patrimonio en <span class="highlight-var">Fideicomiso AFINITIVE</span> / y la Nota Informativa. Asimismo, declaro, bajo declaración jurada, lo siguiente:
+      Mediante la presente DECLARACIÓN DE INVERSIÓN acepto expresamente todos los términos y condiciones detallados en el Acto Constitutivo del Patrimonio en <span class="highlight-var">Fideicomiso {{denominacion}}</span> / y la Nota Informativa. Asimismo, declaro, bajo declaración jurada, lo siguiente:
     </p>
 
     <div style="margin-left: 20px; font-style: italic; text-align: justify;">

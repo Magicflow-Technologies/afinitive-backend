@@ -142,7 +142,7 @@
       font-size: 9.5pt;
       font-weight: bold;
       font-style: italic;
-      text-transform: uppercase;
+      text-transform: capitalize;
     }
 
     .sig-dni {
@@ -185,7 +185,7 @@
 
     <!-- PÁRRAFO 1 -->
     <p>
-      Nos dirigimos a ustedes con relación al Contrato de Fideicomiso (en adelante, el "CONTRATO") celebrado con <span class="highlight-var">fecha {{fecha_actual}}</span>, entre <span class="highlight-var">AFINITIVE S.A.C.</span>, en calidad de Intervinientes; <span class="highlight-var">RICARDO MARTIN BERTALMIO RUIBAL</span>, en calidad de Representante de los inversionistas; y, Corfid Corporación Fiduciaria S.A., en calidad de <em>Fiduciario</em>. Los términos en mayúscula no definidos en esta Instrucción tendrán el significado otorgado en la Cláusula Segunda del CONTRATO.
+      Nos dirigimos a ustedes con relación al Contrato de Fideicomiso (en adelante, el "CONTRATO") celebrado con <span class="highlight-var">fecha {{fecha_actual}}</span>, entre <span class="highlight-var">{{fideicomiso_nombre}}</span>, en calidad de Intervinientes; <span class="highlight-var">{{representante_inversionistas_nombre}}</span>, en calidad de Representante de los inversionistas; y, Corfid Corporación Fiduciaria S.A., en calidad de <em>Fiduciario</em>. Los términos en mayúscula no definidos en esta Instrucción tendrán el significado otorgado en la Cláusula Segunda del CONTRATO.
     </p>
 
     <!-- PÁRRAFO 2 -->
@@ -214,22 +214,22 @@
             <span class="highlight-var">{{cuenta_cci}}</span>
           </td>
           <td>
-            <span class="highlight-var">Dólares Americanos</span>
+            <span class="highlight-var">{{moneda_nombre}}</span>
           </td>
           <td>
-            <span class="highlight-var">{{moneda_simbolo}} {{monto_inicial_invertir_formateado}}</span>
+            <span class="highlight-var">{{monto_inicial_invertir_formateado}}</span>
           </td>
           <td>
             <span class="highlight-var">{{banco_nombre}}</span>
           </td>
           <td>
-            <span class="highlight-var">Patrimonio en Fideicomiso PF AFINITIVE -D. LEG. N° 861, Titulo XI, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.</span>
+            <span class="highlight-var">{{titular_cuenta_nombre}}</span>
           </td>
           <td>
-            <span class="highlight-var">20609876543</span>
+            <span class="highlight-var">{{titular_cuenta_ruc}}</span>
           </td>
           <td>
-            Emisión de Bonos de Titulización y/o Instrumentos de Corto Plazo del <span class="highlight-var">Patrimonio en Fideicomiso AFINITIVE -D. LEG. N° 861, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.</span>
+            <span class="highlight-var">{{patrimonio_nombre}}</span>
           </td>
         </tr>
       </tbody>
@@ -251,13 +251,13 @@
         {{/if}}
         <div class="sig-line" style="border-top: 1px solid #000; width: 220px; margin: 0 auto 5px auto;"></div>
         <div>INVERSIONISTA</div>
-        <div class="sig-name">{{nombres_apellidos}}</div>
-        <div class="sig-dni">{{tipo_documento}} {{numero_documento}}</div>
+        <div class="sig-name">{{#if nombres_apellidos_capitalizado}}{{nombres_apellidos_capitalizado}}{{else}}{{nombres_apellidos}}{{/if}}</div>
+        <div class="sig-dni" style="display: none;">{{tipo_documento}} {{numero_documento}}</div>
       </div>
       <div class="sig-col">
         <div>REPRESENTANTE DE LOS INVERSIONISTAS</div>
-        <div class="sig-name">RICARDO MARTIN BERTALMIO RUIBAL</div>
-        <div class="sig-dni">DNI 07636192</div>
+        <div class="sig-name">{{representante_inversionistas_nombre}}</div>
+        <div class="sig-dni" style="display: none;">DNI {{representante_inversionistas_dni}}</div>
       </div>
     </div>
 

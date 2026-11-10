@@ -1,4 +1,5 @@
 import ExcelJS from 'exceljs';
+import { BadRequestException } from '@nestjs/common';
 
 export interface RawInversionRow {
   fila: number;
@@ -34,6 +35,43 @@ export function normalizeText(text?: string | null): string {
 function normalizeHeader(val?: string | null): string {
   if (!val) return '';
   return normalizeText(val).replace(/[^a-z0-9]/g, '');
+}
+
+/**
+ * Detecta si un valor parece un monto monetario
+ * Ej: "$10.000,00", "10,000.00", "S/ 5,000", "150000"
+ */
+export function isMoneyLike(val: any): boolean {
+  if (val === null || val === undefined) return false;
+  if (typeof val === 'number') return val > 0;
+  const s = String(val).trim();
+  if (s.startsWith('$') || s.startsWith('S/') || s.toUpperCase().startsWith('USD') || s.toUpperCase().startsWith('PEN')) {
+    return true;
+  }
+  return /^[\$S\/\s]*\d{1,3}([.,]\d{3})*([.,]\d{1,2})?$/.test(s) && /\d/.test(s);
+}
+
+/**
+ * Detecta si un valor parece una fecha
+ * Ej: "18/11/2026", "26-01-2027", "2026-11-18"
+ */
+export function isDateLike(val: any): boolean {
+  if (!val) return false;
+  if (val instanceof Date) return true;
+  const s = String(val).trim();
+  return /^\d{1,2}[/-]\d{1,2}[/-]\d{2,4}$/.test(s) || /^\d{4}[/-]\d{1,2}[/-]\d{1,2}$/.test(s);
+}
+
+/**
+ * Detecta si un valor parece una tasa porcentual
+ * Ej: "10%", "10.5 %", "12.00%", 0.10
+ */
+export function isRateLike(val: any): boolean {
+  if (val === null || val === undefined) return false;
+  if (typeof val === 'number' && val > 0 && val <= 1) return true;
+  const s = String(val).trim();
+  if (isDateLike(s)) return false;
+  return s.includes('%') || /^\d{1,2}(\.\d{1,2})?\s*%?$/.test(s);
 }
 
 /**
@@ -83,27 +121,39 @@ export function parseMonto(raw: any): { monto: number; moneda: string } {
 }
 
 /**
- * Extrae texto y URLs de un valor de celda que puede ser enlace
+ * Extrae texto y URLs de un valor de celda que puede ser enlace, fórmula o fecha
  */
 function extractValueAndLink(cellValue: any): { text: string; url?: string } {
-  if (!cellValue) return { text: '', url: '' };
+  if (cellValue === null || cellValue === undefined) return { text: '', url: '' };
 
   if (typeof cellValue === 'object') {
+    // Caso ExcelJS Formula result
+    if ('result' in cellValue) {
+      return extractValueAndLink(cellValue.result);
+    }
     // Caso ExcelJS Hyperlink
-    if (cellValue.text && cellValue.hyperlink) {
+    if (cellValue.text !== undefined && cellValue.hyperlink) {
       return { text: String(cellValue.text).trim(), url: String(cellValue.hyperlink).trim() };
+    }
+    if (cellValue.hyperlink) {
+      const u = String(cellValue.hyperlink).trim();
+      return { text: u, url: u };
     }
     if (cellValue.richText && Array.isArray(cellValue.richText)) {
       const text = cellValue.richText.map((t: any) => t.text).join('').trim();
       return { text, url: '' };
     }
     if (cellValue instanceof Date) {
-      return { text: cellValue.toISOString().split('T')[0], url: '' };
+      const d = String(cellValue.getUTCDate()).padStart(2, '0');
+      const m = String(cellValue.getUTCMonth() + 1).padStart(2, '0');
+      const y = cellValue.getUTCFullYear();
+      return { text: `${d}/${m}/${y}`, url: '' };
     }
   }
 
   const str = String(cellValue).trim();
-  return { text: str };
+  const isUrl = str.startsWith('http://') || str.startsWith('https://');
+  return { text: str, url: isUrl ? str : '' };
 }
 
 /**
@@ -165,13 +215,21 @@ export function parseHtmlTable(htmlContent: string): RawInversionRow[] {
       const norm = normalizeHeader(cell.text);
       if (norm.includes('inversionista') || norm.includes('cliente') || norm.includes('titular')) {
         map['inversionista'] = idx;
-      } else if (norm.includes('fideicomiso') || norm.includes('patrimonio') || norm.includes('fondo')) {
-        map['fideicomiso'] = idx;
-      } else if (norm.includes('monto') || norm.includes('capital') || norm.includes('importe')) {
+      } else if (
+        norm.includes('montoinvertido') ||
+        norm.includes('capitalinvertido') ||
+        norm.includes('patrimonioinvertido') ||
+        norm.includes('montofideicometido') ||
+        norm.includes('monto') ||
+        norm.includes('capital') ||
+        norm.includes('importe')
+      ) {
         map['monto'] = idx;
-      } else if (norm.includes('tasa') || norm.includes('tea') || norm.includes('interes')) {
+      } else if (norm.includes('fideicomiso') || norm.includes('patrimonio') || norm.includes('fondo') || norm.includes('titulizadora')) {
+        map['fideicomiso'] = idx;
+      } else if (norm.includes('tasa') || norm.includes('tea') || norm.includes('interes') || norm.includes('rendimiento')) {
         map['tasa'] = idx;
-      } else if (norm.includes('vencimiento') || norm.includes('plazo')) {
+      } else if (norm.includes('vencimiento') || norm.includes('plazo') || norm.includes('fecha')) {
         map['vencimiento'] = idx;
       } else if (norm.includes('coril')) {
         map['correoOpCoril'] = idx;
@@ -235,12 +293,32 @@ export function parseHtmlTable(htmlContent: string): RawInversionRow[] {
     }
     if (!inversionistaRaw) continue;
 
-    const fideicomisoRaw = colMap['fideicomiso'] !== undefined && row[colMap['fideicomiso']] ? row[colMap['fideicomiso']].text : '';
+    let fideicomisoRaw = colMap['fideicomiso'] !== undefined && row[colMap['fideicomiso']] ? row[colMap['fideicomiso']].text : '';
     const montoCell = colMap['monto'] !== undefined && row[colMap['monto']] ? row[colMap['monto']].text : '';
-    const { monto, moneda } = parseMonto(montoCell);
+    let { monto, moneda } = parseMonto(montoCell);
 
-    const tasaAnualRaw = colMap['tasa'] !== undefined && row[colMap['tasa']] ? row[colMap['tasa']].text : '';
-    const vencimientoRaw = colMap['vencimiento'] !== undefined && row[colMap['vencimiento']] ? row[colMap['vencimiento']].text : '';
+    let tasaAnualRaw = colMap['tasa'] !== undefined && row[colMap['tasa']] ? row[colMap['tasa']].text : '';
+    let vencimientoRaw = colMap['vencimiento'] !== undefined && row[colMap['vencimiento']] ? row[colMap['vencimiento']].text : '';
+
+    // Reajuste semántico inteligente si las columnas quedaron cruzadas
+    if (isMoneyLike(fideicomisoRaw) && monto === 0) {
+      const pm = parseMonto(fideicomisoRaw);
+      monto = pm.monto;
+      moneda = pm.moneda;
+      fideicomisoRaw = '';
+    }
+
+    if (isDateLike(tasaAnualRaw)) {
+      if (!vencimientoRaw) {
+        vencimientoRaw = tasaAnualRaw;
+      }
+      tasaAnualRaw = '';
+    }
+
+    if (isRateLike(vencimientoRaw) && !tasaAnualRaw) {
+      tasaAnualRaw = vencimientoRaw;
+      vencimientoRaw = '';
+    }
     
     let correoOpCoril = colMap['correoOpCoril'] !== undefined && row[colMap['correoOpCoril']] ? row[colMap['correoOpCoril']].text : '';
     let correoOpCorfid = colMap['correoOpCorfid'] !== undefined && row[colMap['correoOpCorfid']] ? row[colMap['correoOpCorfid']].text : '';
@@ -271,12 +349,12 @@ export function parseHtmlTable(htmlContent: string): RawInversionRow[] {
       fila: rIdx + 1,
       numero: colMap['numero'] !== undefined && row[colMap['numero']] ? row[colMap['numero']].text : String(rIdx),
       inversionistaRaw,
-      fideicomisoRaw: fideicomisoRaw || 'AWM LIBRE 2',
-      montoRaw: montoCell,
+      fideicomisoRaw: fideicomisoRaw.trim(),
+      montoRaw: montoCell || (monto > 0 ? String(monto) : ''),
       montoNumerico: monto,
       moneda,
-      tasaAnualRaw: tasaAnualRaw || '10 %',
-      vencimientoRaw,
+      tasaAnualRaw: tasaAnualRaw.trim(),
+      vencimientoRaw: vencimientoRaw.trim(),
       correoOpCoril,
       correoOpCorfid,
       enlaceCronograma,
@@ -308,13 +386,21 @@ export async function parseExcelFile(buffer: Buffer): Promise<RawInversionRow[]>
       const norm = normalizeHeader(cell.text || String(cell.value || ''));
       if (norm.includes('inversionista') || norm.includes('cliente') || norm.includes('titular')) {
         map['inversionista'] = colNumber;
-      } else if (norm.includes('fideicomiso') || norm.includes('patrimonio') || norm.includes('fondo')) {
-        map['fideicomiso'] = colNumber;
-      } else if (norm.includes('monto') || norm.includes('capital') || norm.includes('importe')) {
+      } else if (
+        norm.includes('montoinvertido') ||
+        norm.includes('capitalinvertido') ||
+        norm.includes('patrimonioinvertido') ||
+        norm.includes('montofideicometido') ||
+        norm.includes('monto') ||
+        norm.includes('capital') ||
+        norm.includes('importe')
+      ) {
         map['monto'] = colNumber;
-      } else if (norm.includes('tasa') || norm.includes('tea') || norm.includes('interes')) {
+      } else if (norm.includes('fideicomiso') || norm.includes('patrimonio') || norm.includes('fondo') || norm.includes('titulizadora')) {
+        map['fideicomiso'] = colNumber;
+      } else if (norm.includes('tasa') || norm.includes('tea') || norm.includes('interes') || norm.includes('rendimiento')) {
         map['tasa'] = colNumber;
-      } else if (norm.includes('vencimiento') || norm.includes('plazo')) {
+      } else if (norm.includes('vencimiento') || norm.includes('plazo') || norm.includes('fecha')) {
         map['vencimiento'] = colNumber;
       } else if (norm.includes('coril')) {
         map['correoOpCoril'] = colNumber;
@@ -359,10 +445,10 @@ export async function parseExcelFile(buffer: Buffer): Promise<RawInversionRow[]>
     if (!inversionistaRaw) return;
 
     const fideicomisoCell = colMap['fideicomiso'] ? row.getCell(colMap['fideicomiso']) : null;
-    const fideicomisoRaw = extractValueAndLink(fideicomisoCell?.value).text || 'AWM LIBRE 2';
+    let fideicomisoRaw = extractValueAndLink(fideicomisoCell?.value).text;
 
     const montoCell = colMap['monto'] ? row.getCell(colMap['monto']) : null;
-    const { monto, moneda } = parseMonto(montoCell?.value);
+    let { monto, moneda } = parseMonto(montoCell?.value);
 
     const tasaCell = colMap['tasa'] ? row.getCell(colMap['tasa']) : null;
     let tasaAnualRaw = extractValueAndLink(tasaCell?.value).text;
@@ -371,7 +457,27 @@ export async function parseExcelFile(buffer: Buffer): Promise<RawInversionRow[]>
     }
 
     const vencimientoCell = colMap['vencimiento'] ? row.getCell(colMap['vencimiento']) : null;
-    const vencimientoRaw = extractValueAndLink(vencimientoCell?.value).text;
+    let vencimientoRaw = extractValueAndLink(vencimientoCell?.value).text;
+
+    // Reajuste semántico inteligente si las columnas quedaron cruzadas
+    if (isMoneyLike(fideicomisoRaw) && monto === 0) {
+      const pm = parseMonto(fideicomisoRaw);
+      monto = pm.monto;
+      moneda = pm.moneda;
+      fideicomisoRaw = '';
+    }
+
+    if (isDateLike(tasaAnualRaw)) {
+      if (!vencimientoRaw) {
+        vencimientoRaw = tasaAnualRaw;
+      }
+      tasaAnualRaw = '';
+    }
+
+    if (isRateLike(vencimientoRaw) && !tasaAnualRaw) {
+      tasaAnualRaw = vencimientoRaw;
+      vencimientoRaw = '';
+    }
 
     const corilCell = colMap['correoOpCoril'] ? row.getCell(colMap['correoOpCoril']) : null;
     let correoOpCoril = extractValueAndLink(corilCell?.value).text;
@@ -406,12 +512,12 @@ export async function parseExcelFile(buffer: Buffer): Promise<RawInversionRow[]>
       fila: rowNumber,
       numero,
       inversionistaRaw,
-      fideicomisoRaw,
+      fideicomisoRaw: fideicomisoRaw.trim(),
       montoRaw: String(montoCell?.value ?? monto),
       montoNumerico: monto,
       moneda,
-      tasaAnualRaw: tasaAnualRaw || '10 %',
-      vencimientoRaw,
+      tasaAnualRaw: tasaAnualRaw.trim(),
+      vencimientoRaw: vencimientoRaw.trim(),
       correoOpCoril,
       correoOpCorfid,
       enlaceCronograma,
@@ -422,19 +528,17 @@ export async function parseExcelFile(buffer: Buffer): Promise<RawInversionRow[]>
 }
 
 /**
- * Función principal que detecta si es HTML o Excel y retorna las filas normalizadas
+ * Función principal que procesa el archivo Excel oficial (.xlsx / .xls)
  */
 export async function parseInversionesBuffer(buffer: Buffer, fileName: string): Promise<RawInversionRow[]> {
-  const isHtml =
-    fileName.toLowerCase().endsWith('.html') ||
-    fileName.toLowerCase().endsWith('.htm') ||
-    buffer.slice(0, 100).toString('utf-8').toLowerCase().includes('<html') ||
-    buffer.slice(0, 100).toString('utf-8').toLowerCase().includes('<table');
+  const ext = fileName.toLowerCase();
+  const isExcel = ext.endsWith('.xlsx') || ext.endsWith('.xls');
 
-  if (isHtml) {
-    const htmlText = buffer.toString('utf-8');
-    return parseHtmlTable(htmlText);
-  } else {
-    return await parseExcelFile(buffer);
+  if (!isExcel) {
+    throw new BadRequestException(
+      'Formato no permitido. Por favor sube un archivo Excel (.xlsx o .xls) con las 9 columnas oficiales requeridas.',
+    );
   }
+
+  return await parseExcelFile(buffer);
 }

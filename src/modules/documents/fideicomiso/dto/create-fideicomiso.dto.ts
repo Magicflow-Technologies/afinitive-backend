@@ -15,6 +15,10 @@ export class CreateFideicomisoDto {
 
   @IsString()
   @IsOptional()
+  denominacion?: string;
+
+  @IsString()
+  @IsOptional()
   patrimonioNombreLargo?: string;
 
   @IsString()
@@ -68,6 +72,10 @@ export class CreateFideicomisoDto {
   @IsString()
   @IsOptional()
   representanteLegal?: string;
+
+  @IsString()
+  @IsOptional()
+  representanteLegalDni?: string;
 
   @IsString()
   @IsOptional()

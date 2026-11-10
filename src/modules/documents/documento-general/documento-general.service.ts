@@ -368,15 +368,63 @@ export class DocumentoGeneralService {
 
     const montoVal = invFid?.monto ?? inversion.monto_inicial ?? '';
     const monedaVal = invFid?.moneda ?? inversion.moneda ?? 'USD';
+    const isUSD =
+      String(monedaVal).toUpperCase() === 'USD' ||
+      String(monedaVal).toUpperCase().includes('DOLAR');
+    const monedaNombre = isUSD ? 'Dólares Americanos' : 'Soles';
+    const monedaSimbolo = isUSD ? '$' : 'S/';
     const montoNum = parseFloat(montoVal) || 0;
-    const montoFormateado = montoNum.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    const montoEntero = Math.round(montoNum).toLocaleString('en-US');
+    const montoFormateado =
+      montoNum % 1 === 0
+        ? montoEntero
+        : montoNum.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+
+    if (invFid) {
+      if (!fm.fichaMadre.inversionista) {
+        fm.fichaMadre.inversionista = {};
+      }
+      if (!fm.fichaMadre.inversionista.inversion) {
+        fm.fichaMadre.inversionista.inversion = {};
+      }
+      fm.fichaMadre.inversionista.inversion.monto_inicial = montoFormateado;
+      fm.fichaMadre.inversionista.inversion.moneda = monedaVal;
+      if (invFid.montoLetras) {
+        fm.fichaMadre.inversionista.inversion.monto_inicial_letras = invFid.montoLetras;
+      }
+    }
 
     const paisesFiscales = residencia.paises ?? [];
 
-    return {
+    const toTitleCase = (val: string) =>
+      (val ?? '')
+        .toLowerCase()
+        .split(' ')
+        .filter(Boolean)
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+
+      const tipoValorVal = invFid?.tipoValor || fideicomiso?.tipoValor || '';
+      const denominacionVal = (fideicomiso as any)?.denominacion || '';
+      let cleanDenom = denominacionVal.trim();
+      if (cleanDenom.toUpperCase().startsWith('PF ')) {
+        cleanDenom = cleanDenom.substring(3).trim();
+      }
+      const denomConPF = cleanDenom ? `PF ${cleanDenom}` : '';
+
+      let denomCompleta = '';
+      if (tipoValorVal && denomConPF) {
+        denomCompleta = `${tipoValorVal.toUpperCase()} - ${denomConPF.toUpperCase()}`;
+      } else if (denomConPF) {
+        denomCompleta = denomConPF.toUpperCase();
+      } else if (tipoValorVal) {
+        denomCompleta = tipoValorVal.toUpperCase();
+      }
+
+      return {
       fichaMadre: fm.fichaMadre,
 
       // Estado de firma
@@ -393,6 +441,7 @@ export class DocumentoGeneralService {
 
       // Aliases planos (compatibilidad con las plantillas)
       nombres_apellidos: titular.nombres_apellidos ?? '',
+      nombres_apellidos_capitalizado: toTitleCase(titular.nombres_apellidos),
       nombresApellidos: titular.nombres_apellidos ?? '',
       tipo_documento: titular.tipo_documento ?? '',
       numero_documento: titular.numero_documento ?? '',
@@ -486,10 +535,14 @@ export class DocumentoGeneralService {
       apoderado_email: apoderado.correo_electronico ?? '',
 
       // Inversión y datos bancarios
-      moneda: monedaVal,
-      moneda_simbolo: monedaVal.toUpperCase() === 'USD' ? '$' : 'S/',
+      moneda: isUSD ? 'USD' : 'PEN',
+      moneda_simbolo: monedaSimbolo,
+      moneda_abrev: isUSD ? 'US$' : 'S/',
+      moneda_nombre: monedaNombre,
+      moneda_texto: monedaNombre,
       monto_inicial: montoVal,
       monto_inicial_invertir_formateado: montoFormateado,
+      monto_inicial_invertir_entero: montoEntero,
       monto_inicial_letras: invFid?.montoLetras ?? inversion.monto_inicial_letras ?? '',
       monto_en_letras: invFid?.montoLetras ?? inversion.monto_inicial_letras ?? '',
       origen_recursos: inversion.origen_recursos ?? '',
@@ -498,31 +551,37 @@ export class DocumentoGeneralService {
       cuenta_cci: invFid?.cuentaCciDestino ?? fideicomiso?.cuentaCci ?? inversion.cuenta_cci ?? '',
 
       // Datos del contrato / fideicomiso (configurables dinámicamente)
-      fecha_contrato: '27 de febrero 2024',
-      empresa_interviniente: 'Inversiones Condominio Aventura S.A.C.',
-      interviniente_nombre: fideicomiso?.fideicomitente ?? 'AFINITIVE S.A.C.',
-      representante_inversionistas_nombre: 'RICARDO MARTIN BERTALMIO RUIBAL',
-      representante_inversionistas_dni: '07636192',
-      moneda_nombre: monedaVal.toUpperCase() === 'USD' ? 'dólares americanos' : 'soles',
+      fecha_contrato: '',
+      empresa_interviniente: '',
+      interviniente_nombre: fideicomiso?.fideicomitente ?? '',
+      fiduciaria_nombre: fideicomiso?.emisorFiduciario ?? '',
+      emisor_fiduciario: fideicomiso?.emisorFiduciario ?? '',
+      representante_inversionistas_nombre: toTitleCase(
+        invFid?.representanteNombre ?? fideicomiso?.representanteLegal ?? '',
+      ),
+      representante_inversionistas_dni:
+        invFid?.representanteDni ?? (fideicomiso as any)?.representanteLegalDni ?? '',
       titular_cuenta_nombre:
         invFid?.titularCuentaDestino ??
         fideicomiso?.titularCuenta ??
-        'Patrimonio en Fideicomiso PF AFINITIVE -D. LEG. N° 861, Titulo XI, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.',
-      titular_cuenta_ruc: fideicomiso?.ruc ?? '20609876543',
-      patrimonio_nombre: fideicomiso?.nombre ? `Patrimonio en Fideicomiso ${fideicomiso.nombre}` : 'Patrimonio en Fideicomiso AFINITIVE',
-      patrimonio_nombre_largo:
-        fideicomiso?.patrimonioNombreLargo ??
-        'Patrimonio en Fideicomiso AFINITIVE – D. Leg. N° 861, No Inscrito en la SMV, Dirigido a Inversionistas Institucionales.',
-      patrimonio_sigla: fideicomiso?.nombre ? `PF ${fideicomiso.nombre}` : 'PF AFINITIVE',
-      fideicomiso_nombre: fideicomiso?.nombre ?? 'AWM LIBRE 2',
-      fideicomiso_patrimonio_nombre: fideicomiso?.nombre ? `Fideicomiso ${fideicomiso.nombre}` : 'Fideicomiso AFINITIVE',
-      fideicomitente_nombre: fideicomiso?.fideicomitente ?? 'AFINITIVE S.A.C.',
-      notario_nombre: fideicomiso?.notario ?? 'Notario Público de Lima Dr. Eduardo Laos de Lama',
-      cantidad_valores: invFid?.cantidadValores ?? 'Uno (01)',
-      serie_emision: invFid?.serieEmision ?? 'Primera',
-      tasa_interes: invFid?.tasaInteres ?? fideicomiso?.tasaInteresDefault ?? '10 %',
-      plazo_emision: invFid?.plazoEmision ?? fideicomiso?.plazoEmisionDefault ?? 'Hasta de 24 meses. Base ACT/360.',
-      vigencia_instruccion: invFid?.vigenciaInstruccion ?? 'Seis (06) días hábiles',
+        '',
+      titular_cuenta_ruc: fideicomiso?.ruc ?? '',
+      patrimonio_nombre: fideicomiso?.patrimonioNombreLargo ?? '',
+      patrimonio_nombre_largo: fideicomiso?.patrimonioNombreLargo ?? '',
+      concepto: fideicomiso?.patrimonioNombreLargo ?? '',
+      denominacion: cleanDenom,
+      tipo_valor: tipoValorVal,
+      denominacion_completa: denomCompleta,
+      patrimonio_sigla: fideicomiso?.nombre ? `PF ${fideicomiso.nombre}` : '',
+      fideicomiso_nombre: fideicomiso?.nombre ?? '',
+      fideicomiso_patrimonio_nombre: fideicomiso?.nombre ? `Fideicomiso ${fideicomiso.nombre}` : '',
+      fideicomitente_nombre: fideicomiso?.fideicomitente ?? '',
+      notario_nombre: fideicomiso?.notario ?? '',
+      cantidad_valores: invFid?.cantidadValores ?? '',
+      serie_emision: invFid?.serieEmision ?? '',
+      tasa_interes: invFid?.tasaInteres ?? fideicomiso?.tasaInteresDefault ?? '',
+      plazo_emision: invFid?.plazoEmision ?? fideicomiso?.plazoEmisionDefault ?? '',
+      vigencia_instruccion: invFid?.vigenciaInstruccion ?? '',
     };
   }
 

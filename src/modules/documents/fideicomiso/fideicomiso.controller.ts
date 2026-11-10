@@ -30,6 +30,23 @@ export class FideicomisoController {
     return this.service.getPortalResumen(clienteId);
   }
 
+  @Post('validar-importacion')
+  @UseInterceptors(FileInterceptor('file'))
+  async validarImportacion(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('No se ha proporcionado ningún archivo para validar.');
+    }
+    return this.service.validarInversionesMasivas(file.buffer, file.originalname);
+  }
+
+  @Post('confirmar-importacion')
+  async confirmarImportacion(@Body() body: { filas: any[] }) {
+    if (!body || !Array.isArray(body.filas)) {
+      throw new BadRequestException('El cuerpo de la solicitud debe contener la lista de filas a importar.');
+    }
+    return this.service.confirmarInversionesMasivas(body.filas);
+  }
+
   @Post('importar-masivo')
   @UseInterceptors(FileInterceptor('file'))
   async importarMasivo(@UploadedFile() file: Express.Multer.File) {
