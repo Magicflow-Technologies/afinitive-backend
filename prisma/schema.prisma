@@ -345,6 +345,8 @@ model DocumentoGeneral {
   documentoPlantilla   DocumentoPlantilla     @relation(fields: [documentoPlantillaId], references: [id])
   fichaMadre           FichaMadre             @relation(fields: [fichaMadreId], references: [id])
   inversionFideicomiso InversionFideicomiso?  @relation(fields: [inversionFideicomisoId], references: [id])
+  ampliacionInversion  AmpliacionInversion?   @relation(fields: [ampliacionInversionId], references: [id])
+  ampliacionInversionId String?               @map("ampliacion_inversion_id") @db.Uuid
   firmas               Firma[]
   tokensDocumentos     TokenAccesoDocumento[]
 
@@ -352,6 +354,7 @@ model DocumentoGeneral {
 
   @@index([estado])
   @@index([inversionFideicomisoId])
+  @@index([ampliacionInversionId])
   @@map("documento_general")
 }
 
@@ -612,11 +615,35 @@ model InversionFideicomiso {
   fichaMadre           FichaMadre         @relation(fields: [fichaMadreId], references: [id])
   fideicomiso          Fideicomiso        @relation(fields: [fideicomisoId], references: [id])
   documentos           DocumentoGeneral[]
+  ampliaciones         AmpliacionInversion[]
 
   @@index([fichaMadreId])
   @@index([fideicomisoId])
   @@index([estado])
   @@map("inversion_fideicomiso")
+}
+
+model AmpliacionInversion {
+  id                     String               @id @default(uuid()) @db.Uuid
+  inversionFideicomisoId String               @map("inversion_fideicomiso_id") @db.Uuid
+  numeroVersion          Int                  @map("numero_version")
+  montoAnterior          Decimal              @map("monto_anterior") @db.Decimal(18, 2)
+  montoAmpliacion        Decimal              @map("monto_ampliacion") @db.Decimal(18, 2)
+  montoNuevoTotal        Decimal              @map("monto_nuevo_total") @db.Decimal(18, 2)
+  montoAmpliacionLetras  String?              @map("monto_ampliacion_letras")
+  montoNuevoTotalLetras  String?              @map("monto_nuevo_total_letras")
+  fechaSolicitud         DateTime             @default(now()) @map("fecha_solicitud")
+  estado                 EstadoInversion      @default(PENDIENTE)
+  observaciones          String?
+  createdAt              DateTime             @default(now()) @map("created_at")
+  updatedAt              DateTime             @updatedAt @map("updated_at")
+
+  inversionFideicomiso   InversionFideicomiso @relation(fields: [inversionFideicomisoId], references: [id], onDelete: Cascade)
+  documentos             DocumentoGeneral[]
+
+  @@index([inversionFideicomisoId])
+  @@index([estado])
+  @@map("ampliacion_inversion")
 }
 
 enum EstadoInversion {

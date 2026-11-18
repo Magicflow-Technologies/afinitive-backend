@@ -3,6 +3,7 @@ import { PrismaService } from '../../../core/database/prisma/prisma.service.js';
 import { CreateFideicomisoDto } from './dto/create-fideicomiso.dto.js';
 import { CreateInversionFideicomisoDto } from './dto/create-inversion-fideicomiso.dto.js';
 import { UpdateInversionFideicomisoDto } from './dto/update-inversion-fideicomiso.dto.js';
+import { CreateAmpliacionInversionDto } from './dto/create-ampliacion-inversion.dto.js';
 import { DocumentoGeneralService } from '../documento-general/documento-general.service.js';
 import { parseInversionesBuffer, normalizeText, isDateLike } from './helpers/inversiones-parser.helper.js';
 
@@ -186,10 +187,22 @@ export class FideicomisoService implements OnModuleInit {
       where: { fichaMadreId },
       include: {
         fideicomiso: true,
+        ampliaciones: {
+          orderBy: { numeroVersion: 'asc' },
+          include: {
+            documentos: {
+              include: {
+                documentoPlantilla: true,
+                firmas: true,
+              },
+            },
+          },
+        },
         documentos: {
           include: {
             documentoPlantilla: true,
             firmas: true,
+            ampliacionInversion: true,
           },
           orderBy: { createdAt: 'asc' },
         },
@@ -203,10 +216,22 @@ export class FideicomisoService implements OnModuleInit {
       where: { id },
       include: {
         fideicomiso: true,
+        ampliaciones: {
+          orderBy: { numeroVersion: 'asc' },
+          include: {
+            documentos: {
+              include: {
+                documentoPlantilla: true,
+                firmas: true,
+              },
+            },
+          },
+        },
         documentos: {
           include: {
             documentoPlantilla: true,
             firmas: true,
+            ampliacionInversion: true,
           },
         },
         fichaMadre: {
@@ -343,6 +368,100 @@ export class FideicomisoService implements OnModuleInit {
     }
 
     return this.prisma.inversionFideicomiso.delete({ where: { id } });
+  }
+
+  async crearAmpliacionInversion(inversionId: string, dto: CreateAmpliacionInversionDto) {
+    const inv = await this.prisma.inversionFideicomiso.findUniqueOrThrow({
+      where: { id: inversionId },
+      include: {
+        fideicomiso: true,
+        ampliaciones: true,
+      },
+    });
+
+    if (dto.montoAmpliacion <= 0) {
+      throw new BadRequestException('El monto de la ampliación debe ser mayor a cero.');
+    }
+
+    const versionActual =
+      inv.ampliaciones.length > 0
+        ? Math.max(...inv.ampliaciones.map((a) => a.numeroVersion)) + 1
+        : 2;
+
+    const montoAnterior = Number(inv.monto);
+    const montoAmpliacion = Number(dto.montoAmpliacion);
+    const montoNuevoTotal = montoAnterior + montoAmpliacion;
+
+    // Buscar o registrar la plantilla oficial de ampliación
+    let plantillaAmpliacion = await this.prisma.documentoPlantilla.findFirst({
+      where: { archivo: '05_carta_solicitud_ampliacion.hbs' },
+    });
+
+    if (!plantillaAmpliacion) {
+      plantillaAmpliacion = await this.prisma.documentoPlantilla.create({
+        data: {
+          nombre: 'Carta de Solicitud de Ampliación de Inversionista',
+          descripcion: 'Carta de solicitud de ampliación de inversión en fideicomiso',
+          archivo: '05_carta_solicitud_ampliacion.hbs',
+          formato: 'HTML',
+          activo: true,
+        },
+      });
+    }
+
+    // Ejecutar creación de ampliación y documento dentro de una transacción
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Crear registro histórico de la ampliación
+      const ampliacion = await tx.ampliacionInversion.create({
+        data: {
+          inversionFideicomisoId: inv.id,
+          numeroVersion: versionActual,
+          montoAnterior: montoAnterior,
+          montoAmpliacion: montoAmpliacion,
+          montoNuevoTotal: montoNuevoTotal,
+          montoAmpliacionLetras: dto.montoAmpliacionLetras,
+          montoNuevoTotalLetras: dto.montoNuevoTotalLetras,
+          observaciones: dto.observaciones,
+          estado: 'PENDIENTE',
+        },
+      });
+
+      // 2. Crear DocumentoGeneral de la carta de ampliación para firma
+      const docGen = await tx.documentoGeneral.create({
+        data: {
+          fichaMadreId: inv.fichaMadreId,
+          documentoPlantillaId: plantillaAmpliacion.id,
+          inversionFideicomisoId: inv.id,
+          ampliacionInversionId: ampliacion.id,
+          version: versionActual,
+          nombreArchivo: `Carta de Solicitud de Ampliación (v${versionActual}) - ${inv.fideicomiso.nombre}`,
+          rutaArchivo: `/hbs/${plantillaAmpliacion.archivo}`,
+          estado: 'PENDIENTE_FIRMA',
+        },
+      });
+
+      // 3. Crear Firma electrónica pendiente
+      await tx.firma.create({
+        data: {
+          documentoGeneralId: docGen.id,
+          tipo: 'ELECTRONICA',
+          estado: 'PENDIENTE',
+        },
+      });
+
+      // 4. Actualizar el saldo consolidado de la inversión
+      await tx.inversionFideicomiso.update({
+        where: { id: inv.id },
+        data: {
+          monto: montoNuevoTotal,
+          montoLetras: dto.montoNuevoTotalLetras || inv.montoLetras,
+        },
+      });
+
+      return ampliacion;
+    });
+
+    return this.findOneInversion(inv.id);
   }
 
   async getPdfPackFideicomiso(inversionFideicomisoId: string): Promise<Buffer> {
