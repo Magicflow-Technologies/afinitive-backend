@@ -23,6 +23,7 @@ const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
   '03_dj_residencia_fiscal.hbs': 3,
   '04_formato_beneficiario_final.hbs': 4,
   '05_carta_solicitud_participacion.hbs': 5,
+  '05_carta_solicitud_ampliacion.hbs': 5.5,
   '06_instruccion_inversion.hbs': 6,
   '07_declaracion_inversion.hbs': 7,
 };
@@ -143,7 +144,13 @@ export class DocumentoGeneralService {
       include: {
         documentoPlantilla: true,
         firmas: true,
-        inversionFideicomiso: { include: { fideicomiso: true } },
+        inversionFideicomiso: {
+          include: {
+            fideicomiso: true,
+            ampliaciones: { orderBy: { numeroVersion: 'asc' } },
+          },
+        },
+        ampliacionInversion: true,
       },
     });
 
@@ -157,7 +164,13 @@ export class DocumentoGeneralService {
         documentoPlantilla: true,
         firmas: true,
         fichaMadre: true,
-        inversionFideicomiso: { include: { fideicomiso: true } },
+        inversionFideicomiso: {
+          include: {
+            fideicomiso: true,
+            ampliaciones: { orderBy: { numeroVersion: 'asc' } },
+          },
+        },
+        ampliacionInversion: true,
       },
     });
   }
@@ -366,22 +379,63 @@ export class DocumentoGeneralService {
     const invFid = currentDoc?.inversionFideicomiso;
     const fideicomiso = invFid?.fideicomiso;
 
-    const montoVal = invFid?.monto ?? inversion.monto_inicial ?? '';
+    const esDocAmpliacion = Boolean(
+      currentDoc?.ampliacionInversionId ||
+      currentDoc?.ampliacionInversion ||
+      currentDoc?.documentoPlantilla?.archivo?.includes('ampliacion')
+    );
+
+    let montoParaDocNum: number;
+    let montoLetrasParaDoc: string = '';
+
+    if (esDocAmpliacion) {
+      // 1. Carta de Solicitud de Ampliación de Inversionista:
+      // Debe mostrar EL NUEVO MONTO CONSOLIDADO (ej. si amplió 50k sobre 100k, muestra 150k)
+      const ampliacion = currentDoc?.ampliacionInversion;
+      const nuevoTotal = ampliacion?.montoNuevoTotal
+        ? parseFloat(String(ampliacion.montoNuevoTotal))
+        : (parseFloat(String(invFid?.monto)) || 0);
+
+      montoParaDocNum = nuevoTotal;
+      montoLetrasParaDoc = ampliacion?.montoNuevoTotalLetras || invFid?.montoLetras || '';
+    } else {
+      // 2. Formato 05 (Carta de Solicitud de Participación) y formatos base originales (01 al 07):
+      // Debe mostrar EL MONTO CON EL QUE EMPEZÓ (ej. 100k)
+      let montoInicio = 0;
+      if (invFid?.ampliaciones && invFid.ampliaciones.length > 0) {
+        // La primera ampliación tiene en montoAnterior el capital con el que empezó
+        const primeraAmpliacion = [...invFid.ampliaciones].sort((a: any, b: any) => a.numeroVersion - b.numeroVersion)[0];
+        if (primeraAmpliacion?.montoAnterior) {
+          montoInicio = parseFloat(String(primeraAmpliacion.montoAnterior));
+        }
+      }
+
+      if (montoInicio === 0) {
+        if (inversion.monto_inicial) {
+          montoInicio = parseFloat(String(inversion.monto_inicial));
+        } else if (invFid?.monto) {
+          montoInicio = parseFloat(String(invFid.monto));
+        }
+      }
+
+      montoParaDocNum = montoInicio;
+      montoLetrasParaDoc = inversion.monto_inicial_letras || invFid?.montoLetras || '';
+    }
+
     const monedaVal = invFid?.moneda ?? inversion.moneda ?? 'USD';
     const isUSD =
       String(monedaVal).toUpperCase() === 'USD' ||
       String(monedaVal).toUpperCase().includes('DOLAR');
     const monedaNombre = isUSD ? 'Dólares Americanos' : 'Soles';
     const monedaSimbolo = isUSD ? '$' : 'S/';
-    const montoNum = parseFloat(montoVal) || 0;
-    const montoEntero = Math.round(montoNum).toLocaleString('en-US');
-    const montoFormateado =
-      montoNum % 1 === 0
-        ? montoEntero
-        : montoNum.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          });
+
+    const formatMoney = (val: number) =>
+      val % 1 === 0
+        ? Math.round(val).toLocaleString('en-US')
+        : val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    const montoFormateado = formatMoney(montoParaDocNum);
+    const montoEntero = Math.round(montoParaDocNum).toLocaleString('en-US');
 
     if (invFid) {
       if (!fm.fichaMadre.inversionista) {
@@ -392,10 +446,20 @@ export class DocumentoGeneralService {
       }
       fm.fichaMadre.inversionista.inversion.monto_inicial = montoFormateado;
       fm.fichaMadre.inversionista.inversion.moneda = monedaVal;
-      if (invFid.montoLetras) {
-        fm.fichaMadre.inversionista.inversion.monto_inicial_letras = invFid.montoLetras;
+      if (montoLetrasParaDoc) {
+        fm.fichaMadre.inversionista.inversion.monto_inicial_letras = montoLetrasParaDoc;
       }
     }
+
+    const ampliacion = currentDoc?.ampliacionInversion;
+    const montoAnteriorNum = ampliacion?.montoAnterior ? parseFloat(String(ampliacion.montoAnterior)) : 0;
+    const montoAmpliacionNum = ampliacion?.montoAmpliacion ? parseFloat(String(ampliacion.montoAmpliacion)) : 0;
+    const montoNuevoTotalNum = ampliacion?.montoNuevoTotal ? parseFloat(String(ampliacion.montoNuevoTotal)) : montoParaDocNum;
+
+    const montoAnteriorFormateado = formatMoney(montoAnteriorNum);
+    const montoAmpliacionFormateado = formatMoney(montoAmpliacionNum);
+    const montoNuevoTotalFormateado = formatMoney(montoNuevoTotalNum);
+    const numeroAmpliacion = ampliacion?.numeroVersion ? (ampliacion.numeroVersion - 1) : 1;
 
     const paisesFiscales = residencia.paises ?? [];
 
@@ -540,15 +604,27 @@ export class DocumentoGeneralService {
       moneda_abrev: isUSD ? 'US$' : 'S/',
       moneda_nombre: monedaNombre,
       moneda_texto: monedaNombre,
-      monto_inicial: montoVal,
+      monto_inicial: montoParaDocNum,
       monto_inicial_invertir_formateado: montoFormateado,
       monto_inicial_invertir_entero: montoEntero,
-      monto_inicial_letras: invFid?.montoLetras ?? inversion.monto_inicial_letras ?? '',
-      monto_en_letras: invFid?.montoLetras ?? inversion.monto_inicial_letras ?? '',
+      monto_inicial_letras: montoLetrasParaDoc,
+      monto_en_letras: montoLetrasParaDoc,
       origen_recursos: inversion.origen_recursos ?? '',
       banco_nombre: invFid?.bancoDestino ?? fideicomiso?.bancoNombre ?? inversion.banco_nombre ?? '',
       numero_cuenta: invFid?.numeroCuentaDestino ?? fideicomiso?.numeroCuenta ?? inversion.numero_cuenta ?? '',
       cuenta_cci: invFid?.cuentaCciDestino ?? fideicomiso?.cuentaCci ?? inversion.cuenta_cci ?? '',
+
+      // Datos de ampliación de inversión
+      monto_anterior: montoAnteriorNum,
+      monto_anterior_formateado: montoAnteriorFormateado,
+      monto_ampliacion: montoAmpliacionNum,
+      monto_ampliacion_formateado: montoAmpliacionFormateado,
+      monto_ampliacion_letras: ampliacion?.montoAmpliacionLetras || '',
+      monto_nuevo_total: montoNuevoTotalNum,
+      monto_nuevo_total_formateado: montoNuevoTotalFormateado,
+      monto_nuevo_total_letras: ampliacion?.montoNuevoTotalLetras || '',
+      numero_ampliacion: numeroAmpliacion,
+      es_ampliacion: Boolean(ampliacion),
 
       // Datos del contrato / fideicomiso (configurables dinámicamente)
       fecha_contrato: '',
@@ -696,8 +772,9 @@ export class DocumentoGeneralService {
       where: { id: inversionFideicomisoId },
       include: {
         fideicomiso: true,
+        ampliaciones: { orderBy: { numeroVersion: 'asc' } },
         documentos: {
-          include: { documentoPlantilla: true, firmas: true },
+          include: { documentoPlantilla: true, firmas: true, ampliacionInversion: true },
         },
       },
     });

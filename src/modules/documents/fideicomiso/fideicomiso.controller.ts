@@ -18,6 +18,7 @@ import { FideicomisoService } from './fideicomiso.service.js';
 import { CreateFideicomisoDto } from './dto/create-fideicomiso.dto.js';
 import { CreateInversionFideicomisoDto } from './dto/create-inversion-fideicomiso.dto.js';
 import { UpdateInversionFideicomisoDto } from './dto/update-inversion-fideicomiso.dto.js';
+import { CreateAmpliacionInversionDto } from './dto/create-ampliacion-inversion.dto.js';
 
 @Controller('fideicomisos')
 export class FideicomisoController {
@@ -90,6 +91,14 @@ export class FideicomisoController {
     @Body() dto: UpdateInversionFideicomisoDto,
   ) {
     return this.service.updateInversion(id, dto);
+  }
+
+  @Post('inversion/:id/ampliacion')
+  crearAmpliacionInversion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateAmpliacionInversionDto,
+  ) {
+    return this.service.crearAmpliacionInversion(id, dto);
   }
 
   @Delete('inversion/:id')
