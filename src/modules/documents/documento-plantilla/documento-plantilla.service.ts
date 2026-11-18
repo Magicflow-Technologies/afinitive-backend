@@ -9,6 +9,7 @@ const TEMPLATE_DISPLAY_ORDER: Record<string, number> = {
   '03_dj_residencia_fiscal.hbs': 3,
   '04_formato_beneficiario_final.hbs': 4,
   '05_carta_solicitud_participacion.hbs': 5,
+  '05_carta_solicitud_ampliacion.hbs': 5.5,
   '06_instruccion_inversion.hbs': 6,
   '07_declaracion_inversion.hbs': 7,
 };
