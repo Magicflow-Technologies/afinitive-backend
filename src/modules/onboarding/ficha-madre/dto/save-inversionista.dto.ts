@@ -28,6 +28,7 @@ class DomicilioDto {
 
 class TitularDto {
   @IsOptional() @IsString() nombres_apellidos?: string;
+  @IsOptional() @IsString() identificacion_tributaria?: string;
   @IsOptional() @IsString() tipo_documento?: string;
   @IsOptional() @IsString() numero_documento?: string;
   @IsOptional() @IsString() nacionalidad?: string;
@@ -50,6 +51,10 @@ class InformacionLaboralDto {
   @IsOptional() @IsString() situacion_laboral?: string;
   @IsOptional() @IsString() profesion?: string;
   @IsOptional() @IsString() ocupacion?: string;
+  @IsOptional() @IsString() actividad_economica_principal?: string;
+  @IsOptional() @IsString() pais_actividad_principal?: string;
+  @IsOptional() @IsString() cargo_actual?: string;
+  @IsOptional() @IsString() tiempo_servicio?: string;
   @IsOptional() @IsString() empresa_centro_trabajo?: string;
   @IsOptional() ingreso_promedio_anual?: number | string;
 }
@@ -80,6 +85,8 @@ class ApoderadoDto {
 
 class VinculacionesDto {
   @IsOptional() @IsBoolean() es_vinculado_corfid_grupo_coril?: boolean;
+  @IsOptional() @IsBoolean() es_vinculado_grupo_economico?: boolean;
+  @IsOptional() @IsString() nombre_grupo_economico?: string;
   @IsOptional() @IsBoolean() ha_sido_cliente_otra_fiduciaria?: boolean;
   @IsOptional() @IsBoolean() ha_sido_trabajador_otra_fiduciaria?: boolean;
   @IsOptional() valor_aproximado_patrimonio?: number | string;
@@ -118,6 +125,21 @@ class InversionDto {
   @IsOptional() @IsString() banco_nombre?: string;
   @IsOptional() @IsString() numero_cuenta?: string;
   @IsOptional() @IsString() cuenta_cci?: string;
+  @IsOptional() @IsString() tipo_cuenta?: string;
+
+  // Anexo 4: Transferencias al exterior
+  @IsOptional() @IsString() exterior_cuenta_beneficiario?: string;
+  @IsOptional() @IsString() exterior_nombre_beneficiario?: string;
+  @IsOptional() @IsString() exterior_direccion_beneficiario?: string;
+  @IsOptional() @IsString() exterior_pais_beneficiario?: string;
+  @IsOptional() @IsString() exterior_banco_destino_swift?: string;
+  @IsOptional() @IsString() exterior_banco_destino_nombre?: string;
+  @IsOptional() @IsString() exterior_banco_destino_direccion?: string;
+  @IsOptional() @IsString() exterior_banco_destino_pais?: string;
+  @IsOptional() @IsString() exterior_banco_intermediario_swift?: string;
+  @IsOptional() @IsString() exterior_banco_intermediario_nombre?: string;
+  @IsOptional() @IsString() exterior_banco_intermediario_direccion?: string;
+  @IsOptional() @IsString() exterior_banco_intermediario_pais?: string;
 }
 
 export class SaveInversionistaDto {

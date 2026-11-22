@@ -1,6 +1,7 @@
 const VACIO = {
   titular: {
     nombres_apellidos: '',
+    identificacion_tributaria: '',
     tipo_documento: '',
     numero_documento: '',
     nacionalidad: '',
@@ -46,6 +47,10 @@ const VACIO = {
     situacion_laboral: '',
     profesion: '',
     ocupacion: '',
+    actividad_economica_principal: '',
+    pais_actividad_principal: '',
+    cargo_actual: '',
+    tiempo_servicio: '',
     empresa_centro_trabajo: '',
     ingreso_promedio_anual: null,
   },
@@ -80,6 +85,8 @@ const VACIO = {
   },
   vinculaciones: {
     es_vinculado_corfid_grupo_coril: false,
+    es_vinculado_grupo_economico: false,
+    nombre_grupo_economico: '',
     ha_sido_cliente_otra_fiduciaria: false,
     ha_sido_trabajador_otra_fiduciaria: false,
     valor_aproximado_patrimonio: null,
@@ -109,6 +116,19 @@ const VACIO = {
     banco_nombre: '',
     numero_cuenta: '',
     cuenta_cci: '',
+    tipo_cuenta: 'Ahorros',
+    exterior_cuenta_beneficiario: '',
+    exterior_nombre_beneficiario: '',
+    exterior_direccion_beneficiario: '',
+    exterior_pais_beneficiario: '',
+    exterior_banco_destino_swift: '',
+    exterior_banco_destino_nombre: '',
+    exterior_banco_destino_direccion: '',
+    exterior_banco_destino_pais: '',
+    exterior_banco_intermediario_swift: '',
+    exterior_banco_intermediario_nombre: '',
+    exterior_banco_intermediario_direccion: '',
+    exterior_banco_intermediario_pais: '',
   },
 };
 
@@ -151,6 +171,7 @@ export function toFichaMadreObject(ficha: any): any {
 
   const titularObj = {
     nombres_apellidos: titular?.nombresApellidos || personaNombreCompleto,
+    identificacion_tributaria: titular?.identificacionTributaria ?? '',
     tipo_documento: titular?.tipoDocumento || persona?.tipoDocumento || 'DNI',
     numero_documento: titular?.numeroDocumento || persona?.numeroDocumento || '',
     nacionalidad: titular?.nacionalidad || 'Peruana',
@@ -193,6 +214,10 @@ export function toFichaMadreObject(ficha: any): any {
           situacion_laboral: inv.informacionLaboral.situacionLaboral ?? '',
           profesion: inv.informacionLaboral.profesion ?? '',
           ocupacion: inv.informacionLaboral.ocupacion ?? '',
+          actividad_economica_principal: inv.informacionLaboral.actividadEconomicaPrincipal ?? '',
+          pais_actividad_principal: inv.informacionLaboral.paisActividadPrincipal ?? '',
+          cargo_actual: inv.informacionLaboral.cargoActual ?? '',
+          tiempo_servicio: inv.informacionLaboral.tiempoServicio ?? '',
           empresa_centro_trabajo: inv.informacionLaboral.empresaCentroTrabajo ?? '',
           ingreso_promedio_anual: inv.informacionLaboral.ingresoPromedioAnual
             ? inv.informacionLaboral.ingresoPromedioAnual.toString()
@@ -226,6 +251,8 @@ export function toFichaMadreObject(ficha: any): any {
     vinculaciones: inv?.vinculaciones
       ? {
           es_vinculado_corfid_grupo_coril: inv.vinculaciones.esVinculadoCorfidGrupoCoril ?? false,
+          es_vinculado_grupo_economico: inv.vinculaciones.esVinculadoGrupoEconomico ?? false,
+          nombre_grupo_economico: inv.vinculaciones.nombreGrupoEconomico ?? '',
           ha_sido_cliente_otra_fiduciaria: inv.vinculaciones.haSidoClienteOtraFiduciaria ?? false,
           ha_sido_trabajador_otra_fiduciaria: inv.vinculaciones.haSidoTrabajadorOtraFiduciaria ?? false,
           valor_aproximado_patrimonio: inv.vinculaciones.valorAproximadoPatrimonio
@@ -268,6 +295,19 @@ export function toFichaMadreObject(ficha: any): any {
           banco_nombre: inv.inversion.bancoNombre ?? '',
           numero_cuenta: inv.inversion.numeroCuenta ?? '',
           cuenta_cci: inv.inversion.cuentaCci ?? '',
+          tipo_cuenta: inv.inversion.tipoCuenta ?? 'Ahorros',
+          exterior_cuenta_beneficiario: inv.inversion.exteriorCuentaBeneficiario ?? '',
+          exterior_nombre_beneficiario: inv.inversion.exteriorNombreBeneficiario ?? '',
+          exterior_direccion_beneficiario: inv.inversion.exteriorDireccionBeneficiario ?? '',
+          exterior_pais_beneficiario: inv.inversion.exteriorPaisBeneficiario ?? '',
+          exterior_banco_destino_swift: inv.inversion.exteriorBancoDestinoSwift ?? '',
+          exterior_banco_destino_nombre: inv.inversion.exteriorBancoDestinoNombre ?? '',
+          exterior_banco_destino_direccion: inv.inversion.exteriorBancoDestinoDireccion ?? '',
+          exterior_banco_destino_pais: inv.inversion.exteriorBancoDestinoPais ?? '',
+          exterior_banco_intermediario_swift: inv.inversion.exteriorBancoIntermediarioSwift ?? '',
+          exterior_banco_intermediario_nombre: inv.inversion.exteriorBancoIntermediarioNombre ?? '',
+          exterior_banco_intermediario_direccion: inv.inversion.exteriorBancoIntermediarioDireccion ?? '',
+          exterior_banco_intermediario_pais: inv.inversion.exteriorBancoIntermediarioPais ?? '',
         }
       : VACIO.inversion,
   };
