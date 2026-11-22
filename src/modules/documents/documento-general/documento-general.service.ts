@@ -326,6 +326,8 @@ export class DocumentoGeneralService {
     const inversion = inv.inversion ?? {};
     const residencia = inv.residencia_fiscal ?? {};
     const apoderado = inv.apoderado ?? {};
+    const vinculaciones = inv.vinculaciones ?? {};
+    const origenFondos = inv.origen_fondos ?? {};
 
     const meses = [
       'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -522,6 +524,30 @@ export class DocumentoGeneralService {
       pep: titular.pep ?? false,
       pep_institucion_cargo: titular.pep_institucion_cargo ?? '',
 
+      identificacion_tributaria: titular.identificacion_tributaria ?? '',
+      actividad_economica_principal: laboral.actividad_economica_principal ?? '',
+      pais_actividad_principal: laboral.pais_actividad_principal ?? titular.pais_residencia ?? 'Perú',
+      cargo_actual: laboral.cargo_actual ?? laboral.ocupacion ?? '',
+      tiempo_servicio: laboral.tiempo_servicio ?? '',
+      es_vinculado_corfid_grupo_coril: Boolean(vinculaciones.es_vinculado_corfid_grupo_coril),
+      es_vinculado_grupo_economico: Boolean(vinculaciones.es_vinculado_grupo_economico),
+      nombre_grupo_economico: vinculaciones.nombre_grupo_economico ?? '',
+      tipo_cuenta: inversion.tipo_cuenta || 'Ahorros',
+      cuenta_bancaria_cliente: inversion.numero_cuenta ?? '',
+      cuenta_cci_cliente: inversion.cuenta_cci ?? '',
+      banco_nombre_cliente: inversion.banco_nombre ?? '',
+      exterior_cuenta_beneficiario: inversion.exterior_cuenta_beneficiario ?? '',
+      exterior_nombre_beneficiario: inversion.exterior_nombre_beneficiario ?? titular.nombres_apellidos ?? '',
+      exterior_direccion_beneficiario: inversion.exterior_direccion_beneficiario ?? domicilio.direccion_completa ?? '',
+      exterior_pais_beneficiario: inversion.exterior_pais_beneficiario ?? titular.pais_residencia ?? 'Perú',
+      exterior_banco_destino_swift: inversion.exterior_banco_destino_swift ?? '',
+      exterior_banco_destino_nombre: inversion.exterior_banco_destino_nombre ?? '',
+      exterior_banco_destino_direccion: inversion.exterior_banco_destino_direccion ?? '',
+      exterior_banco_destino_pais: inversion.exterior_banco_destino_pais ?? '',
+      exterior_banco_intermediario_swift: inversion.exterior_banco_intermediario_swift ?? '',
+      exterior_banco_intermediario_nombre: inversion.exterior_banco_intermediario_nombre ?? '',
+      exterior_banco_intermediario_direccion: inversion.exterior_banco_intermediario_direccion ?? '',
+      exterior_banco_intermediario_pais: inversion.exterior_banco_intermediario_pais ?? '',
       situacion_laboral: laboral.situacion_laboral ?? '',
       profesion: laboral.profesion ?? '',
       ocupacion: laboral.ocupacion ?? '',
