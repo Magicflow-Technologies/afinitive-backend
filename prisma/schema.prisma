@@ -457,15 +457,50 @@ model Auditoria {
   @@map("auditoria")
 }
 
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
 model asistentes_evento {
-  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  evento_id        String    @db.VarChar
-  nombre           String    @db.VarChar
-  correo           String    @db.VarChar
-  celular          String?   @db.VarChar
-  persona_contacto String?   @db.VarChar
-  created_at       DateTime? @default(now()) @db.Timestamptz(6)
-  eventos          eventos   @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  evento_id           String    @db.VarChar
+  nombre              String    @db.VarChar
+  correo              String    @db.VarChar
+  celular             String?   @db.VarChar
+  persona_contacto    String?   @db.VarChar
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  pais                String?   @db.VarChar(100)
+  interes_inversion   String?   @db.VarChar(255)
+  estado              String?   @default("pendiente") @db.VarChar(50)
+  notas               String?
+  fecha_atencion      DateTime? @db.Timestamptz(6)
+  recordatorio_estado String?   @default("pendiente") @db.VarChar(50)
+  eventos             eventos   @relation(fields: [evento_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([created_at(sort: Desc)], map: "idx_asistentes_evento_created_at")
+  @@index([estado], map: "idx_asistentes_evento_estado")
+  @@index([pais], map: "idx_asistentes_evento_pais")
+  @@index([recordatorio_estado], map: "idx_asistentes_recordatorio_estado")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model campanas_agente {
+  id                     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  titulo_evento          String    @db.VarChar(255)
+  mensaje                String
+  link_reunion           String?
+  fecha_evento           DateTime? @db.Timestamptz(6)
+  canal                  String?   @default("email") @db.VarChar(50)
+  filtro_destinatarios   String?   @default("todos") @db.VarChar(100)
+  estado_envio           String?   @default("guardado") @db.VarChar(50)
+  total_destinatarios    Int?      @default(0)
+  destinatarios_enviados Int?      @default(0)
+  metadata               Json?     @default("{}")
+  created_at             DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime? @default(now()) @db.Timestamptz(6)
+  recordatorio_estado    String?   @default("pendiente") @db.VarChar(50)
+
+  @@index([created_at(sort: Desc)], map: "idx_campanas_agente_created_at")
+  @@index([estado_envio], map: "idx_campanas_agente_estado")
+  @@index([titulo_evento], map: "idx_campanas_agente_titulo")
+  @@index([recordatorio_estado], map: "idx_campanas_recordatorio_estado")
 }
 
 model calendar_settings {
@@ -478,31 +513,61 @@ model calendar_settings {
   send_interval      Int       @default(5)
   send_interval_unit String    @default("minutes") @db.VarChar(20)
   updated_at         DateTime? @default(now()) @db.Timestamptz(6)
+  whatsapp_number    String?   @default("51982100208") @db.VarChar(50)
 }
 
 model email_queue {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  recipient_name  String    @db.VarChar(255)
-  recipient_email String    @db.VarChar(255)
-  proposed_time   DateTime  @db.Timestamptz(6)
-  status          String    @default("pending") @db.VarChar(50)
-  error_message   String?
-  sent_at         DateTime? @db.Timestamptz(6)
-  created_at      DateTime? @default(now()) @db.Timestamptz(6)
-  recipient_phone String?   @db.VarChar(50)
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recipient_name      String    @db.VarChar(255)
+  recipient_email     String    @db.VarChar(255)
+  recipient_phone     String?   @db.VarChar(50)
+  proposed_time       DateTime  @db.Timestamptz(6)
+  status              String    @default("pending") @db.VarChar(50)
+  error_message       String?
+  sent_at             DateTime? @db.Timestamptz(6)
+  created_at          DateTime? @default(now()) @db.Timestamptz(6)
+  whatsapp_clicked_at DateTime? @db.Timestamptz(6)
+  investment_range    String?   @db.VarChar(100)
+  consent_promo       Boolean?  @default(false)
+  consent_privacy     Boolean?  @default(true)
+  consent_demand      Boolean?  @default(false)
+  tag                 String?   @db.VarChar(255)
+}
+
+model email_templates {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String    @db.VarChar(255)
+  subject      String
+  type         String    @default("full_html") @db.VarChar(50)
+  html_content String
+  category     String?   @default("General") @db.VarChar(50)
+  created_by   String?   @default("manual") @db.VarChar(50)
+  is_active    Boolean?  @default(true)
+  metadata     Json?     @default("{}")
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model email_tracking_test {
-  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  recipient_email String
-  subject         String
-  status          String    @default("Enviado")
-  resend_email_id String    @unique
-  sent_at         DateTime  @default(now()) @db.Timestamptz(6)
-  opened_at       DateTime? @db.Timestamptz(6)
-  proposed_time   DateTime? @db.Timestamptz(6)
-  recipient_name  String?
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recipient_email     String
+  subject             String
+  status              String    @default("Enviado")
+  resend_email_id     String    @unique
+  sent_at             DateTime  @default(now()) @db.Timestamptz(6)
+  opened_at           DateTime? @db.Timestamptz(6)
+  proposed_time       DateTime? @db.Timestamptz(6)
+  recipient_name      String?
+  whatsapp_clicked_at DateTime? @db.Timestamptz(6)
+  recipient_phone     String?   @db.VarChar(50)
+  investment_range    String?   @db.VarChar(100)
+  consent_promo       Boolean?  @default(false)
+  consent_privacy     Boolean?  @default(true)
+  consent_demand      Boolean?  @default(false)
+  booking_notes       String?
+  booking_source      String?   @default("calendario_publico") @db.VarChar(100)
+  tag                 String?   @db.VarChar(255)
 }
 
 model eventos {
@@ -514,7 +579,13 @@ model eventos {
   duracion_minutos  Int?                @default(60)
   activo            Boolean?            @default(true)
   created_at        DateTime?           @default(now()) @db.Timestamptz(6)
+  imagen_url        String?
+  tipo              String?             @default("webinar") @db.VarChar(50)
+  plantilla_id      String?             @db.VarChar(255)
   asistentes_evento asistentes_evento[]
+
+  @@index([plantilla_id], map: "idx_eventos_plantilla_id")
+  @@index([tipo], map: "idx_eventos_tipo")
 }
 
 enum TipoDocumento {
