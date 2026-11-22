@@ -342,6 +342,7 @@ export class FichaMadreService {
 
   private mapTitular(t: {
     nombres_apellidos?: string;
+    identificacion_tributaria?: string;
     tipo_documento?: string;
     numero_documento?: string;
     nacionalidad?: string;
@@ -367,6 +368,7 @@ export class FichaMadreService {
   }) {
     return {
       nombresApellidos: t.nombres_apellidos,
+      identificacionTributaria: t.identificacion_tributaria?.trim() ? t.identificacion_tributaria.trim() : null,
       tipoDocumento: normTipoDoc(t.tipo_documento),
       numeroDocumento: t.numero_documento,
       nacionalidad: t.nacionalidad,
@@ -390,11 +392,15 @@ export class FichaMadreService {
     };
   }
 
-  private mapLaboral(l: { situacion_laboral?: string; profesion?: string; ocupacion?: string; empresa_centro_trabajo?: string; ingreso_promedio_anual?: number | string }) {
+  private mapLaboral(l: { situacion_laboral?: string; profesion?: string; ocupacion?: string; actividad_economica_principal?: string; pais_actividad_principal?: string; cargo_actual?: string; tiempo_servicio?: string; empresa_centro_trabajo?: string; ingreso_promedio_anual?: number | string }) {
     return {
       situacionLaboral: l.situacion_laboral,
       profesion: l.profesion,
       ocupacion: l.ocupacion,
+      actividadEconomicaPrincipal: l.actividad_economica_principal,
+      paisActividadPrincipal: l.pais_actividad_principal,
+      cargoActual: l.cargo_actual,
+      tiempoServicio: l.tiempo_servicio,
       empresaCentroTrabajo: l.empresa_centro_trabajo,
       ingresoPromedioAnual: num(l.ingreso_promedio_anual),
     };
@@ -438,9 +444,11 @@ export class FichaMadreService {
     };
   }
 
-  private mapVinculaciones(v: { es_vinculado_corfid_grupo_coril?: boolean; ha_sido_cliente_otra_fiduciaria?: boolean; ha_sido_trabajador_otra_fiduciaria?: boolean; valor_aproximado_patrimonio?: number | string }) {
+  private mapVinculaciones(v: { es_vinculado_corfid_grupo_coril?: boolean; es_vinculado_grupo_economico?: boolean; nombre_grupo_economico?: string; ha_sido_cliente_otra_fiduciaria?: boolean; ha_sido_trabajador_otra_fiduciaria?: boolean; valor_aproximado_patrimonio?: number | string }) {
     return {
       esVinculadoCorfidGrupoCoril: v.es_vinculado_corfid_grupo_coril,
+      esVinculadoGrupoEconomico: v.es_vinculado_grupo_economico,
+      nombreGrupoEconomico: v.nombre_grupo_economico,
       haSidoClienteOtraFiduciaria: v.ha_sido_cliente_otra_fiduciaria,
       haSidoTrabajadorOtraFiduciaria: v.ha_sido_trabajador_otra_fiduciaria,
       valorAproximadoPatrimonio: num(v.valor_aproximado_patrimonio),
@@ -480,7 +488,28 @@ export class FichaMadreService {
     };
   }
 
-  private mapInversion(i: { moneda?: string; monto_inicial?: number | string; monto_inicial_letras?: string; origen_recursos?: string; banco_nombre?: string; numero_cuenta?: string; cuenta_cci?: string }) {
+  private mapInversion(i: {
+    moneda?: string;
+    monto_inicial?: number | string;
+    monto_inicial_letras?: string;
+    origen_recursos?: string;
+    banco_nombre?: string;
+    numero_cuenta?: string;
+    cuenta_cci?: string;
+    tipo_cuenta?: string;
+    exterior_cuenta_beneficiario?: string;
+    exterior_nombre_beneficiario?: string;
+    exterior_direccion_beneficiario?: string;
+    exterior_pais_beneficiario?: string;
+    exterior_banco_destino_swift?: string;
+    exterior_banco_destino_nombre?: string;
+    exterior_banco_destino_direccion?: string;
+    exterior_banco_destino_pais?: string;
+    exterior_banco_intermediario_swift?: string;
+    exterior_banco_intermediario_nombre?: string;
+    exterior_banco_intermediario_direccion?: string;
+    exterior_banco_intermediario_pais?: string;
+  }) {
     return {
       moneda: i.moneda,
       montoInicial: num(i.monto_inicial),
@@ -489,6 +518,19 @@ export class FichaMadreService {
       bancoNombre: i.banco_nombre,
       numeroCuenta: i.numero_cuenta,
       cuentaCci: i.cuenta_cci,
+      tipoCuenta: i.tipo_cuenta,
+      exteriorCuentaBeneficiario: i.exterior_cuenta_beneficiario,
+      exteriorNombreBeneficiario: i.exterior_nombre_beneficiario,
+      exteriorDireccionBeneficiario: i.exterior_direccion_beneficiario,
+      exteriorPaisBeneficiario: i.exterior_pais_beneficiario,
+      exteriorBancoDestinoSwift: i.exterior_banco_destino_swift,
+      exteriorBancoDestinoNombre: i.exterior_banco_destino_nombre,
+      exteriorBancoDestinoDireccion: i.exterior_banco_destino_direccion,
+      exteriorBancoDestinoPais: i.exterior_banco_destino_pais,
+      exteriorBancoIntermediarioSwift: i.exterior_banco_intermediario_swift,
+      exteriorBancoIntermediarioNombre: i.exterior_banco_intermediario_nombre,
+      exteriorBancoIntermediarioDireccion: i.exterior_banco_intermediario_direccion,
+      exteriorBancoIntermediarioPais: i.exterior_banco_intermediario_pais,
     };
   }
 

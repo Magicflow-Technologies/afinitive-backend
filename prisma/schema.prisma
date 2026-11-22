@@ -161,6 +161,7 @@ model Titular {
   id                      String         @id @default(uuid()) @db.Uuid
   inversionistaId         String         @unique @map("inversionista_id") @db.Uuid
   nombresApellidos        String?        @map("nombres_apellidos")
+  identificacionTributaria String?       @map("identificacion_tributaria")
   tipoDocumento           TipoDocumento? @map("tipo_documento")
   numeroDocumento         String?        @map("numero_documento")
   nacionalidad            String?
@@ -210,6 +211,10 @@ model InformacionLaboral {
   situacionLaboral     String?       @map("situacion_laboral")
   profesion            String?
   ocupacion            String?
+  actividadEconomicaPrincipal String?      @map("actividad_economica_principal")
+  paisActividadPrincipal     String?       @map("pais_actividad_principal")
+  cargoActual                String?       @map("cargo_actual")
+  tiempoServicio             String?       @map("tiempo_servicio")
   empresaCentroTrabajo String?       @map("empresa_centro_trabajo")
   ingresoPromedioAnual Decimal?      @map("ingreso_promedio_anual") @db.Decimal(18, 2)
   inversionista        Inversionista @relation(fields: [inversionistaId], references: [id])
@@ -245,6 +250,8 @@ model Vinculaciones {
   id                             String        @id @default(uuid()) @db.Uuid
   inversionistaId                String        @unique @map("inversionista_id") @db.Uuid
   esVinculadoCorfidGrupoCoril    Boolean       @default(false) @map("es_vinculado_corfid_grupo_coril")
+  esVinculadoGrupoEconomico      Boolean       @default(false) @map("es_vinculado_grupo_economico")
+  nombreGrupoEconomico           String?       @map("nombre_grupo_economico")
   haSidoClienteOtraFiduciaria    Boolean       @default(false) @map("ha_sido_cliente_otra_fiduciaria")
   haSidoTrabajadorOtraFiduciaria Boolean       @default(false) @map("ha_sido_trabajador_otra_fiduciaria")
   valorAproximadoPatrimonio      Decimal?      @map("valor_aproximado_patrimonio") @db.Decimal(18, 2)
@@ -310,6 +317,19 @@ model Inversion {
   bancoNombre        String?       @map("banco_nombre")
   numeroCuenta       String?       @map("numero_cuenta")
   cuentaCci          String?       @map("cuenta_cci")
+  tipoCuenta                          String?       @map("tipo_cuenta")
+  exteriorCuentaBeneficiario          String?       @map("exterior_cuenta_beneficiario")
+  exteriorNombreBeneficiario          String?       @map("exterior_nombre_beneficiario")
+  exteriorDireccionBeneficiario       String?       @map("exterior_direccion_beneficiario")
+  exteriorPaisBeneficiario            String?       @map("exterior_pais_beneficiario")
+  exteriorBancoDestinoSwift           String?       @map("exterior_banco_destino_swift")
+  exteriorBancoDestinoNombre          String?       @map("exterior_banco_destino_nombre")
+  exteriorBancoDestinoDireccion       String?       @map("exterior_banco_destino_direccion")
+  exteriorBancoDestinoPais            String?       @map("exterior_banco_destino_pais")
+  exteriorBancoIntermediarioSwift     String?       @map("exterior_banco_intermediario_swift")
+  exteriorBancoIntermediarioNombre    String?       @map("exterior_banco_intermediario_nombre")
+  exteriorBancoIntermediarioDireccion String?       @map("exterior_banco_intermediario_direccion")
+  exteriorBancoIntermediarioPais      String?       @map("exterior_banco_intermediario_pais")
   inversionista      Inversionista @relation(fields: [inversionistaId], references: [id])
 
   @@map("inversion")
